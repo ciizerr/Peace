@@ -22,7 +22,7 @@
 |:---:|:---:|
 | **Morning Light** | **Night Sky** |
 
-> *Note: Screenshots coming soon!*
+
 
 ## 📖 About the Project
 
