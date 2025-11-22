@@ -104,7 +104,7 @@ fun HomeScreen(
                 userName = userName,
                 greeting = greeting,
                 profileUri = profileUri,
-                onProfileClick = { navController.navigate(Screen.Settings.route) }
+                onProfileClick = { navController.navigate(Screen.Profile.route) }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -135,7 +135,11 @@ fun HomeScreen(
                 contentPadding = PaddingValues(bottom = 80.dp)
             ) {
                 items(reminders) { reminder ->
-                    ReminderCard(reminder = reminder, onClick = { viewModel.onEditClick(reminder); onFabClick() })
+                    ReminderCard(
+                        reminder = reminder,
+                        onClick = { viewModel.onEditClick(reminder); onFabClick() },
+                        onToggleCompletion = { viewModel.toggleReminderCompletion(reminder) }
+                    )
                 }
             }
         }
@@ -227,7 +231,11 @@ fun AiInsightCard(quote: String) {
 }
 
 @Composable
-fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
+fun ReminderCard(
+    reminder: Reminder,
+    onClick: () -> Unit,
+    onToggleCompletion: () -> Unit
+) {
     // Map dummy integers to our colors (or use category color if available)
     // For now, using static colors based on type/random for variety
     val cardColor = when(reminder.id.toInt() % 4) {
@@ -238,8 +246,11 @@ fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
         else -> PeaceCardBlue
     }
 
+    val containerColor = if (reminder.isCompleted) MaterialTheme.colorScheme.surfaceVariant else cardColor
+    val contentColor = if (reminder.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else Color.White
+
     Card(
-        colors = CardDefaults.cardColors(containerColor = cardColor),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(28.dp),
         modifier = Modifier
             .fillMaxWidth()
@@ -251,33 +262,42 @@ fun ReminderCard(reminder: Reminder, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
                     val timeString = timeFormat.format(Date(reminder.timeInMillis))
                     
-                    Text(timeString, color = Color.White.copy(alpha = 0.7f), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        timeString,
+                        color = contentColor.copy(alpha = 0.7f),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        style = if (reminder.isCompleted) androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough) else androidx.compose.ui.text.TextStyle()
+                    )
                     if (reminder.frequency != Frequency.Once) {
-                        Text(" ↻", color = Color.White.copy(alpha = 0.7f))
+                        Text(" ↻", color = contentColor.copy(alpha = 0.7f))
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(reminder.title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            }
-
-            // Icon based on Alarm or Notification
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Color.Black.copy(alpha = 0.1f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = null,
-                    tint = Color.White
+                Text(
+                    reminder.title,
+                    color = contentColor,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = if (reminder.isCompleted) androidx.compose.ui.text.TextStyle(textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough) else androidx.compose.ui.text.TextStyle()
                 )
             }
+
+            // Checkbox for completion
+            androidx.compose.material3.Checkbox(
+                checked = reminder.isCompleted,
+                onCheckedChange = { onToggleCompletion() },
+                colors = androidx.compose.material3.CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    uncheckedColor = contentColor.copy(alpha = 0.7f),
+                    checkmarkColor = Color.White
+                )
+            )
         }
     }
 }

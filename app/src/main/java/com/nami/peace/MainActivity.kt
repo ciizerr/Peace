@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -14,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,8 +25,10 @@ import androidx.navigation.compose.rememberNavController
 import com.nami.peace.ui.SettingsScreen
 import com.nami.peace.ui.SplashScreen
 import com.nami.peace.ui.home.HomeScreen
+import com.nami.peace.ui.navigation.PeaceBottomBar
 import com.nami.peace.ui.navigation.Screen
 import com.nami.peace.ui.theme.PeaceTheme
+import com.nami.peace.ui.home.UpcomingScreen
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 
@@ -35,54 +39,68 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel: com.nami.peace.ui.PeaceViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
             val isDarkMode = viewModel.isDarkMode.collectAsState(initial = true)
+            val themeAccent = viewModel.themeAccent.collectAsState(initial = "Purple")
             val navController = rememberNavController()
 
             val sheetState = androidx.compose.material3.rememberModalBottomSheetState()
             var showSheet by remember { mutableStateOf(false) }
             val scope = androidx.compose.runtime.rememberCoroutineScope()
 
-            PeaceTheme(darkTheme = isDarkMode.value) {
-                NavHost(
-                    navController = navController,
-                    startDestination = Screen.Splash.route
-                ) {
-                    composable(Screen.Splash.route) {
-                        SplashScreen(navController = navController)
+            PeaceTheme(
+                darkTheme = isDarkMode.value,
+                themeAccent = themeAccent.value
+            ) {
+                Scaffold(
+                    bottomBar = {
+                        PeaceBottomBar(navController = navController)
                     }
-                    composable(Screen.Home.route) {
-                        HomeScreen(
-                            navController = navController,
-                            viewModel = viewModel,
-                            onFabClick = { 
-                                viewModel.resetReminderState()
-                                showSheet = true 
-                            }
-                        )
-                    }
-                    composable(Screen.Settings.route) {
-                        SettingsScreen(navController = navController, viewModel = viewModel)
-                    }
-                    composable(Screen.Profile.route) {
-                        com.nami.peace.ui.settings.ProfileScreen(navController = navController, viewModel = viewModel)
-                    }
-                }
-
-                if (showSheet) {
-                    androidx.compose.material3.ModalBottomSheet(
-                        onDismissRequest = { showSheet = false },
-                        sheetState = sheetState
+                ) { paddingValues ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.Splash.route,
+                        modifier = Modifier.padding(paddingValues)
                     ) {
-                        com.nami.peace.ui.AddReminderSheet(
-                            viewModel = viewModel,
-                            onDismiss = {
-                                scope.launch { sheetState.hide() }.invokeOnCompletion {
-                                    if (!sheetState.isVisible) {
-                                        showSheet = false
-                                        viewModel.resetReminderState()
+                        composable(Screen.Splash.route) {
+                            SplashScreen(navController = navController)
+                        }
+                        composable(Screen.Home.route) {
+                            HomeScreen(
+                                navController = navController,
+                                viewModel = viewModel,
+                                onFabClick = { 
+                                    viewModel.resetReminderState()
+                                    showSheet = true 
+                                }
+                            )
+                        }
+                        composable("upcoming") { // Matches BottomNavItem.Upcoming.route
+                            UpcomingScreen(navController = navController, viewModel = viewModel)
+                        }
+                        composable(Screen.Settings.route) {
+                            SettingsScreen(navController = navController, viewModel = viewModel)
+                        }
+                        composable(Screen.Profile.route) {
+                            com.nami.peace.ui.settings.ProfileScreen(navController = navController, viewModel = viewModel)
+                        }
+                    }
+
+                    if (showSheet) {
+                        androidx.compose.material3.ModalBottomSheet(
+                            onDismissRequest = { showSheet = false },
+                            sheetState = sheetState
+                        ) {
+                            com.nami.peace.ui.AddReminderSheet(
+                                viewModel = viewModel,
+                                onDismiss = {
+                                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            showSheet = false
+                                            viewModel.resetReminderState()
+                                        }
                                     }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }

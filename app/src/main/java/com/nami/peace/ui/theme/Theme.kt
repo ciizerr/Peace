@@ -11,8 +11,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-
 import androidx.compose.material3.ProvideTextStyle
+
 private val DarkColorScheme = darkColorScheme(
     primary = PeaceTeal,
     secondary = PeaceLavender,
@@ -37,22 +37,28 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = MorningLightTextSecondary
 )
 
-
 @Composable
 fun PeaceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    themeAccent: String = "Purple",
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val accentColor = when (themeAccent) {
+        "Blue" -> Color(0xFF2196F3)
+        "Teal" -> Color(0xFF009688)
+        "Green" -> Color(0xFF4CAF50)
+        else -> if (darkTheme) PeaceTeal else Color(0xFF5C6BC0) // Default Purple-ish
+    }
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> DarkColorScheme.copy(primary = accentColor)
+        else -> LightColorScheme.copy(primary = accentColor)
     }
 
     MaterialTheme(

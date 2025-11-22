@@ -46,6 +46,14 @@ class GeminiRepository {
     }
 
     suspend fun getCoachQuote(userName: String, focusAreas: Set<String>, apiKey: String): String = withContext(Dispatchers.IO) {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        val timeOfDay = when (hour) {
+            in 5..11 -> "Morning"
+            in 12..17 -> "Afternoon"
+            in 18..22 -> "Evening"
+            else -> "Night"
+        }
+
         try {
             val generativeModel = GenerativeModel(
                 modelName = "gemini-pro",
@@ -56,8 +64,9 @@ class GeminiRepository {
                 You are a gentle, encouraging life coach named "Peace".
                 User: $userName
                 Focus Areas: ${focusAreas.joinToString(", ")}
+                Time of Day: $timeOfDay
                 
-                Generate a short, calming, 1-sentence greeting or tip for the user based on their focus areas.
+                Generate a short, calming, 1-sentence greeting or tip for the user based on their focus areas and the current time of day ($timeOfDay).
                 Do not be bossy. Be soft and poetic.
             """.trimIndent()
 

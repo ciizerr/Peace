@@ -39,6 +39,16 @@ class PeaceViewModel(application: Application) : AndroidViewModel(application) {
     val allCategories: StateFlow<List<Category>> = repository.allCategories
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val upcomingReminders: StateFlow<List<Reminder>> = allReminders.map { reminders ->
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        val endOfToday = calendar.timeInMillis
+
+        reminders.filter { it.timeInMillis > endOfToday }.sortedBy { it.timeInMillis }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val gardenProgress: StateFlow<Float> = allReminders.map { reminders ->
         val essentialReminders = reminders.filter { it.isEssential }
         if (essentialReminders.isEmpty()) 0f
@@ -175,6 +185,16 @@ class PeaceViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.deleteReminder(reminder)
             alarmScheduler.cancel(reminder)
+        }
+    }
+
+    fun toggleReminderCompletion(reminder: Reminder) {
+        viewModelScope.launch {
+            val updated = reminder.copy(isCompleted = !reminder.isCompleted)
+            repository.insertReminder(updated)
+            if (updated.isCompleted) {
+                refreshCoachQuote()
+            }
         }
     }
 

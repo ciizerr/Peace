@@ -47,7 +47,6 @@ import com.nami.peace.ui.navigation.Screen
 enum class SettingsCategory(val title: String) {
     General("General"),
     Database("Database"),
-    User("User"),
     AI("AI"),
     About("About")
 }
@@ -250,15 +249,6 @@ fun SettingsContent(
                         onExport = { viewModel.exportData() },
                         onNuke = { viewModel.nukeData() }
                     )
-                    SettingsCategory.User -> UserSettings(
-                        accentColor = accentColor,
-                        contentColor = contentColor,
-                        userName = userName,
-                        profileUri = profileUri,
-                        onNameChange = { viewModel.saveUserName(it) },
-                        onProfileImageChange = { viewModel.saveProfileUri(it) },
-                        onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
-                    )
                     SettingsCategory.AI -> AISettings(
                         accentColor = accentColor,
                         contentColor = contentColor,
@@ -439,136 +429,6 @@ fun DatabaseSettings(
             subtitle = "Delete all reminders and categories",
             onClick = onNuke,
             iconColor = Color(0xFFF44336),
-            accentColor = accentColor,
-            contentColor = contentColor
-        )
-    }
-}
-
-@Composable
-fun UserSettings(
-    accentColor: Color,
-    contentColor: Color,
-    userName: String,
-    profileUri: String?,
-    onNameChange: (String) -> Unit,
-    onProfileImageChange: (String) -> Unit,
-    onNavigateToProfile: () -> Unit
-) {
-    var isEditing by remember { mutableStateOf(false) }
-    
-    // Photo Picker
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: android.net.Uri? ->
-        uri?.let { onProfileImageChange(it.toString()) }
-    }
-
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SettingsSectionHeader("User Profile", contentColor)
-            IconButton(onClick = { isEditing = !isEditing }) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Profile",
-                    tint = if (isEditing) accentColor else contentColor.copy(alpha = 0.5f)
-                )
-            }
-        }
-        
-        // Profile Picture
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(contentColor.copy(alpha = 0.1f))
-                    .clickable { launcher.launch("image/*") }
-                    .border(2.dp, accentColor, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                if (profileUri != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(profileUri),
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = null,
-                        tint = contentColor.copy(alpha = 0.5f),
-                        modifier = Modifier.size(48.dp)
-                    )
-                }
-            }
-            if (isEditing) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .offset(x = (-120).dp, y = 0.dp) // Adjust position roughly
-                        .background(accentColor, CircleShape)
-                        .padding(4.dp)
-                ) {
-                    Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
-                }
-            }
-        }
-
-        if (isEditing) {
-            // Name Input
-            OutlinedTextField(
-                value = userName,
-                onValueChange = onNameChange,
-                label = { Text("Your Name") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = accentColor,
-                    unfocusedBorderColor = contentColor.copy(alpha = 0.5f),
-                    focusedLabelColor = accentColor,
-                    unfocusedLabelColor = contentColor.copy(alpha = 0.7f),
-                    cursorColor = accentColor,
-                    focusedTextColor = contentColor,
-                    unfocusedTextColor = contentColor
-                ),
-                singleLine = true
-            )
-        } else {
-            // Display Name
-            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = userName,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = contentColor
-                )
-                Text(
-                    text = "Tap edit to change details",
-                    fontSize = 12.sp,
-                    color = contentColor.copy(alpha = 0.5f)
-                )
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-        
-        SettingsActionItem(
-            icon = Icons.Outlined.Person,
-            title = "Personal Details",
-            subtitle = "Manage your profile",
-            onClick = { onNavigateToProfile() },
-            iconColor = Color(0xFFE91E63),
             accentColor = accentColor,
             contentColor = contentColor
         )
@@ -800,7 +660,8 @@ fun SettingsToggleItem(
                 Text(
                     text = subtitle,
                     fontSize = 13.sp,
-                    color = contentColor.copy(alpha = 0.6f)
+                    color = contentColor.copy(alpha = 0.6f),
+                    lineHeight = 18.sp
                 )
             }
         }
@@ -810,8 +671,8 @@ fun SettingsToggleItem(
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = accentColor,
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = contentColor.copy(alpha = 0.2f)
+                uncheckedThumbColor = contentColor.copy(alpha = 0.5f),
+                uncheckedTrackColor = contentColor.copy(alpha = 0.1f)
             )
         )
     }
