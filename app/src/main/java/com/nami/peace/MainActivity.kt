@@ -18,10 +18,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
+import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
+import android.os.Build
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.activity.compose.rememberLauncherForActivityResult
 import com.nami.peace.ui.SettingsScreen
 import com.nami.peace.ui.SplashScreen
 import com.nami.peace.ui.home.HomeScreen
@@ -45,6 +50,20 @@ class MainActivity : ComponentActivity() {
             val sheetState = androidx.compose.material3.rememberModalBottomSheetState()
             var showSheet by remember { mutableStateOf(false) }
             val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+            // Permission Request Logic
+            val permissionLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission(),
+                onResult = { isGranted ->
+                    // Handle permission result if needed
+                }
+            )
+
+            LaunchedEffect(Unit) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
 
             PeaceTheme(
                 darkTheme = isDarkMode.value,

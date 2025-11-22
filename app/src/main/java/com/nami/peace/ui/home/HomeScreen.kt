@@ -211,17 +211,17 @@ fun AiInsightCard(quote: String) {
                 .padding(24.dp)
         ) {
             Column {
-                Row(verticalAlignment = Alignment.Top) {
-                    Icon(Icons.Rounded.AutoAwesome, contentDescription = null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.AutoAwesome, contentDescription = null, tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text("PEACE COACH", color = Color.White.copy(alpha = 0.7f), fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                        Text("PEACE COACH", color = Color.White.copy(alpha = 0.7f), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = quote,
                             color = Color.White,
-                            fontSize = 14.sp,
-                            lineHeight = 22.sp
+                            fontSize = 15.sp,
+                            lineHeight = 24.sp
                         )
                     }
                 }

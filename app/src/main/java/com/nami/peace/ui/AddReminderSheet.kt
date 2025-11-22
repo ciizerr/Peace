@@ -12,6 +12,7 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,6 +48,31 @@ fun AddReminderSheet(
         calendar.get(java.util.Calendar.MINUTE),
         true
     )
+
+    // Date Picker State
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = viewModel.reminderDate ?: System.currentTimeMillis())
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.reminderDate = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -108,6 +134,39 @@ fun AddReminderSheet(
 
         // --- 3. Results (Auto-filled by AI or Manual) ---
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            // Date Display
+            Column(modifier = Modifier.weight(1f)) {
+                Text("DATE", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontWeight = FontWeight.Bold)
+                Box(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                        .clickable { showDatePicker = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val dateText = viewModel.reminderDate?.let {
+                            val sdf = java.text.SimpleDateFormat("MMM dd", java.util.Locale.getDefault())
+                            sdf.format(java.util.Date(it))
+                        } ?: "Today"
+                        
+                        Text(
+                            text = dateText,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.Outlined.DateRange, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
             // Time Display
             Column(modifier = Modifier.weight(1f)) {
                 Text("TIME", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontWeight = FontWeight.Bold)
@@ -133,10 +192,12 @@ fun AddReminderSheet(
                     }
                 }
             }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Mode Display (Notification vs Alarm)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+             // Mode Display (Notification vs Alarm)
              Column(modifier = Modifier.weight(1f)) {
                 Text("MODE", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), fontWeight = FontWeight.Bold)
                 Box(

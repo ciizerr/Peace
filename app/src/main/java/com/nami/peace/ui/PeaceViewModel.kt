@@ -96,6 +96,7 @@ class PeaceViewModel(application: Application) : AndroidViewModel(application) {
     var reminderCategoryId by mutableStateOf<Long?>(null)
     var currentReminderId by mutableStateOf<Long?>(null)
     var isEssential by mutableStateOf(false)
+    var reminderDate by mutableStateOf<Long?>(null)
 
     var isAiLoading by mutableStateOf(false)
     var coachQuote by mutableStateOf("The task is only the quiet folding of paper; let your focused intention be the light that shows you the crease.")
@@ -153,11 +154,16 @@ class PeaceViewModel(application: Application) : AndroidViewModel(application) {
             val minute = timeParts[1].toIntOrNull() ?: 0
             
             val calendar = Calendar.getInstance().apply {
+                if (reminderDate != null) {
+                    timeInMillis = reminderDate!!
+                }
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
-                if (timeInMillis < System.currentTimeMillis()) {
+                
+                // If no date selected, use default logic (today/tomorrow)
+                if (reminderDate == null && timeInMillis < System.currentTimeMillis()) {
                     add(Calendar.DAY_OF_YEAR, 1)
                 }
             }
@@ -175,8 +181,8 @@ class PeaceViewModel(application: Application) : AndroidViewModel(application) {
             repository.insertReminder(reminder)
             
             // Schedule Alarm
-            // We need the ID for scheduling.
-            // For now, we will just reset the UI.
+            alarmScheduler.schedule(reminder)
+            
             resetReminderState()
         }
     }
@@ -210,6 +216,13 @@ class PeaceViewModel(application: Application) : AndroidViewModel(application) {
         val hour = calendar.get(Calendar.HOUR_OF_DAY)
         val minute = calendar.get(Calendar.MINUTE)
         reminderTime = String.format("%02d:%02d", hour, minute)
+        
+        // Set date (strip time)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        reminderDate = calendar.timeInMillis
     }
 
     fun resetReminderState() {
@@ -220,6 +233,7 @@ class PeaceViewModel(application: Application) : AndroidViewModel(application) {
         reminderCategoryId = null
         currentReminderId = null
         isEssential = false
+        reminderDate = null
     }
 
     fun saveWakeUpTime(time: String) {
