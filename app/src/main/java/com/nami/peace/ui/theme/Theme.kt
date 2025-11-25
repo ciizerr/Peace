@@ -9,63 +9,59 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PeaceTeal,
-    secondary = PeaceLavender,
-    tertiary = PeaceOrange,
-    background = NightSkyBackground,
-    surface = NightSkySurface,
-    onBackground = NightSkyTextPrimary,
-    onSurface = NightSkyTextPrimary,
-    surfaceVariant = NightSkySurface,
-    onSurfaceVariant = NightSkyTextSecondary
+    primary = Purple80,
+    secondary = PurpleGrey80,
+    tertiary = Pink80,
+    background = DarkGray,
+    surface = DarkGray,
+    onBackground = White,
+    onSurface = White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF5C6BC0), // Slightly deeper for light mode contrast
-    secondary = Color(0xFF7E57C2),
-    tertiary = Color(0xFFEF5350),
-    background = MorningLightBackground,
-    surface = MorningLightSurface,
-    onBackground = MorningLightTextPrimary,
-    onSurface = MorningLightTextPrimary,
-    surfaceVariant = Color(0xFFE1E5EB),
-    onSurfaceVariant = MorningLightTextSecondary
+    primary = Purple40,
+    secondary = PurpleGrey40,
+    tertiary = Pink40,
+    background = OffWhite,
+    surface = White,
+    onBackground = Black,
+    onSurface = Black
 )
 
 @Composable
 fun PeaceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    themeAccent: String = "Purple",
-    dynamicColor: Boolean = false,
+    // Dynamic color is available on Android 12+
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val accentColor = when (themeAccent) {
-        "Blue" -> Color(0xFF2196F3)
-        "Teal" -> Color(0xFF009688)
-        "Green" -> Color(0xFF4CAF50)
-        else -> if (darkTheme) PeaceTeal else Color(0xFF5C6BC0) // Default Purple-ish
-    }
-
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColorScheme.copy(primary = accentColor)
-        else -> LightColorScheme.copy(primary = accentColor)
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
+    }
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+        }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
-        content = {
-            ProvideTextStyle(value = Typography.bodyLarge, content = content)
-        }
+        content = content
     )
 }
