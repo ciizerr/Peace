@@ -36,9 +36,7 @@ class AddEditReminderViewModel @Inject constructor(
             }
             is AddEditReminderEvent.RecurrenceChanged -> {
                 _uiState.value = _uiState.value.copy(
-                    recurrenceType = event.recurrenceType,
-                    // Rule 1: Nag Mode disabled if DAILY
-                    isNagModeEnabled = if (event.recurrenceType == RecurrenceType.DAILY) false else _uiState.value.isNagModeEnabled
+                    recurrenceType = event.recurrenceType
                 )
                 recalculateMaxRepetitions()
             }
@@ -47,11 +45,45 @@ class AddEditReminderViewModel @Inject constructor(
                 recalculateMaxRepetitions()
             }
             is AddEditReminderEvent.NagModeToggled -> {
-                _uiState.value = _uiState.value.copy(isNagModeEnabled = event.isEnabled)
+                if (event.isEnabled) {
+                    // Check Soft Warning Condition
+                    // Recurrence == DAILY AND StartTime is between 21:00 (9 PM) and 04:00 (4 AM).
+                    val calendar = Calendar.getInstance()
+                    calendar.timeInMillis = _uiState.value.startTimeInMillis
+                    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+                    
+                    val isNightTime = hour >= 21 || hour < 4
+                    val isDaily = _uiState.value.recurrenceType == RecurrenceType.DAILY
+                    
+                    if (isDaily && isNightTime) {
+                        _uiState.value = _uiState.value.copy(showSoftWarningDialog = true)
+                    } else {
+                        _uiState.value = _uiState.value.copy(isNagModeEnabled = true)
+                        recalculateMaxRepetitions()
+                    }
+                } else {
+                    _uiState.value = _uiState.value.copy(isNagModeEnabled = false)
+                }
+            }
+            is AddEditReminderEvent.DismissWarningDialog -> {
+                _uiState.value = _uiState.value.copy(showSoftWarningDialog = false)
+            }
+            is AddEditReminderEvent.ConfirmWarningDialog -> {
+                _uiState.value = _uiState.value.copy(
+                    showSoftWarningDialog = false,
+                    isNagModeEnabled = true
+                )
+                recalculateMaxRepetitions()
+            }
+            is AddEditReminderEvent.PermissionStateChanged -> {
+                _uiState.value = _uiState.value.copy(showPermissionBanner = !event.hasPermission)
             }
             is AddEditReminderEvent.NagIntervalChanged -> {
                 _uiState.value = _uiState.value.copy(nagIntervalInMillis = event.interval)
                 recalculateMaxRepetitions()
+            }
+            is AddEditReminderEvent.NagRepetitionsChanged -> {
+                _uiState.value = _uiState.value.copy(nagTotalRepetitions = event.repetitions)
             }
             is AddEditReminderEvent.SaveReminder -> {
                 saveReminder()
@@ -63,7 +95,10 @@ class AddEditReminderViewModel @Inject constructor(
         val state = _uiState.value
         if (state.isNagModeEnabled && state.nagIntervalInMillis != null) {
             val maxReps = calculateMaxRepetitionsUseCase(state.startTimeInMillis, state.nagIntervalInMillis)
-            _uiState.value = state.copy(nagTotalRepetitions = maxReps)
+            _uiState.value = state.copy(
+                maxAllowedRepetitions = maxReps,
+                nagTotalRepetitions = if (state.nagTotalRepetitions > maxReps) maxReps else state.nagTotalRepetitions
+            )
         }
     }
 
@@ -96,7 +131,10 @@ data class AddEditReminderUiState(
     val recurrenceType: RecurrenceType = RecurrenceType.ONE_TIME,
     val isNagModeEnabled: Boolean = false,
     val nagIntervalInMillis: Long? = null,
-    val nagTotalRepetitions: Int = 0
+    val nagTotalRepetitions: Int = 0,
+    val maxAllowedRepetitions: Int = 0,
+    val showSoftWarningDialog: Boolean = false,
+    val showPermissionBanner: Boolean = false
 )
 
 sealed class AddEditReminderEvent {
@@ -106,5 +144,9 @@ sealed class AddEditReminderEvent {
     data class StartTimeChanged(val time: Long) : AddEditReminderEvent()
     data class NagModeToggled(val isEnabled: Boolean) : AddEditReminderEvent()
     data class NagIntervalChanged(val interval: Long) : AddEditReminderEvent()
+    data class NagRepetitionsChanged(val repetitions: Int) : AddEditReminderEvent()
+    object DismissWarningDialog : AddEditReminderEvent()
+    object ConfirmWarningDialog : AddEditReminderEvent()
+    data class PermissionStateChanged(val hasPermission: Boolean) : AddEditReminderEvent()
     object SaveReminder : AddEditReminderEvent()
 }

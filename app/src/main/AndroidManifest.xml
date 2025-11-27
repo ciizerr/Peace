@@ -33,6 +33,16 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ui.alarm.AlarmActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Peace"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
+
         <receiver android:name=".scheduler.AlarmReceiver" android:exported="false" />
         
         <receiver 
@@ -41,6 +51,7 @@
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
         

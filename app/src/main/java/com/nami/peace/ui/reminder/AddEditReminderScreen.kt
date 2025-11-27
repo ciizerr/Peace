@@ -3,6 +3,7 @@ package com.nami.peace.ui.reminder
 import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -119,26 +120,94 @@ fun AddEditReminderScreen(
                 Text("Nag Mode", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 Switch(
                     checked = uiState.isNagModeEnabled,
-                    onCheckedChange = { viewModel.onEvent(AddEditReminderEvent.NagModeToggled(it)) },
-                    enabled = uiState.recurrenceType != RecurrenceType.DAILY
+                    onCheckedChange = { viewModel.onEvent(AddEditReminderEvent.NagModeToggled(it)) }
                 )
             }
-            if (uiState.recurrenceType == RecurrenceType.DAILY) {
-                Text(
-                    "Nag Mode is disabled for Daily reminders.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+
+            // Soft Warning Dialog
+            if (uiState.showSoftWarningDialog) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) },
+                    title = { Text("Limited Repetitions Warning") },
+                    text = {
+                        Text(
+                            "You are scheduling a Daily sequence late at night.\n\n" +
+                            "To prevent conflicts with tomorrow's schedule, 'Nag Mode' sequences are reset at midnight (11:59 PM).\n\n" +
+                            "Result: You may not get as many repetitions as you expect before the day ends."
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.ConfirmWarningDialog) }) {
+                            Text("I Understand")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) }) {
+                            Text("Cancel")
+                        }
+                    }
                 )
+            }
+
+            // Permission Banner
+            // We need to check permission on resume or launch
+            val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                val hasPermission = alarmManager.canScheduleExactAlarms()
+                LaunchedEffect(hasPermission) {
+                    viewModel.onEvent(AddEditReminderEvent.PermissionStateChanged(hasPermission))
+                }
+            }
+
+            if (uiState.showPermissionBanner) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Exact Alarm Permission Required",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            "To ensure your reminders fire on time, please grant the 'Alarms & Reminders' permission.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                    val intent = android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                    context.startActivity(intent)
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Grant Permission")
+                        }
+                    }
+                }
             }
 
             // Nag Interval & Repetitions
             if (uiState.isNagModeEnabled) {
                 Text("Nag Interval", style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                
+                // Interval Selector (Dropdown-like using exposed dropdown or just a list for now, let's use a better list)
+                // User requested "Every 15 min", "Every 30 min", "Every 1 Hour"
+                // Let's use a FlowRow or similar if possible, or just a scrollable Row
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     val intervals = listOf(
+                        15 * 60 * 1000L to "15m",
                         30 * 60 * 1000L to "30m",
                         60 * 60 * 1000L to "1h",
-                        2 * 60 * 60 * 1000L to "2h"
+                        2 * 60 * 60 * 1000L to "2h",
+                        3 * 60 * 60 * 1000L to "3h"
                     )
                     intervals.forEach { (duration, label) ->
                         FilterChip(
@@ -151,14 +220,29 @@ fun AddEditReminderScreen(
 
                 if (uiState.nagIntervalInMillis != null) {
                     Text(
-                        "Max Repetitions today: ${uiState.nagTotalRepetitions}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        "Repetitions: ${uiState.nagTotalRepetitions}",
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                    Text(
-                        "Repetitions stop at midnight.",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    
+                    if (uiState.maxAllowedRepetitions > 0) {
+                        Slider(
+                            value = uiState.nagTotalRepetitions.toFloat(),
+                            onValueChange = { viewModel.onEvent(AddEditReminderEvent.NagRepetitionsChanged(it.toInt())) },
+                            valueRange = 0f..uiState.maxAllowedRepetitions.toFloat(),
+                            steps = if (uiState.maxAllowedRepetitions > 1) uiState.maxAllowedRepetitions - 1 else 0
+                        )
+                        Text(
+                            "Max allowed: ${uiState.maxAllowedRepetitions} (Stops at midnight)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    } else {
+                        Text(
+                            "No repetitions possible today (Too close to midnight)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }

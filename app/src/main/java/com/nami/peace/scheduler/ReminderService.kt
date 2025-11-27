@@ -24,20 +24,45 @@ class ReminderService : Service() {
     @Inject
     lateinit var repository: ReminderRepository
 
+    private var wakeLock: android.os.PowerManager.WakeLock? = null
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // 1. Acquire WakeLock immediately
+        val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "Peace:ServiceWakeLock")
+        wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
+        
         val reminderId = intent?.getIntExtra("REMINDER_ID", -1) ?: -1
         if (reminderId != -1) {
             CoroutineScope(Dispatchers.IO).launch {
                 val reminder = repository.getReminderById(reminderId)
                 if (reminder != null) {
+                    // 2. Play Sound
+                    com.nami.peace.util.SoundManager.playAlarmSound(this@ReminderService)
+                    
+                    // 3. Show Notification (Start Foreground)
                     showNotification(reminder)
+                } else {
+                    stopSelf()
                 }
-                stopSelf() // Stop service after showing notification
             }
+        } else {
+            stopSelf()
         }
-        return START_NOT_STICKY
+        return START_STICKY
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // 4. Stop Sound and Release WakeLock
+        com.nami.peace.util.SoundManager.stopAlarmSound()
+        
+        wakeLock?.let {
+            if (it.isHeld) it.release()
+        }
+        wakeLock = null
     }
 
     private fun showNotification(reminder: com.nami.peace.domain.model.Reminder) {
@@ -45,6 +70,11 @@ class ReminderService : Service() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val audioAttributes = android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+
             val channel = NotificationChannel(
                 channelId,
                 "Reminders",
@@ -52,17 +82,21 @@ class ReminderService : Service() {
             ).apply {
                 description = "Nag Mode Reminders"
                 enableVibration(true)
+                vibrationPattern = longArrayOf(0, 500, 200, 500)
+                setSound(android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI, audioAttributes)
             }
             notificationManager.createNotificationChannel(channel)
         }
 
-        val fullScreenIntent = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra("NAVIGATE_TO_ALARM", true)
+        val fullScreenIntent = Intent(this, com.nami.peace.ui.alarm.AlarmActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra("REMINDER_ID", reminder.id)
+            putExtra("REMINDER_TITLE", reminder.title)
+            putExtra("REMINDER_PRIORITY", reminder.priority.name)
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,
-            0,
+            reminder.id,
             fullScreenIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -72,6 +106,17 @@ class ReminderService : Service() {
         } else {
             "Time to ${reminder.title}"
         }
+            
+        // Action to stop service via AlarmReceiver
+        val stopSoundIntent = Intent(this, com.nami.peace.scheduler.AlarmReceiver::class.java).apply {
+            action = "com.nami.peace.ACTION_STOP_SOUND"
+        }
+        val stopSoundPendingIntent = PendingIntent.getBroadcast(
+            this,
+            reminder.id, 
+            stopSoundIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val notification = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
@@ -81,8 +126,11 @@ class ReminderService : Service() {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setAutoCancel(true)
+            .setOngoing(true) // Make it ongoing so it can't be swiped away easily
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Dismiss", stopSoundPendingIntent)
+            .setDeleteIntent(stopSoundPendingIntent)
             .build()
 
-        notificationManager.notify(reminder.id, notification)
+        startForeground(reminder.id, notification)
     }
 }
