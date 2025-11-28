@@ -198,22 +198,65 @@ fun AddEditReminderScreen(
                 // Interval Selector (Dropdown-like using exposed dropdown or just a list for now, let's use a better list)
                 // User requested "Every 15 min", "Every 30 min", "Every 1 Hour"
                 // Let's use a FlowRow or similar if possible, or just a scrollable Row
+                // Interval Input Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = uiState.nagIntervalValue,
+                        onValueChange = { 
+                            // Only allow numeric input
+                            if (it.all { char -> char.isDigit() }) {
+                                viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(it))
+                            }
+                        },
+                        label = { Text("Interval") },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        singleLine = true
+                    )
+                    
+                    // Unit Selector (Simple Toggle for now)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 8.dp)
+                    ) {
+                        TimeUnit.values().forEach { unit ->
+                            FilterChip(
+                                selected = uiState.nagIntervalUnit == unit,
+                                onClick = { viewModel.onEvent(AddEditReminderEvent.NagIntervalUnitChanged(unit)) },
+                                label = { Text(unit.name.lowercase().capitalize()) },
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Presets
+                Text("Presets", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val intervals = listOf(
-                        15 * 60 * 1000L to "15m",
-                        30 * 60 * 1000L to "30m",
-                        60 * 60 * 1000L to "1h",
-                        2 * 60 * 60 * 1000L to "2h",
-                        3 * 60 * 60 * 1000L to "3h"
+                    val presets = listOf(
+                        15 to TimeUnit.MINUTES,
+                        30 to TimeUnit.MINUTES,
+                        1 to TimeUnit.HOURS,
+                        2 to TimeUnit.HOURS
                     )
-                    intervals.forEach { (duration, label) ->
+                    presets.forEach { (valNum, unit) ->
                         FilterChip(
-                            selected = uiState.nagIntervalInMillis == duration,
-                            onClick = { viewModel.onEvent(AddEditReminderEvent.NagIntervalChanged(duration)) },
-                            label = { Text(label) }
+                            selected = uiState.nagIntervalValue == valNum.toString() && uiState.nagIntervalUnit == unit,
+                            onClick = { 
+                                viewModel.onEvent(AddEditReminderEvent.NagIntervalUnitChanged(unit))
+                                viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(valNum.toString()))
+                            },
+                            label = { 
+                                val unitLabel = if (unit == TimeUnit.MINUTES) "m" else "h"
+                                Text("$valNum$unitLabel") 
+                            }
                         )
                     }
                 }

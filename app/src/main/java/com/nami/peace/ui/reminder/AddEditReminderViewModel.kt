@@ -16,15 +16,52 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+import androidx.lifecycle.SavedStateHandle
+
 @HiltViewModel
 class AddEditReminderViewModel @Inject constructor(
     private val repository: ReminderRepository,
     private val calculateMaxRepetitionsUseCase: CalculateMaxRepetitionsUseCase,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddEditReminderUiState())
     val uiState: StateFlow<AddEditReminderUiState> = _uiState.asStateFlow()
+
+    init {
+        val reminderId = savedStateHandle.get<Int>("reminderId")
+        if (reminderId != null && reminderId != -1) {
+            viewModelScope.launch {
+                repository.getReminderById(reminderId)?.let { reminder ->
+                    // Reverse calculate interval
+                    val (intervalValue, intervalUnit) = if (reminder.nagIntervalInMillis != null) {
+                        if (reminder.nagIntervalInMillis % (60 * 60 * 1000L) == 0L) {
+                            (reminder.nagIntervalInMillis / (60 * 60 * 1000L)).toString() to TimeUnit.HOURS
+                        } else {
+                            (reminder.nagIntervalInMillis / (60 * 1000L)).toString() to TimeUnit.MINUTES
+                        }
+                    } else {
+                        "15" to TimeUnit.MINUTES
+                    }
+
+                    _uiState.value = _uiState.value.copy(
+                        id = reminder.id,
+                        title = reminder.title,
+                        priority = reminder.priority,
+                        startTimeInMillis = reminder.startTimeInMillis,
+                        recurrenceType = reminder.recurrenceType,
+                        isNagModeEnabled = reminder.isNagModeEnabled,
+                        nagIntervalInMillis = reminder.nagIntervalInMillis,
+                        nagIntervalValue = intervalValue,
+                        nagIntervalUnit = intervalUnit,
+                        nagTotalRepetitions = reminder.nagTotalRepetitions
+                    )
+                    recalculateMaxRepetitions()
+                }
+            }
+        }
+    }
 
     fun onEvent(event: AddEditReminderEvent) {
         when (event) {
@@ -78,9 +115,13 @@ class AddEditReminderViewModel @Inject constructor(
             is AddEditReminderEvent.PermissionStateChanged -> {
                 _uiState.value = _uiState.value.copy(showPermissionBanner = !event.hasPermission)
             }
-            is AddEditReminderEvent.NagIntervalChanged -> {
-                _uiState.value = _uiState.value.copy(nagIntervalInMillis = event.interval)
-                recalculateMaxRepetitions()
+            is AddEditReminderEvent.NagIntervalValueChanged -> {
+                _uiState.value = _uiState.value.copy(nagIntervalValue = event.value)
+                updateNagIntervalInMillis()
+            }
+            is AddEditReminderEvent.NagIntervalUnitChanged -> {
+                _uiState.value = _uiState.value.copy(nagIntervalUnit = event.unit)
+                updateNagIntervalInMillis()
             }
             is AddEditReminderEvent.NagRepetitionsChanged -> {
                 _uiState.value = _uiState.value.copy(nagTotalRepetitions = event.repetitions)
@@ -89,6 +130,18 @@ class AddEditReminderViewModel @Inject constructor(
                 saveReminder()
             }
         }
+    }
+
+    private fun updateNagIntervalInMillis() {
+        val value = _uiState.value.nagIntervalValue.toLongOrNull() ?: 0L
+        val multiplier = when (_uiState.value.nagIntervalUnit) {
+            TimeUnit.MINUTES -> 60 * 1000L
+            TimeUnit.HOURS -> 60 * 60 * 1000L
+        }
+        val millis = if (value > 0) value * multiplier else null
+        
+        _uiState.value = _uiState.value.copy(nagIntervalInMillis = millis)
+        recalculateMaxRepetitions()
     }
 
     private fun recalculateMaxRepetitions() {
@@ -106,6 +159,7 @@ class AddEditReminderViewModel @Inject constructor(
         viewModelScope.launch {
             val state = _uiState.value
             val reminder = Reminder(
+                id = state.id,
                 title = state.title,
                 priority = state.priority,
                 startTimeInMillis = state.startTimeInMillis,
@@ -125,12 +179,15 @@ class AddEditReminderViewModel @Inject constructor(
 }
 
 data class AddEditReminderUiState(
+    val id: Int = 0,
     val title: String = "",
     val priority: PriorityLevel = PriorityLevel.MEDIUM,
     val startTimeInMillis: Long = System.currentTimeMillis(),
     val recurrenceType: RecurrenceType = RecurrenceType.ONE_TIME,
     val isNagModeEnabled: Boolean = false,
     val nagIntervalInMillis: Long? = null,
+    val nagIntervalValue: String = "15",
+    val nagIntervalUnit: TimeUnit = TimeUnit.MINUTES,
     val nagTotalRepetitions: Int = 0,
     val maxAllowedRepetitions: Int = 0,
     val showSoftWarningDialog: Boolean = false,
@@ -143,10 +200,15 @@ sealed class AddEditReminderEvent {
     data class RecurrenceChanged(val recurrenceType: RecurrenceType) : AddEditReminderEvent()
     data class StartTimeChanged(val time: Long) : AddEditReminderEvent()
     data class NagModeToggled(val isEnabled: Boolean) : AddEditReminderEvent()
-    data class NagIntervalChanged(val interval: Long) : AddEditReminderEvent()
+    data class NagIntervalValueChanged(val value: String) : AddEditReminderEvent()
+    data class NagIntervalUnitChanged(val unit: TimeUnit) : AddEditReminderEvent()
     data class NagRepetitionsChanged(val repetitions: Int) : AddEditReminderEvent()
     object DismissWarningDialog : AddEditReminderEvent()
     object ConfirmWarningDialog : AddEditReminderEvent()
     data class PermissionStateChanged(val hasPermission: Boolean) : AddEditReminderEvent()
     object SaveReminder : AddEditReminderEvent()
+}
+
+enum class TimeUnit {
+    MINUTES, HOURS
 }
