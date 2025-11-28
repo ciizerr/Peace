@@ -8,37 +8,16 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Snooze
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -47,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nami.peace.scheduler.AlarmReceiver
 import com.nami.peace.scheduler.ReminderService
 import com.nami.peace.ui.theme.PeaceTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,22 +38,27 @@ import java.time.format.DateTimeFormatter
 class AlarmActivity : ComponentActivity() {
 
     private var wakeLock: android.os.PowerManager.WakeLock? = null
+    private var reminderId: Int = -1 // Store ID to pass it back
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
         // 1. Lock Orientation
         requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        
+        // Fix: Set window background to black to avoid white flash
+        window.decorView.setBackgroundColor(android.graphics.Color.BLACK)
 
-        // 2. Acquire WakeLock immediately to keep CPU running
+        // 2. Acquire WakeLock
         val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
         wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "Peace:AlarmActivityWakeLock")
-        wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
-        com.nami.peace.util.DebugLogger.log("AlarmActivity: Acquired WakeLock.")
+        wakeLock?.acquire(10 * 60 * 1000L)
 
-        // 3. Turn Screen On and Keyguard Handling
+        // 3. Turn Screen On
         turnScreenOnAndKeyguard()
         
+        // 4. Get Data
+        reminderId = intent.getIntExtra("REMINDER_ID", -1)
         val reminderTitle = intent.getStringExtra("REMINDER_TITLE") ?: "Reminder"
         val reminderPriority = intent.getStringExtra("REMINDER_PRIORITY") ?: "MEDIUM"
 
@@ -83,22 +68,32 @@ class AlarmActivity : ComponentActivity() {
                     title = reminderTitle,
                     priority = reminderPriority,
                     onStop = {
-                        stopService()
-                        finish()
+                        // SEND "COMPLETE" SIGNAL
+                        sendAction("com.nami.peace.ACTION_COMPLETE")
                     },
                     onSnooze = {
-                        // For now, snooze behaves like stop (as per requirements)
-                        stopService()
-                        finish()
+                        // SEND "SNOOZE" SIGNAL
+                        sendAction("com.nami.peace.ACTION_SNOOZE")
                     }
                 )
             }
         }
     }
 
-    private fun stopService() {
-        val serviceIntent = Intent(this, ReminderService::class.java)
-        stopService(serviceIntent)
+    // --- NEW HELPER FUNCTION ---
+    private fun sendAction(actionName: String) {
+        val intent = Intent(this, AlarmReceiver::class.java).apply {
+            action = actionName
+            putExtra("REMINDER_ID", reminderId)
+        }
+        sendBroadcast(intent)
+        
+        // We still finish the UI, but we let the Receiver stop the Service
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAndRemoveTask()
+        } else {
+            finish()
+        }
     }
 
     private fun turnScreenOnAndKeyguard() {
@@ -106,27 +101,19 @@ class AlarmActivity : ComponentActivity() {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         }
-        
         window.addFlags(
             WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
             WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON or
             WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
             WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
         )
-        
         val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         keyguardManager.requestDismissKeyguard(this, null)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        // Release WakeLock
-        wakeLock?.let {
-            if (it.isHeld) {
-                it.release()
-                com.nami.peace.util.DebugLogger.log("AlarmActivity: Released WakeLock.")
-            }
-        }
+        wakeLock?.let { if (it.isHeld) it.release() }
         wakeLock = null
     }
 }
@@ -138,11 +125,11 @@ fun AlarmScreen(
     onStop: () -> Unit,
     onSnooze: () -> Unit
 ) {
-    // Dynamic Background Gradient
+    // Dynamic Gradient Colors based on Priority
     val gradientColors = if (priority == "HIGH") {
-        listOf(Color(0xFFB71C1C), Color(0xFF212121)) // Deep Red -> Dark Grey
+        listOf(Color(0xFFB71C1C), Color(0xFF212121)) 
     } else {
-        listOf(Color(0xFF1976D2), Color(0xFF212121)) // Ocean Blue -> Dark Grey
+        listOf(Color(0xFF1976D2), Color(0xFF212121)) 
     }
 
     // Clock Logic
@@ -169,7 +156,7 @@ fun AlarmScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color.Black // Fallback
+        color = Color.Black 
     ) {
         Box(
             modifier = Modifier
@@ -199,7 +186,6 @@ fun AlarmScreen(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(120.dp)
                 ) {
-                    // Pulsing Background Circle
                     Box(
                         modifier = Modifier
                             .size(100.dp)

@@ -29,26 +29,25 @@ class BootReceiver : BroadcastReceiver() {
             scope.launch {
                 try {
                     val now = System.currentTimeMillis()
+                    val gracePeriod = 15 * 60 * 1000L // 15 Minutes
+
                     // Fetch all reminders that are NOT completed
-                    // We need a repository method for this. Assuming getActiveReminders exists or similar.
-                    // Based on previous view_file, repository.getActiveReminders(now) was used.
-                    // But we should probably get ALL enabled reminders to be safe.
-                    // Let's assume getActiveReminders returns reminders that should be active.
+                    val incompleteReminders = repository.getIncompleteReminders()
                     
-                    val activeReminders = repository.getActiveReminders(now)
-                    
-                    activeReminders.forEach { reminder ->
-                        if (!reminder.isCompleted) {
-                            // If the reminder is in the future, schedule it normally.
-                            if (reminder.startTimeInMillis > now) {
-                                alarmScheduler.schedule(reminder)
+                    incompleteReminders.forEach { reminder ->
+                        if (reminder.startTimeInMillis > now) {
+                            // Future: Schedule normally
+                            alarmScheduler.schedule(reminder)
+                        } else {
+                            // Past: Check if it's "Fresh" or "Stale"
+                            val diff = now - reminder.startTimeInMillis
+                            if (diff < gracePeriod) {
+                                // Fresh: Fire immediately (Phone just rebooted in time)
+                                // Schedule for now + 100ms to ensure it fires
+                                alarmScheduler.schedule(reminder, now + 100)
                             } else {
-                                // If the reminder was missed (startTime < now),
-                                // AND it hasn't been marked completed,
-                                // we should probably fire it immediately or schedule it for very soon.
-                                // For Nag Mode, if we missed a nag, we should restart the cycle?
-                                // For now, let's fire it immediately to ensure the user sees it.
-                                alarmScheduler.schedule(reminder, now + 1000) // Fire in 1 second
+                                // Stale: Ignore (Don't annoy user with old alarms)
+                                com.nami.peace.util.DebugLogger.log("Skipping stale alarm: ${reminder.title}")
                             }
                         }
                     }
