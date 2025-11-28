@@ -70,14 +70,32 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable("home") {
                             com.nami.peace.ui.home.HomeScreen(
-                                onAddReminder = { navController.navigate("add_edit") }
+                                onAddReminder = { navController.navigate("add_edit") },
+                                onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") },
+                                onNavigateToSettings = { navController.navigate("settings") }
                             )
-                            
-                            // Permission Dialog Logic for HomeScreen
-                            // We can add it here if we want to force it on Home.
                         }
-                        composable("add_edit") {
+                        composable(
+                            route = "add_edit?reminderId={reminderId}",
+                            arguments = listOf(
+                                androidx.navigation.navArgument("reminderId") {
+                                    type = androidx.navigation.NavType.IntType
+                                    defaultValue = -1
+                                }
+                            )
+                        ) {
                             com.nami.peace.ui.reminder.AddEditReminderScreen(
+                                onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable("settings") {
+                            com.nami.peace.ui.settings.SettingsScreen(
+                                onNavigateUp = { navController.popBackStack() },
+                                onNavigateToHistory = { navController.navigate("history") }
+                            )
+                        }
+                        composable("history") {
+                            com.nami.peace.ui.history.HistoryScreen(
                                 onNavigateUp = { navController.popBackStack() }
                             )
                         }
