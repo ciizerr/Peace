@@ -11,6 +11,7 @@ data class Reminder(
     val nagTotalRepetitions: Int,
     val currentRepetitionIndex: Int = 0,
     val isCompleted: Boolean = false,
+    val isEnabled: Boolean = true,
     val isInNestedSnoozeLoop: Boolean = false,
     val nestedSnoozeStartTime: Long? = null
 )

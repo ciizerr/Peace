@@ -18,7 +18,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 5
-        versionName = "2.3.1 - Unstable"
+        versionName = "2.3.2 - Stable"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -68,6 +68,9 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     // Hilt (Dependency Injection)
     implementation("com.google.dagger:hilt-android:2.51.1")

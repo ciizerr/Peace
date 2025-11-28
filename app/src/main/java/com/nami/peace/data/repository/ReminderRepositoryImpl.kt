@@ -37,4 +37,12 @@ class ReminderRepositoryImpl @Inject constructor(
     override suspend fun getActiveReminders(currentTime: Long): List<Reminder> {
         return dao.getActiveReminders(currentTime).map { it.toDomain() }
     }
+
+    override suspend fun getIncompleteReminders(): List<Reminder> {
+        return dao.getIncompleteReminders().map { it.toDomain() }
+    }
+
+    override suspend fun setTaskCompleted(id: Int, isCompleted: Boolean) {
+        dao.setTaskCompleted(id, isCompleted)
+    }
 }

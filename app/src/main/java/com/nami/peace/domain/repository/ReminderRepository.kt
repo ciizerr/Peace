@@ -10,4 +10,6 @@ interface ReminderRepository {
     suspend fun updateReminder(reminder: Reminder)
     suspend fun deleteReminder(reminder: Reminder)
     suspend fun getActiveReminders(currentTime: Long): List<Reminder>
+    suspend fun getIncompleteReminders(): List<Reminder>
+    suspend fun setTaskCompleted(id: Int, isCompleted: Boolean)
 }

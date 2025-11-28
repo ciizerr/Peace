@@ -28,4 +28,10 @@ interface ReminderDao {
     // Helper to get active reminders for collision handling or rescheduling
     @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND startTimeInMillis <= :currentTime")
     suspend fun getActiveReminders(currentTime: Long): List<ReminderEntity>
+
+    @Query("SELECT * FROM reminders WHERE isCompleted = 0")
+    suspend fun getIncompleteReminders(): List<ReminderEntity>
+
+    @Query("UPDATE reminders SET isCompleted = :isCompleted WHERE id = :id")
+    suspend fun setTaskCompleted(id: Int, isCompleted: Boolean)
 }
