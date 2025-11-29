@@ -179,12 +179,13 @@ class AddEditReminderViewModel @Inject constructor(
     private fun saveReminder() {
         viewModelScope.launch {
             val state = _uiState.value
-            // When saving manually, we reset the anchor (originalStartTime) to the new start time.
-            val reminder = Reminder(
+            
+            // Construct a temporary reminder to calculate the correct next trigger time
+            val tempReminder = Reminder(
                 id = state.id,
                 title = state.title,
                 priority = state.priority,
-                startTimeInMillis = state.startTimeInMillis,
+                startTimeInMillis = state.startTimeInMillis, // This is just the time picker value (today's date + selected time)
                 recurrenceType = state.recurrenceType,
                 isNagModeEnabled = state.isNagModeEnabled,
                 nagIntervalInMillis = state.nagIntervalInMillis,
@@ -192,9 +193,18 @@ class AddEditReminderViewModel @Inject constructor(
                 category = state.category,
                 isStrictSchedulingEnabled = state.isStrictSchedulingEnabled,
                 dateInMillis = state.dateInMillis,
-                daysOfWeek = state.daysOfWeek,
-                originalStartTimeInMillis = state.startTimeInMillis
+                daysOfWeek = state.daysOfWeek
             )
+
+            // Calculate the actual next start time (e.g., next Monday)
+            val calculatedStartTime = alarmScheduler.calculateNextTriggerTime(tempReminder)
+
+            // When saving manually, we reset the anchor (originalStartTime) to the new calculated start time.
+            val reminder = tempReminder.copy(
+                startTimeInMillis = calculatedStartTime,
+                originalStartTimeInMillis = calculatedStartTime
+            )
+            
             val id = repository.insertReminder(reminder)
             
             // Schedule Alarm
