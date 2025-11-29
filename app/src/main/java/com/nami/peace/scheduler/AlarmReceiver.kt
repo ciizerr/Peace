@@ -46,11 +46,21 @@ class AlarmReceiver : BroadcastReceiver() {
                             com.nami.peace.util.DebugLogger.log("User clicked COMPLETE. Current Rep: ${reminder.currentRepetitionIndex + 1}/${reminder.nagTotalRepetitions}")
                             
                             // Archive to History
+                            val nagInfo = if (reminder.isNagModeEnabled) {
+                                val minutes = (reminder.nagIntervalInMillis ?: 0) / 60000
+                                "${reminder.nagTotalRepetitions} reps @ $minutes mins"
+                            } else {
+                                "Standard"
+                            }
+                            
                             historyDao.insert(
                                 HistoryEntity(
                                     originalTitle = reminder.title,
                                     completedTime = System.currentTimeMillis(),
-                                    status = "Done"
+                                    status = "Done",
+                                    priority = reminder.priority,
+                                    category = reminder.category,
+                                    nagInfo = nagInfo
                                 )
                             )
 
@@ -113,6 +123,7 @@ class AlarmReceiver : BroadcastReceiver() {
                                 com.nami.peace.util.DebugLogger.log("Sequence Finished. Marking Task Complete.")
                                 
                                 val completedReminder = reminder.copy(
+                                    isCompleted = true,
                                     isEnabled = false // Disable it so it leaves the active list
                                 )
                                 repository.updateReminder(completedReminder)
