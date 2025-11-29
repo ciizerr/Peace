@@ -2,11 +2,10 @@ package com.nami.peace.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.nami.peace.data.local.HistoryDao
-import com.nami.peace.data.local.HistoryEntity
-import com.nami.peace.data.local.ReminderEntity
+import androidx.room.TypeConverters
 
-@Database(entities = [ReminderEntity::class, HistoryEntity::class], version = 2, exportSchema = false)
+@Database(entities = [ReminderEntity::class, HistoryEntity::class], version = 6, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun reminderDao(): ReminderDao
     abstract fun historyDao(): HistoryDao

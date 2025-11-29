@@ -19,7 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nami.peace.domain.model.PriorityLevel
 import com.nami.peace.domain.model.RecurrenceType
+import com.nami.peace.domain.model.ReminderCategory
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.text.SimpleDateFormat
+import androidx.compose.foundation.shape.CircleShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +71,31 @@ fun AddEditReminderScreen(
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
 
+            // Category
+            Text("Category", style = MaterialTheme.typography.titleMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ReminderCategory.values().forEach { category ->
+                    val isSelected = uiState.category == category
+                    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                    val iconColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                    
+                    Surface(
+                        onClick = { viewModel.onEvent(AddEditReminderEvent.CategoryChanged(category)) },
+                        shape = MaterialTheme.shapes.medium,
+                        color = backgroundColor,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = androidx.compose.ui.res.painterResource(id = category.iconResId),
+                                contentDescription = category.name,
+                                tint = iconColor
+                            )
+                        }
+                    }
+                }
+            }
+
             // Priority
             Text("Priority", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -102,13 +132,72 @@ fun AddEditReminderScreen(
 
             // Recurrence
             Text("Recurrence", style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
                 RecurrenceType.values().forEach { type ->
                     FilterChip(
                         selected = uiState.recurrenceType == type,
                         onClick = { viewModel.onEvent(AddEditReminderEvent.RecurrenceChanged(type)) },
-                        label = { Text(type.name) }
+                        label = { Text(type.name.replace("_", " ")) }
                     )
+                }
+            }
+
+            // Date Picker (One Time)
+            if (uiState.recurrenceType == RecurrenceType.ONE_TIME) {
+                val dateText = if (uiState.dateInMillis != null) {
+                    SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(uiState.dateInMillis!!))
+                } else {
+                    "Select Date"
+                }
+                
+                val calendar = Calendar.getInstance()
+                
+                val datePickerDialog = android.app.DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        val selectedCalendar = Calendar.getInstance()
+                        selectedCalendar.set(year, month, dayOfMonth)
+                        viewModel.onEvent(AddEditReminderEvent.DateChanged(selectedCalendar.timeInMillis))
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                )
+
+                OutlinedButton(
+                    onClick = { datePickerDialog.show() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(dateText)
+                }
+            }
+
+            // Day Selector (Weekly)
+            if (uiState.recurrenceType == RecurrenceType.WEEKLY) {
+                Text("Repeat on", style = MaterialTheme.typography.bodyMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val days = listOf("S", "M", "T", "W", "T", "F", "S")
+                    days.forEachIndexed { index, dayLabel ->
+                        val dayValue = index + 1 // Calendar.SUNDAY = 1
+                        val isSelected = uiState.daysOfWeek.contains(dayValue)
+                        
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { viewModel.onEvent(AddEditReminderEvent.DayToggled(dayValue)) },
+                            label = { Text(dayLabel) },
+                            shape = CircleShape,
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        )
+                    }
                 }
             }
 
@@ -117,120 +206,41 @@ fun AddEditReminderScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Nag Mode", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text("Nag Mode", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = uiState.isNagModeEnabled,
                     onCheckedChange = { viewModel.onEvent(AddEditReminderEvent.NagModeToggled(it)) }
                 )
             }
 
-            // Soft Warning Dialog
-            if (uiState.showSoftWarningDialog) {
-                AlertDialog(
-                    onDismissRequest = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) },
-                    title = { Text("Limited Repetitions Warning") },
-                    text = {
-                        Text(
-                            "You are scheduling a Daily sequence late at night.\n\n" +
-                            "To prevent conflicts with tomorrow's schedule, 'Nag Mode' sequences are reset at midnight (11:59 PM).\n\n" +
-                            "Result: You may not get as many repetitions as you expect before the day ends."
-                        )
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.ConfirmWarningDialog) }) {
-                            Text("I Understand")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) }) {
-                            Text("Cancel")
-                        }
-                    }
-                )
-            }
-
-            // Permission Banner
-            // We need to check permission on resume or launch
-            val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                val hasPermission = alarmManager.canScheduleExactAlarms()
-                LaunchedEffect(hasPermission) {
-                    viewModel.onEvent(AddEditReminderEvent.PermissionStateChanged(hasPermission))
-                }
-            }
-
-            if (uiState.showPermissionBanner) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            "Exact Alarm Permission Required",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Text(
-                            "To ensure your reminders fire on time, please grant the 'Alarms & Reminders' permission.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = {
-                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                                    val intent = android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                                    context.startActivity(intent)
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Text("Grant Permission")
-                        }
-                    }
-                }
-            }
-
-            // Nag Interval & Repetitions
             if (uiState.isNagModeEnabled) {
-                Text("Nag Interval", style = MaterialTheme.typography.titleMedium)
-                
-                // Interval Selector (Dropdown-like using exposed dropdown or just a list for now, let's use a better list)
-                // User requested "Every 15 min", "Every 30 min", "Every 1 Hour"
-                // Let's use a FlowRow or similar if possible, or just a scrollable Row
-                // Interval Input Row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = uiState.nagIntervalValue,
-                        onValueChange = { 
-                            // Only allow numeric input
-                            if (it.all { char -> char.isDigit() }) {
-                                viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(it))
-                            }
-                        },
-                        label = { Text("Interval") },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                        singleLine = true
-                    )
-                    
-                    // Unit Selector (Simple Toggle for now)
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(top = 8.dp)
-                    ) {
-                        TimeUnit.values().forEach { unit ->
-                            FilterChip(
-                                selected = uiState.nagIntervalUnit == unit,
-                                onClick = { viewModel.onEvent(AddEditReminderEvent.NagIntervalUnitChanged(unit)) },
-                                label = { Text(unit.name.lowercase().capitalize()) },
-                                modifier = Modifier.padding(end = 4.dp)
-                            )
+                // Interval
+                OutlinedTextField(
+                    value = uiState.nagIntervalValue,
+                    onValueChange = { 
+                        if (it.all { char -> char.isDigit() }) {
+                            viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(it))
                         }
+                    },
+                    label = { Text("Interval") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                    singleLine = true
+                )
+                
+                // Unit Selector
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    TimeUnit.values().forEach { unit ->
+                        FilterChip(
+                            selected = uiState.nagIntervalUnit == unit,
+                            onClick = { viewModel.onEvent(AddEditReminderEvent.NagIntervalUnitChanged(unit)) },
+                            label = { Text(unit.name.lowercase().capitalize()) },
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
                     }
                 }
 
@@ -285,6 +295,88 @@ fun AddEditReminderScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
+                    }
+                }
+
+                // Strict Mode (Radio Buttons)
+                Text("Scheduling Mode", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = !uiState.isStrictSchedulingEnabled,
+                        onClick = { viewModel.onEvent(AddEditReminderEvent.StrictModeToggled(false)) }
+                    )
+                    Text("Flexible (Drift)")
+                    Spacer(modifier = Modifier.width(16.dp))
+                    RadioButton(
+                        selected = uiState.isStrictSchedulingEnabled,
+                        onClick = { viewModel.onEvent(AddEditReminderEvent.StrictModeToggled(true)) }
+                    )
+                    Text("Strict (Anchored)")
+                }
+            }
+
+            // Soft Warning Dialog
+            if (uiState.showSoftWarningDialog) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) },
+                    title = { Text("Limited Repetitions Warning") },
+                    text = {
+                        Text(
+                            "You are scheduling a Daily sequence late at night.\n\n" +
+                            "To prevent conflicts with tomorrow's schedule, 'Nag Mode' sequences are reset at midnight (11:59 PM).\n\n" +
+                            "Result: You may not get as many repetitions as you expect before the day ends."
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.ConfirmWarningDialog) }) {
+                            Text("I Understand")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
+            // Permission Banner
+            val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                val hasPermission = alarmManager.canScheduleExactAlarms()
+                LaunchedEffect(hasPermission) {
+                    viewModel.onEvent(AddEditReminderEvent.PermissionStateChanged(hasPermission))
+                }
+            }
+
+            if (uiState.showPermissionBanner) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            "Exact Alarm Permission Required",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Text(
+                            "To ensure your reminders fire on time, please grant the 'Alarms & Reminders' permission.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                                    val intent = android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                    context.startActivity(intent)
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Grant Permission")
+                        }
                     }
                 }
             }

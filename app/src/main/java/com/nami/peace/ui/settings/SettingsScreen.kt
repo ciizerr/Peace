@@ -21,7 +21,7 @@ fun SettingsScreen(
     onNavigateToHistory: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val schedulingMode by viewModel.schedulingMode.collectAsState()
+
 
     Scaffold(
         topBar = {
@@ -42,60 +42,7 @@ fun SettingsScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Alarm Behavior Section
-            Text(
-                "Alarm Behavior",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Scheduling Mode", style = MaterialTheme.typography.titleSmall)
-                
-                // Flexible Option
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { viewModel.setSchedulingMode("FLEXIBLE") }
-                        .padding(vertical = 8.dp)
-                ) {
-                    RadioButton(
-                        selected = schedulingMode == "FLEXIBLE",
-                        onClick = { viewModel.setSchedulingMode("FLEXIBLE") }
-                    )
-                    Column(modifier = Modifier.padding(start = 8.dp)) {
-                        Text("Flexible (Drift)", style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            "Next alarm is calculated from when you respond. Good for workouts.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                // Strict Option
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { viewModel.setSchedulingMode("STRICT") }
-                        .padding(vertical = 8.dp)
-                ) {
-                    RadioButton(
-                        selected = schedulingMode == "STRICT",
-                        onClick = { viewModel.setSchedulingMode("STRICT") }
-                    )
-                    Column(modifier = Modifier.padding(start = 8.dp)) {
-                        Text("Strict (Anchored)", style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            "Alarms lock to the original schedule (e.g. 6:00, 6:15). Good for meds.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
 
             HorizontalDivider()
 

@@ -15,16 +15,5 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "se
 class UserPreferencesRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) {
-    private val SCHEDULING_MODE = stringPreferencesKey("scheduling_mode")
 
-    val schedulingMode: Flow<String> = dataStore.data
-        .map { preferences ->
-            preferences[SCHEDULING_MODE] ?: "FLEXIBLE"
-        }
-
-    suspend fun setSchedulingMode(mode: String) {
-        dataStore.edit { preferences ->
-            preferences[SCHEDULING_MODE] = mode
-        }
-    }
 }

@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import com.nami.peace.domain.model.PriorityLevel
 import com.nami.peace.domain.model.RecurrenceType
 import com.nami.peace.domain.model.Reminder
+import com.nami.peace.domain.model.ReminderCategory
 
 @Entity(tableName = "reminders")
 data class ReminderEntity(
@@ -20,7 +21,12 @@ data class ReminderEntity(
     val isCompleted: Boolean = false,
     val isEnabled: Boolean = true,
     val isInNestedSnoozeLoop: Boolean = false,
-    val nestedSnoozeStartTime: Long? = null
+    val nestedSnoozeStartTime: Long? = null,
+    val category: ReminderCategory = ReminderCategory.GENERAL,
+    val isStrictSchedulingEnabled: Boolean = false,
+    val dateInMillis: Long? = null,
+    val daysOfWeek: List<Int> = emptyList(),
+    val originalStartTimeInMillis: Long = startTimeInMillis
 ) {
     fun toDomain(): Reminder {
         return Reminder(
@@ -36,7 +42,12 @@ data class ReminderEntity(
             isCompleted = isCompleted,
             isEnabled = isEnabled,
             isInNestedSnoozeLoop = isInNestedSnoozeLoop,
-            nestedSnoozeStartTime = nestedSnoozeStartTime
+            nestedSnoozeStartTime = nestedSnoozeStartTime,
+            category = category,
+            isStrictSchedulingEnabled = isStrictSchedulingEnabled,
+            dateInMillis = dateInMillis,
+            daysOfWeek = daysOfWeek,
+            originalStartTimeInMillis = originalStartTimeInMillis
         )
     }
 
@@ -55,7 +66,12 @@ data class ReminderEntity(
                 isCompleted = reminder.isCompleted,
                 isEnabled = reminder.isEnabled,
                 isInNestedSnoozeLoop = reminder.isInNestedSnoozeLoop,
-                nestedSnoozeStartTime = reminder.nestedSnoozeStartTime
+                nestedSnoozeStartTime = reminder.nestedSnoozeStartTime,
+                category = reminder.category,
+                isStrictSchedulingEnabled = reminder.isStrictSchedulingEnabled,
+                dateInMillis = reminder.dateInMillis,
+                daysOfWeek = reminder.daysOfWeek,
+                originalStartTimeInMillis = reminder.originalStartTimeInMillis
             )
         }
     }

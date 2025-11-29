@@ -13,5 +13,10 @@ data class Reminder(
     val isCompleted: Boolean = false,
     val isEnabled: Boolean = true,
     val isInNestedSnoozeLoop: Boolean = false,
-    val nestedSnoozeStartTime: Long? = null
+    val nestedSnoozeStartTime: Long? = null,
+    val category: ReminderCategory = ReminderCategory.GENERAL,
+    val isStrictSchedulingEnabled: Boolean = false,
+    val dateInMillis: Long? = null,
+    val daysOfWeek: List<Int> = emptyList(), // 1=Sun, 2=Mon, ..., 7=Sat
+    val originalStartTimeInMillis: Long = startTimeInMillis // Default to startTime for new/migration
 )

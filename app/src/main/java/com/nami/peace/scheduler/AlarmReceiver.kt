@@ -5,12 +5,10 @@ import android.content.Context
 import android.content.Intent
 import com.nami.peace.data.local.HistoryDao
 import com.nami.peace.data.local.HistoryEntity
-import com.nami.peace.data.repository.UserPreferencesRepository
 import com.nami.peace.domain.repository.ReminderRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,9 +23,6 @@ class AlarmReceiver : BroadcastReceiver() {
 
     @Inject
     lateinit var historyDao: HistoryDao
-
-    @Inject
-    lateinit var userPreferencesRepository: UserPreferencesRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         com.nami.peace.util.DebugLogger.log("Receiver Woke Up! Action: ${intent.action}")
@@ -70,19 +65,22 @@ class AlarmReceiver : BroadcastReceiver() {
                                     15 * 60 * 1000L
                                 }
 
-                                val schedulingMode = userPreferencesRepository.schedulingMode.first()
                                 val now = System.currentTimeMillis()
                                 var nextTime: Long
                                 var nextRepIndex = reminder.currentRepetitionIndex + 1
 
-                                if (schedulingMode == "STRICT") {
+                                if (reminder.isStrictSchedulingEnabled) {
                                     // STRICT (Anchored)
-                                    nextTime = reminder.startTimeInMillis + interval
+                                    // Calculate based on Original Start Time + (RepIndex * Interval)
+                                    // RepIndex is 0-based. Next rep is 'nextRepIndex'.
+                                    nextTime = reminder.originalStartTimeInMillis + (nextRepIndex * interval)
                                     
                                     // Catch-up loop
+                                    // If the calculated nextTime is already in the past, skip it and move to the next rep.
                                     while (nextTime <= now && nextRepIndex < reminder.nagTotalRepetitions) {
-                                        nextTime += interval
+                                        com.nami.peace.util.DebugLogger.log("Strict Mode: Catching up. Skipping rep $nextRepIndex at $nextTime")
                                         nextRepIndex++
+                                        nextTime = reminder.originalStartTimeInMillis + (nextRepIndex * interval)
                                     }
                                     
                                     if (nextRepIndex >= reminder.nagTotalRepetitions) {
@@ -102,17 +100,24 @@ class AlarmReceiver : BroadcastReceiver() {
                                     currentRepetitionIndex = nextRepIndex,
                                     isInNestedSnoozeLoop = false,
                                     nestedSnoozeStartTime = null,
-                                    startTimeInMillis = nextTime
+                                    startTimeInMillis = nextTime,
+                                    originalStartTimeInMillis = reminder.originalStartTimeInMillis
                                 )
                                 repository.updateReminder(updatedReminder)
                                 
                                 alarmScheduler.schedule(updatedReminder, nextTime)
-                                com.nami.peace.util.DebugLogger.log("Scheduled Next Repetition ($schedulingMode) at $nextTime")
+                                com.nami.peace.util.DebugLogger.log("Scheduled Next Repetition (Strict=${reminder.isStrictSchedulingEnabled}) at $nextTime")
                                 
                             } else {
                                 // CASE B: Sequence Finished
                                 com.nami.peace.util.DebugLogger.log("Sequence Finished. Marking Task Complete.")
-                                repository.setTaskCompleted(reminderId, true)
+                                
+                                val completedReminder = reminder.copy(
+                                    isEnabled = false // Disable it so it leaves the active list
+                                )
+                                repository.updateReminder(completedReminder)
+                                
+                                alarmScheduler.cancel(reminder)
                             }
                         }
                         stopService(context)

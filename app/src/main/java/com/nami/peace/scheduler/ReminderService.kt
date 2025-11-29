@@ -44,6 +44,11 @@ class ReminderService : Service() {
                     
                     // 3. Show Notification (Start Foreground)
                     showNotification(reminder)
+
+                    // 4. Timeout Logic (1 Minute)
+                    kotlinx.coroutines.delay(60 * 1000L)
+                    com.nami.peace.util.SoundManager.stopAlarmSound()
+                    com.nami.peace.util.DebugLogger.log("Ringtone Timeout: Sound stopped after 1 minute.")
                 } else {
                     stopSelf()
                 }
@@ -119,7 +124,7 @@ class ReminderService : Service() {
         )
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(reminder.category.iconResId)
             .setContentTitle(titleText)
             .setContentText("Tap to view")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

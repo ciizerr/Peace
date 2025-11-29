@@ -15,16 +15,5 @@ class SettingsViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
-    val schedulingMode: StateFlow<String> = userPreferencesRepository.schedulingMode
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = "FLEXIBLE"
-        )
 
-    fun setSchedulingMode(mode: String) {
-        viewModelScope.launch {
-            userPreferencesRepository.setSchedulingMode(mode)
-        }
-    }
 }

@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             com.nami.peace.ui.home.HomeScreen(
                                 onAddReminder = { navController.navigate("add_edit") },
-                                onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") },
+                                onEditReminder = { id -> navController.navigate("detail/$id") },
                                 onNavigateToSettings = { navController.navigate("settings") }
                             )
                         }
@@ -86,6 +86,19 @@ class MainActivity : ComponentActivity() {
                         ) {
                             com.nami.peace.ui.reminder.AddEditReminderScreen(
                                 onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable(
+                            route = "detail/{reminderId}",
+                            arguments = listOf(
+                                androidx.navigation.navArgument("reminderId") {
+                                    type = androidx.navigation.NavType.IntType
+                                }
+                            )
+                        ) {
+                            com.nami.peace.ui.reminder.ReminderDetailScreen(
+                                onNavigateUp = { navController.popBackStack() },
+                                onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") }
                             )
                         }
                         composable("settings") {

@@ -26,8 +26,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getReminders().collectLatest { reminders ->
                 // Sort by startTimeInMillis (Closest time first)
-                val sortedReminders = reminders.sortedBy { it.startTimeInMillis }
-                _uiState.value = HomeUiState(reminders = sortedReminders)
+                // Filter out completed reminders
+                val activeList = reminders.filter { !it.isCompleted }.sortedBy { it.startTimeInMillis }
+                _uiState.value = HomeUiState(reminders = activeList)
             }
         }
     }
@@ -48,7 +49,6 @@ class HomeViewModel @Inject constructor(
         }
     }
     
-    // Placeholder for now until I add isEnabled
     fun deleteReminder(reminder: Reminder) {
         viewModelScope.launch {
             repository.deleteReminder(reminder)
