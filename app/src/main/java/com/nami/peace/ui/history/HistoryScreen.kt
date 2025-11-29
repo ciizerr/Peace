@@ -1,19 +1,20 @@
 package com.nami.peace.ui.history
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.nami.peace.data.local.HistoryEntity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -22,9 +23,34 @@ import java.util.Locale
 @Composable
 fun HistoryScreen(
     onNavigateUp: () -> Unit,
+    onNavigateToDetail: (Int) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val historyList by viewModel.history.collectAsState()
+    var itemToDelete by remember { mutableStateOf<HistoryEntity?>(null) }
+
+    if (itemToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { itemToDelete = null },
+            title = { Text("Delete History?") },
+            text = { Text("This action cannot be undone.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        itemToDelete?.let { viewModel.deleteHistoryItem(it) }
+                        itemToDelete = null
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { itemToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -60,7 +86,11 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(historyList) { item ->
-                    HistoryItem(item)
+                    HistoryItem(
+                        item = item,
+                        onClick = { onNavigateToDetail(item.id) },
+                        onDelete = { itemToDelete = item }
+                    )
                 }
             }
         }
@@ -68,9 +98,15 @@ fun HistoryScreen(
 }
 
 @Composable
-fun HistoryItem(item: com.nami.peace.data.local.HistoryEntity) {
+fun HistoryItem(
+    item: HistoryEntity,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
@@ -80,23 +116,26 @@ fun HistoryItem(item: com.nami.peace.data.local.HistoryEntity) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    item.originalTitle,
+                    text = item.originalTitle,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    formatDateTime(item.completedTime),
+                    text = "Completed: ${formatDateTime(item.completedTime)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Text(
-                item.status,
-                style = MaterialTheme.typography.labelMedium,
-                color = if (item.status == "Done") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
+            
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
