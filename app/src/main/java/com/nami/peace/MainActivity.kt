@@ -109,6 +109,20 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("history") {
                             com.nami.peace.ui.history.HistoryScreen(
+                                onNavigateUp = { navController.popBackStack() },
+                                onNavigateToDetail = { id -> navController.navigate("history_detail/$id") }
+                            )
+                        }
+                        composable(
+                            route = "history_detail/{historyId}",
+                            arguments = listOf(
+                                androidx.navigation.navArgument("historyId") {
+                                    type = androidx.navigation.NavType.IntType
+                                }
+                            )
+                        ) {
+                            com.nami.peace.ui.history.HistoryDetailScreen(
+                                historyId = it.arguments?.getInt("historyId") ?: -1,
                                 onNavigateUp = { navController.popBackStack() }
                             )
                         }
