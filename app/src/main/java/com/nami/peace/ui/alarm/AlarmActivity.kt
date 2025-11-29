@@ -26,6 +26,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.nami.peace.domain.model.Reminder
+import com.nami.peace.domain.repository.ReminderRepository
 import com.nami.peace.scheduler.AlarmReceiver
 import com.nami.peace.scheduler.ReminderService
 import com.nami.peace.ui.theme.PeaceTheme
@@ -33,12 +39,20 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AlarmActivity : ComponentActivity() {
 
     private var wakeLock: android.os.PowerManager.WakeLock? = null
-    private var reminderId: Int = -1 // Store ID to pass it back
+    private var bundledReminderIds: ArrayList<Int> = arrayListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,36 +71,39 @@ class AlarmActivity : ComponentActivity() {
         // 3. Turn Screen On
         turnScreenOnAndKeyguard()
         
-        // 4. Get Data
-        reminderId = intent.getIntExtra("REMINDER_ID", -1)
+        // 4. Get Data - now includes bundled reminder IDs
+        val reminderId = intent.getIntExtra("REMINDER_ID", -1)
+        bundledReminderIds = intent.getIntegerArrayListExtra("BUNDLED_REMINDER_IDS") ?: arrayListOf(reminderId)
         val reminderTitle = intent.getStringExtra("REMINDER_TITLE") ?: "Reminder"
         val reminderPriority = intent.getStringExtra("REMINDER_PRIORITY") ?: "MEDIUM"
 
         setContent {
             PeaceTheme {
-                AlarmScreen(
-                    title = reminderTitle,
-                    priority = reminderPriority,
+                AlarmScreenWithViewModel(
+                    bundledReminderIds = bundledReminderIds,
                     onStop = {
-                        // SEND "COMPLETE" SIGNAL
-                        sendAction("com.nami.peace.ACTION_COMPLETE")
+                        // SEND "COMPLETE" SIGNAL for ALL bundled reminders
+                        sendActionForAll("com.nami.peace.ACTION_COMPLETE")
                     },
                     onSnooze = {
-                        // SEND "SNOOZE" SIGNAL
-                        sendAction("com.nami.peace.ACTION_SNOOZE")
+                        // SEND "SNOOZE" SIGNAL for ALL bundled reminders
+                        sendActionForAll("com.nami.peace.ACTION_SNOOZE")
                     }
                 )
             }
         }
     }
 
-    // --- NEW HELPER FUNCTION ---
-    private fun sendAction(actionName: String) {
-        val intent = Intent(this, AlarmReceiver::class.java).apply {
-            action = actionName
-            putExtra("REMINDER_ID", reminderId)
+    // --- UPDATED HELPER FUNCTION to handle multiple reminders ---
+    private fun sendActionForAll(actionName: String) {
+        // Send action for each bundled reminder
+        bundledReminderIds.forEach { id ->
+            val intent = Intent(this, AlarmReceiver::class.java).apply {
+                action = actionName
+                putExtra("REMINDER_ID", id)
+            }
+            sendBroadcast(intent)
         }
-        sendBroadcast(intent)
         
         // We still finish the UI, but we let the Receiver stop the Service
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -118,18 +135,66 @@ class AlarmActivity : ComponentActivity() {
     }
 }
 
+// ViewModel for loading bundled reminders
+@HiltViewModel
+class BundledAlarmViewModel @Inject constructor(
+    private val repository: ReminderRepository
+) : ViewModel() {
+    
+    private val _reminders = MutableStateFlow<List<Reminder>>(emptyList())
+    val reminders: StateFlow<List<Reminder>> = _reminders.asStateFlow()
+    
+    fun loadReminders(ids: List<Int>) {
+        viewModelScope.launch {
+            val loaded = ids.mapNotNull { repository.getReminderById(it) }
+                .sortedBy { it.priority.ordinal } // HIGH=0, MEDIUM=1, LOW=2
+            _reminders.value = loaded
+        }
+    }
+}
+
 @Composable
-fun AlarmScreen(
-    title: String,
-    priority: String,
+fun AlarmScreenWithViewModel(
+    bundledReminderIds: List<Int>,
+    onStop: () -> Unit,
+    onSnooze: () -> Unit,
+    viewModel: BundledAlarmViewModel = hiltViewModel()
+) {
+    val reminders by viewModel.reminders.collectAsState()
+    
+    LaunchedEffect(bundledReminderIds) {
+        viewModel.loadReminders(bundledReminderIds)
+    }
+    
+    if (reminders.isEmpty()) {
+        // Loading state
+        Box(
+            modifier = Modifier.fillMaxSize().background(Color.Black),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.White)
+        }
+    } else {
+        AlarmScreenMultiple(
+            reminders = reminders,
+            onStop = onStop,
+            onSnooze = onSnooze
+        )
+    }
+}
+
+@Composable
+fun AlarmScreenMultiple(
+    reminders: List<Reminder>,
     onStop: () -> Unit,
     onSnooze: () -> Unit
 ) {
-    // Dynamic Gradient Colors based on Priority
-    val gradientColors = if (priority == "HIGH") {
-        listOf(Color(0xFFB71C1C), Color(0xFF212121)) 
-    } else {
-        listOf(Color(0xFF1976D2), Color(0xFF212121)) 
+    // Use the highest priority for gradient
+    val highestPriority = reminders.firstOrNull()?.priority?.name ?: "MEDIUM"
+    val gradientColors = when (highestPriority) {
+        "HIGH" -> listOf(Color(0xFFB71C1C), Color(0xFF212121))
+        "MEDIUM" -> listOf(Color(0xFF1976D2), Color(0xFF212121))
+        else -> listOf(Color(0xFF2E7D32), Color(0xFF212121))
     }
 
     // Clock Logic
@@ -161,34 +226,34 @@ fun AlarmScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(gradientColors)),
-            contentAlignment = Alignment.Center
+                .background(Brush.verticalGradient(gradientColors))
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(24.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp)
             ) {
                 // Top: Clock
                 Text(
                     text = currentTime.format(timeFormatter),
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 80.sp,
+                        fontSize = 64.sp,
                         color = Color.White
                     )
                 )
                 
-                Spacer(modifier = Modifier.height(48.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Middle: Pulsing Icon & Title
+                // Middle: Pulsing Icon
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(120.dp)
+                    modifier = Modifier.size(100.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(100.dp)
+                            .size(80.dp)
                             .scale(scale)
                             .background(Color.White.copy(alpha = 0.2f), CircleShape)
                     )
@@ -196,21 +261,37 @@ fun AlarmScreen(
                         imageVector = Icons.Default.Alarm,
                         contentDescription = "Alarm",
                         tint = Color.White,
-                        modifier = Modifier.size(64.dp)
+                        modifier = Modifier.size(48.dp)
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                // Show count if multiple
+                if (reminders.size > 1) {
+                    Text(
+                        text = "${reminders.size} Reminders Due",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
                     )
-                )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                
+                // List of reminders (sorted by priority)
+                LazyColumn(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(reminders) { reminder ->
+                        ReminderCard(reminder = reminder)
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(64.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Bottom: Buttons
                 Button(
@@ -224,12 +305,12 @@ fun AlarmScreen(
                         .height(56.dp)
                 ) {
                     Text(
-                        text = "I'M DOING IT (STOP)",
+                        text = "I'M DOING IT (STOP ALL)",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedButton(
                     onClick = onSnooze,
@@ -242,10 +323,59 @@ fun AlarmScreen(
                         .height(56.dp)
                 ) {
                     Text(
-                        text = "SNOOZE",
+                        text = "SNOOZE ALL",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReminderCard(reminder: Reminder) {
+    val priorityColor = when (reminder.priority.name) {
+        "HIGH" -> Color(0xFFEF5350)
+        "MEDIUM" -> Color(0xFF42A5F5)
+        else -> Color(0xFF66BB6A)
+    }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.15f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Priority indicator
+            Box(
+                modifier = Modifier
+                    .size(8.dp, 40.dp)
+                    .background(priorityColor, RoundedCornerShape(4.dp))
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = reminder.title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                )
+                Text(
+                    text = reminder.priority.name,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                )
             }
         }
     }

@@ -35,6 +35,8 @@ class ReminderService : Service() {
         wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
         
         val reminderId = intent?.getIntExtra("REMINDER_ID", -1) ?: -1
+        val bundledIds = intent?.getIntegerArrayListExtra("BUNDLED_REMINDER_IDS") ?: arrayListOf(reminderId)
+        
         if (reminderId != -1) {
             CoroutineScope(Dispatchers.IO).launch {
                 val reminder = repository.getReminderById(reminderId)
@@ -42,8 +44,8 @@ class ReminderService : Service() {
                     // 2. Play Sound
                     com.nami.peace.util.SoundManager.playAlarmSound(this@ReminderService)
                     
-                    // 3. Show Notification (Start Foreground)
-                    showNotification(reminder)
+                    // 3. Show Notification (Start Foreground) with bundled IDs
+                    showNotification(reminder, bundledIds)
 
                     // 4. Timeout Logic (1 Minute)
                     kotlinx.coroutines.delay(60 * 1000L)
@@ -70,7 +72,7 @@ class ReminderService : Service() {
         wakeLock = null
     }
 
-    private fun showNotification(reminder: com.nami.peace.domain.model.Reminder) {
+    private fun showNotification(reminder: com.nami.peace.domain.model.Reminder, bundledIds: ArrayList<Int> = arrayListOf(reminder.id)) {
         val channelId = "reminder_channel"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -98,6 +100,7 @@ class ReminderService : Service() {
             putExtra("REMINDER_ID", reminder.id)
             putExtra("REMINDER_TITLE", reminder.title)
             putExtra("REMINDER_PRIORITY", reminder.priority.name)
+            putIntegerArrayListExtra("BUNDLED_REMINDER_IDS", bundledIds)
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,

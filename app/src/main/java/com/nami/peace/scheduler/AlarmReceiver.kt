@@ -242,8 +242,22 @@ class AlarmReceiver : BroadcastReceiver() {
                             }
                             
                             if (shouldPlayAlarm) {
+                                // Find all reminders due at the same time (within 1 minute window)
+                                val allReminders = repository.getIncompleteReminders()
+                                val timeWindow = 60 * 1000L // 1 minute
+                                val bundledReminderIds = allReminders
+                                    .filter { 
+                                        kotlin.math.abs(it.startTimeInMillis - reminder.startTimeInMillis) < timeWindow &&
+                                        !it.isCompleted && it.isEnabled
+                                    }
+                                    .sortedBy { it.priority.ordinal } // HIGH=0, MEDIUM=1, LOW=2
+                                    .map { it.id }
+                                
+                                com.nami.peace.util.DebugLogger.log("Bundled ${bundledReminderIds.size} reminders for simultaneous alarm")
+                                
                                 val serviceIntent = Intent(context, com.nami.peace.scheduler.ReminderService::class.java).apply {
                                     putExtra("REMINDER_ID", reminderId)
+                                    putIntegerArrayListExtra("BUNDLED_REMINDER_IDS", ArrayList(bundledReminderIds))
                                 }
                                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                                     context.startForegroundService(serviceIntent)

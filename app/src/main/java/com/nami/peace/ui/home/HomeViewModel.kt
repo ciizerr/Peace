@@ -28,8 +28,24 @@ class HomeViewModel @Inject constructor(
                 // Filter out completed reminders and sort by time
                 val activeList = reminders.filter { !it.isCompleted }.sortedBy { it.startTimeInMillis }
                 
-                // Identify Next Up (The very first one that is ENABLED)
-                val nextUp = activeList.filter { it.isEnabled }.firstOrNull()
+                // Identify Next Up with priority consideration
+                val enabledReminders = activeList.filter { it.isEnabled }
+                val nextUp = if (enabledReminders.isNotEmpty()) {
+                    // Get the earliest time
+                    val earliestTime = enabledReminders.first().startTimeInMillis
+                    val timeWindow = 60 * 1000L // 1 minute window
+                    
+                    // Find all reminders within the time window of the earliest
+                    val simultaneousReminders = enabledReminders.filter { 
+                        kotlin.math.abs(it.startTimeInMillis - earliestTime) < timeWindow
+                    }
+                    
+                    // If multiple reminders at same time, pick highest priority
+                    // Priority enum: HIGH=0, MEDIUM=1, LOW=2 (lower ordinal = higher priority)
+                    simultaneousReminders.minByOrNull { it.priority.ordinal }
+                } else {
+                    null
+                }
                 
                 // Group the rest by date headers
                 // User wants Next Up to appear in the list as well, so we use activeList directly
