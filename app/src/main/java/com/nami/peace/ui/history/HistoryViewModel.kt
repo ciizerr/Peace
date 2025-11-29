@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,4 +22,13 @@ class HistoryViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+    fun deleteHistoryItem(item: HistoryEntity) {
+        viewModelScope.launch {
+            historyDao.delete(item)
+        }
+    }
+
+    fun getHistoryItem(id: Int): kotlinx.coroutines.flow.Flow<HistoryEntity?> {
+        return historyDao.getById(id)
+    }
 }
