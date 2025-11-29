@@ -64,6 +64,11 @@ class AddEditReminderViewModel @Inject constructor(
                     recalculateMaxRepetitions()
                 }
             }
+        } else {
+            // New Reminder: Default to Today
+            _uiState.value = _uiState.value.copy(
+                dateInMillis = System.currentTimeMillis()
+            )
         }
     }
 
