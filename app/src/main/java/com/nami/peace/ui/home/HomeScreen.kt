@@ -28,7 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onAddReminder: () -> Unit,
@@ -37,7 +37,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val reminders = uiState.reminders
+    val nextUp = uiState.nextUp
+    val sections = uiState.sections
 
     Scaffold(
         topBar = {
@@ -73,15 +74,12 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Section 1: Next Up (Hero Card)
-            val activeReminders = reminders.filter { it.isEnabled && !it.isCompleted }
-            val nextUp = activeReminders.firstOrNull()
-            
             if (nextUp != null) {
                 item {
                     Text(
                         "Next Up", 
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
                     )
                     HeroReminderCard(
                         reminder = nextUp,
@@ -90,18 +88,24 @@ fun HomeScreen(
                 }
             }
 
-            // Section 2: Upcoming (List)
-            val upcomingList = reminders.filter { it.id != nextUp?.id }
-            
-            if (upcomingList.isNotEmpty()) {
-                item {
-                    Text(
-                        "Upcoming", 
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-                    )
+            // Section 2: Grouped Lists
+            sections.forEach { (header, reminders) ->
+                stickyHeader {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        Text(
+                            header,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
-                items(upcomingList, key = { it.id }) { reminder ->
+                
+                items(reminders, key = { it.id }) { reminder ->
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
@@ -134,6 +138,7 @@ fun HomeScreen(
                         content = {
                             UpcomingReminderCard(
                                 reminder = reminder,
+                                isNextUp = (reminder.id == nextUp?.id),
                                 onToggle = { viewModel.toggleReminder(reminder) },
                                 onClick = { onEditReminder(reminder.id) }
                             )
@@ -141,7 +146,9 @@ fun HomeScreen(
                         enableDismissFromStartToEnd = false
                     )
                 }
-            } else if (nextUp == null) {
+            }
+            
+            if (nextUp == null && sections.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier
@@ -157,6 +164,11 @@ fun HomeScreen(
                         )
                     }
                 }
+            }
+            
+            // Add some bottom padding for FAB
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
@@ -231,6 +243,7 @@ fun HeroReminderCard(
 @Composable
 fun UpcomingReminderCard(
     reminder: Reminder,
+    isNextUp: Boolean = false,
     onToggle: (Boolean) -> Unit,
     onClick: () -> Unit
 ) {
@@ -263,6 +276,15 @@ fun UpcomingReminderCard(
                     .weight(1f)
                     .padding(16.dp)
             ) {
+                if (isNextUp) {
+                    Text(
+                        "Next Reminder",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
                 Text(
                     reminder.title,
                     style = MaterialTheme.typography.titleMedium,
