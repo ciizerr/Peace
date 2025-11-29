@@ -12,4 +12,10 @@ interface HistoryDao {
 
     @Query("SELECT * FROM history ORDER BY completedTime DESC")
     fun getAll(): Flow<List<HistoryEntity>>
+
+    @Query("SELECT * FROM history WHERE id = :id")
+    fun getById(id: Int): Flow<HistoryEntity?>
+
+    @androidx.room.Delete
+    suspend fun delete(history: HistoryEntity)
 }
