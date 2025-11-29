@@ -25,10 +25,22 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             repository.getReminders().collectLatest { reminders ->
-                // Sort by startTimeInMillis (Closest time first)
-                // Filter out completed reminders
+                // Filter out completed reminders and sort by time
                 val activeList = reminders.filter { !it.isCompleted }.sortedBy { it.startTimeInMillis }
-                _uiState.value = HomeUiState(reminders = activeList)
+                
+                // Identify Next Up (The very first one that is ENABLED)
+                val nextUp = activeList.filter { it.isEnabled }.firstOrNull()
+                
+                // Group the rest by date headers
+                // User wants Next Up to appear in the list as well, so we use activeList directly
+                val sections = activeList.groupBy { 
+                    com.nami.peace.util.DateUtils.formatDateHeader(it.startTimeInMillis) 
+                }
+
+                _uiState.value = HomeUiState(
+                    nextUp = nextUp,
+                    sections = sections
+                )
             }
         }
     }
@@ -58,5 +70,6 @@ class HomeViewModel @Inject constructor(
 }
 
 data class HomeUiState(
-    val reminders: List<Reminder> = emptyList()
+    val nextUp: Reminder? = null,
+    val sections: Map<String, List<Reminder>> = emptyMap()
 )
