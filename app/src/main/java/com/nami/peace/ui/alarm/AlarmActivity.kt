@@ -47,6 +47,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.nami.peace.R
 
 @AndroidEntryPoint
 class AlarmActivity : ComponentActivity() {
@@ -259,7 +261,7 @@ fun AlarmScreenMultiple(
                     )
                     Icon(
                         imageVector = Icons.Default.Alarm,
-                        contentDescription = "Alarm",
+                        contentDescription = stringResource(R.string.cd_alarm),
                         tint = Color.White,
                         modifier = Modifier.size(48.dp)
                     )
@@ -270,7 +272,7 @@ fun AlarmScreenMultiple(
                 // Show count if multiple
                 if (reminders.size > 1) {
                     Text(
-                        text = "${reminders.size} Reminders Due",
+                        text = stringResource(R.string.reminders_due_format, reminders.size),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White.copy(alpha = 0.9f)
@@ -305,7 +307,7 @@ fun AlarmScreenMultiple(
                         .height(56.dp)
                 ) {
                     Text(
-                        text = "I'M DOING IT (STOP ALL)",
+                        text = stringResource(R.string.im_doing_it_stop_all),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -323,7 +325,7 @@ fun AlarmScreenMultiple(
                         .height(56.dp)
                 ) {
                     Text(
-                        text = "SNOOZE ALL",
+                        text = stringResource(R.string.snooze_all),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     )
                 }

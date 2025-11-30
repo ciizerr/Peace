@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="reminders_due">
+        <item quantity="one">%d Reminder Due</item>
+        <item quantity="other">%d Reminders Due</item>
+    </plurals>
+    
+    <plurals name="repetitions">
+        <item quantity="one">%d Repetition</item>
+        <item quantity="other">%d Repetitions</item>
+    </plurals>
+</resources>

@@ -25,6 +25,8 @@ import java.util.Date
 import java.util.Locale
 import java.text.SimpleDateFormat
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.res.stringResource
+import com.nami.peace.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,10 +40,10 @@ fun AddEditReminderScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("New Reminder") },
+                title = { Text(stringResource(R.string.new_reminder)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 },
                 actions = {
@@ -49,7 +51,7 @@ fun AddEditReminderScreen(
                         viewModel.onEvent(AddEditReminderEvent.SaveReminder)
                         onNavigateUp()
                     }) {
-                        Icon(Icons.Default.Check, contentDescription = "Save")
+                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.cd_save))
                     }
                 }
             )
@@ -66,13 +68,13 @@ fun AddEditReminderScreen(
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = { viewModel.onEvent(AddEditReminderEvent.TitleChanged(it)) },
-                label = { Text("Title") },
+                label = { Text(stringResource(R.string.title)) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
             )
 
             // Category
-            Text("Category", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.category), style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ReminderCategory.values().forEach { category ->
                     val isSelected = uiState.category == category
@@ -97,7 +99,7 @@ fun AddEditReminderScreen(
             }
 
             // Priority
-            Text("Priority", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.priority), style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PriorityLevel.values().forEach { priority ->
                     FilterChip(
@@ -109,7 +111,7 @@ fun AddEditReminderScreen(
             }
 
             // Start Time
-            Text("Start Time", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.start_time), style = MaterialTheme.typography.titleMedium)
             Button(onClick = {
                 val calendar = Calendar.getInstance()
                 calendar.timeInMillis = uiState.startTimeInMillis
@@ -131,7 +133,7 @@ fun AddEditReminderScreen(
             }
 
             // Recurrence
-            Text("Recurrence", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.recurrence), style = MaterialTheme.typography.titleMedium)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -150,7 +152,7 @@ fun AddEditReminderScreen(
                 val dateText = if (uiState.dateInMillis != null) {
                     SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(uiState.dateInMillis!!))
                 } else {
-                    "Select Date"
+                    stringResource(R.string.select_date)
                 }
                 
                 val calendar = Calendar.getInstance()
@@ -177,7 +179,7 @@ fun AddEditReminderScreen(
 
             // Day Selector (Weekly)
             if (uiState.recurrenceType == RecurrenceType.WEEKLY) {
-                Text("Repeat on", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.repeat_on), style = MaterialTheme.typography.bodyMedium)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -206,7 +208,7 @@ fun AddEditReminderScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Nag Mode", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.nag_mode), style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = uiState.isNagModeEnabled,
@@ -223,7 +225,7 @@ fun AddEditReminderScreen(
                             viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(it))
                         }
                     },
-                    label = { Text("Interval") },
+                    label = { Text(stringResource(R.string.interval)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
                     singleLine = true
@@ -245,7 +247,7 @@ fun AddEditReminderScreen(
                 }
 
                 // Presets
-                Text("Presets", style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.presets), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -273,7 +275,7 @@ fun AddEditReminderScreen(
 
                 if (uiState.nagIntervalInMillis != null) {
                     Text(
-                        "Repetitions: ${uiState.nagTotalRepetitions}",
+                        stringResource(R.string.repetitions_format, uiState.nagTotalRepetitions),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     
@@ -285,13 +287,13 @@ fun AddEditReminderScreen(
                             steps = if (uiState.maxAllowedRepetitions > 1) uiState.maxAllowedRepetitions - 1 else 0
                         )
                         Text(
-                            "Max allowed: ${uiState.maxAllowedRepetitions} (Stops at midnight)",
+                            stringResource(R.string.max_allowed_format, uiState.maxAllowedRepetitions),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
                     } else {
                         Text(
-                            "No repetitions possible today (Too close to midnight)",
+                            stringResource(R.string.no_repetitions_possible),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -299,19 +301,19 @@ fun AddEditReminderScreen(
                 }
 
                 // Strict Mode (Radio Buttons)
-                Text("Scheduling Mode", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.scheduling_mode), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = !uiState.isStrictSchedulingEnabled,
                         onClick = { viewModel.onEvent(AddEditReminderEvent.StrictModeToggled(false)) }
                     )
-                    Text("Flexible (Drift)")
+                    Text(stringResource(R.string.flexible_drift))
                     Spacer(modifier = Modifier.width(16.dp))
                     RadioButton(
                         selected = uiState.isStrictSchedulingEnabled,
                         onClick = { viewModel.onEvent(AddEditReminderEvent.StrictModeToggled(true)) }
                     )
-                    Text("Strict (Anchored)")
+                    Text(stringResource(R.string.strict_anchored))
                 }
             }
 
@@ -319,22 +321,18 @@ fun AddEditReminderScreen(
             if (uiState.showSoftWarningDialog) {
                 AlertDialog(
                     onDismissRequest = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) },
-                    title = { Text("Limited Repetitions Warning") },
+                    title = { Text(stringResource(R.string.limited_repetitions_warning)) },
                     text = {
-                        Text(
-                            "You are scheduling a Daily sequence late at night.\n\n" +
-                            "To prevent conflicts with tomorrow's schedule, 'Nag Mode' sequences are reset at midnight (11:59 PM).\n\n" +
-                            "Result: You may not get as many repetitions as you expect before the day ends."
-                        )
+                        Text(stringResource(R.string.limited_repetitions_message))
                     },
                     confirmButton = {
                         TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.ConfirmWarningDialog) }) {
-                            Text("I Understand")
+                            Text(stringResource(R.string.i_understand))
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) }) {
-                            Text("Cancel")
+                            Text(stringResource(R.string.cancel))
                         }
                     }
                 )
@@ -356,12 +354,12 @@ fun AddEditReminderScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "Exact Alarm Permission Required",
+                            stringResource(R.string.exact_alarm_permission_required),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
                         Text(
-                            "To ensure your reminders fire on time, please grant the 'Alarms & Reminders' permission.",
+                            stringResource(R.string.exact_alarm_permission_message),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
@@ -375,7 +373,7 @@ fun AddEditReminderScreen(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                         ) {
-                            Text("Grant Permission")
+                            Text(stringResource(R.string.grant_permission))
                         }
                     }
                 }

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peace</string>
+    
+    <!-- Common -->
+    <string name="back">Atrás</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="settings">Configuración</string>
+    
+    <!-- Home Screen -->
+    <string name="my_schedule">Mi Horario</string>
+    <string name="next_up">Próximo</string>
+    <string name="add_reminder">Agregar Recordatorio</string>
+    <string name="next_reminder">Próximo Recordatorio</string>
+    <string name="no_reminders_message">No hay recordatorios programados.\nDisfruta tu paz.</string>
+    <string name="snoozed_nag_mode">⚠️ Pospuesto (Modo Insistente)</string>
+    <string name="repetition_format">Repetición %1$d/%2$d</string>
+    <string name="snoozed">Pospuesto</string>
+    
+    <!-- Add/Edit Reminder Screen -->
+    <string name="new_reminder">Nuevo Recordatorio</string>
+    <string name="edit_reminder">Editar Recordatorio</string>
+    <string name="title">Título</string>
+    <string name="category">Categoría</string>
+    <string name="priority">Prioridad</string>
+    <string name="start_time">Hora de Inicio</string>
+    <string name="recurrence">Recurrencia</string>
+    <string name="select_date">Seleccionar Fecha</string>
+    <string name="repeat_on">Repetir en</string>
+    <string name="nag_mode">Modo Insistente</string>
+    <string name="interval">Intervalo</string>
+    <string name="presets">Preajustes</string>
+    <string name="repetitions_format">Repeticiones: %d</string>
+    <string name="max_allowed_format">Máximo permitido: %d (Se detiene a medianoche)</string>
+    <string name="no_repetitions_possible">No hay repeticiones posibles hoy (Muy cerca de medianoche)</string>
+    <string name="scheduling_mode">Modo de Programación</string>
+    <string name="flexible_drift">Flexible (Deriva)</string>
+    <string name="strict_anchored">Estricto (Anclado)</string>
+    
+    <!-- Priority Levels -->
+    <string name="priority_high">ALTA</string>
+    <string name="priority_medium">MEDIA</string>
+    <string name="priority_low">BAJA</string>
+    
+    <!-- Recurrence Types -->
+    <string name="recurrence_one_time">UNA VEZ</string>
+    <string name="recurrence_daily">DIARIO</string>
+    <string name="recurrence_weekly">SEMANAL</string>
+    
+    <!-- Time Units -->
+    <string name="minutes">Minutos</string>
+    <string name="hours">Horas</string>
+    
+    <!-- Day Labels (Short) -->
+    <string name="day_sunday_short">D</string>
+    <string name="day_monday_short">L</string>
+    <string name="day_tuesday_short">M</string>
+    <string name="day_wednesday_short">X</string>
+    <string name="day_thursday_short">J</string>
+    <string name="day_friday_short">V</string>
+    <string name="day_saturday_short">S</string>
+    
+    <!-- Warning Dialog -->
+    <string name="limited_repetitions_warning">Advertencia de Repeticiones Limitadas</string>
+    <string name="limited_repetitions_message">Estás programando una secuencia diaria tarde en la noche.\n\nPara evitar conflictos con el horario de mañana, las secuencias del \'Modo Insistente\' se reinician a medianoche (11:59 PM).\n\nResultado: Es posible que no obtengas tantas repeticiones como esperas antes de que termine el día.</string>
+    <string name="i_understand">Entiendo</string>
+    
+    <!-- Permission Banner -->
+    <string name="exact_alarm_permission_required">Se Requiere Permiso de Alarma Exacta</string>
+    <string name="exact_alarm_permission_message">Para asegurar que tus recordatorios se activen a tiempo, por favor otorga el permiso de \'Alarmas y Recordatorios\'.</string>
+    <string name="grant_permission">Otorgar Permiso</string>
+    
+    <!-- Alarm Screen -->
+    <string name="alarm">Alarma</string>
+    <string name="reminders_due_format">%d Recordatorios Pendientes</string>
+    <string name="im_doing_it_stop_all">LO ESTOY HACIENDO (DETENER TODO)</string>
+    <string name="snooze_all">POSPONER TODO</string>
+    <string name="im_doing_it_stop">LO ESTOY HACIENDO (DETENER)</string>
+    <string name="snooze">POSPONER</string>
+    
+    <!-- Settings Screen -->
+    <string name="data">Datos</string>
+    <string name="view_history_log">Ver Historial</string>
+    
+    <!-- History Screen -->
+    <string name="history_log">Historial</string>
+    <string name="no_history_yet">Aún no hay historial.</string>
+    <string name="delete_history_title">¿Eliminar Historial?</string>
+    <string name="delete_history_message">Esta acción no se puede deshacer.</string>
+    <string name="completed_format">Completado: %s</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">Configuración</string>
+    <string name="cd_add_reminder">Agregar Recordatorio</string>
+    <string name="cd_back">Atrás</string>
+    <string name="cd_save">Guardar</string>
+    <string name="cd_delete">Eliminar</string>
+    <string name="cd_alarm">Alarma</string>
+    <string name="cd_snoozed">Pospuesto</string>
+    <string name="cd_history">Historial</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_granted">Permiso de Notificación Otorgado</string>
+    <string name="notification_permission_denied">Permiso de Notificación Denegado</string>
+    <string name="exact_alarm_permission_missing">Falta Permiso de Alarma Exacta</string>
+    
+    <!-- Debug/Log Messages -->
+    <string name="reminder">Recordatorio</string>
+    <string name="done">Hecho</string>
+    <string name="standard">Estándar</string>
+    
+    <!-- Time Presets -->
+    <string name="preset_15m">15m</string>
+    <string name="preset_30m">30m</string>
+    <string name="preset_1h">1h</string>
+    <string name="preset_2h">2h</string>
+</resources>

@@ -23,9 +23,9 @@ class MainActivity : ComponentActivity() {
                 androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
                 if (isGranted) {
-                    com.nami.peace.util.DebugLogger.log("Notification Permission Granted")
+                    com.nami.peace.util.DebugLogger.log(getString(R.string.notification_permission_granted))
                 } else {
-                    com.nami.peace.util.DebugLogger.log("Notification Permission Denied")
+                    com.nami.peace.util.DebugLogger.log(getString(R.string.notification_permission_denied))
                 }
             }
             
@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
                 // The requirement says: "If False: Show a dialog... and redirect them to Settings."
                 // Let's implement this in the HomeScreen or a top-level Composable.
                 // For now, let's just log it here and ensure the UI handles it.
-                com.nami.peace.util.DebugLogger.log("Exact Alarm Permission Missing")
+                com.nami.peace.util.DebugLogger.log(getString(R.string.exact_alarm_permission_missing))
             }
         }
 

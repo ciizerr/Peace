@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.nami.peace.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,10 +28,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 }
             )
@@ -48,7 +50,7 @@ fun SettingsScreen(
 
             // Data Section
             Text(
-                "Data",
+                stringResource(R.string.data),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -57,9 +59,9 @@ fun SettingsScreen(
                 onClick = onNavigateToHistory,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(Icons.Default.History, contentDescription = null)
+                Icon(Icons.Default.History, contentDescription = stringResource(R.string.cd_history))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("View History Log")
+                Text(stringResource(R.string.view_history_log))
             }
         }
     }

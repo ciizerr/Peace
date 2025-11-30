@@ -18,6 +18,8 @@ import com.nami.peace.data.local.HistoryEntity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import com.nami.peace.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,8 +34,8 @@ fun HistoryScreen(
     if (itemToDelete != null) {
         AlertDialog(
             onDismissRequest = { itemToDelete = null },
-            title = { Text("Delete History?") },
-            text = { Text("This action cannot be undone.") },
+            title = { Text(stringResource(R.string.delete_history_title)) },
+            text = { Text(stringResource(R.string.delete_history_message)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -41,12 +43,12 @@ fun HistoryScreen(
                         itemToDelete = null
                     }
                 ) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { itemToDelete = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -55,10 +57,10 @@ fun HistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("History Log") },
+                title = { Text(stringResource(R.string.history_log)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
                     }
                 }
             )
@@ -72,7 +74,7 @@ fun HistoryScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "No history yet.",
+                    stringResource(R.string.no_history_yet),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -123,7 +125,7 @@ fun HistoryItem(
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Completed: ${formatDateTime(item.completedTime)}",
+                    text = stringResource(R.string.completed_format, formatDateTime(item.completedTime)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -132,7 +134,7 @@ fun HistoryItem(
             IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
+                    contentDescription = stringResource(R.string.cd_delete),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

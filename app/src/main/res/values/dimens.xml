@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+    <dimen name="spacing_xxlarge">64dp</dimen>
+    
+    <!-- Card Dimensions -->
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_corner_radius_large">24dp</dimen>
+    <dimen name="card_elevation">8dp</dimen>
+    
+    <!-- Hero Card -->
+    <dimen name="hero_card_height">180dp</dimen>
+    
+    <!-- Button Heights -->
+    <dimen name="button_height">56dp</dimen>
+    
+    <!-- Icon Sizes -->
+    <dimen name="icon_size_small">24dp</dimen>
+    <dimen name="icon_size_medium">48dp</dimen>
+    <dimen name="icon_size_large">100dp</dimen>
+    <dimen name="icon_size_alarm">80dp</dimen>
+    
+    <!-- Priority Strip -->
+    <dimen name="priority_strip_width">6dp</dimen>
+    <dimen name="priority_indicator_width">8dp</dimen>
+    <dimen name="priority_indicator_height">40dp</dimen>
+    
+    <!-- FAB Bottom Padding -->
+    <dimen name="fab_bottom_padding">80dp</dimen>
+    
+    <!-- Category Icon Size -->
+    <dimen name="category_icon_size">48dp</dimen>
+</resources>

@@ -1,3 +1,118 @@
 <resources>
     <string name="app_name">Peace</string>
+    
+    <!-- Common -->
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings">Settings</string>
+    
+    <!-- Home Screen -->
+    <string name="my_schedule">My Schedule</string>
+    <string name="next_up">Next Up</string>
+    <string name="add_reminder">Add Reminder</string>
+    <string name="next_reminder">Next Reminder</string>
+    <string name="no_reminders_message">No reminders scheduled.\nEnjoy your peace.</string>
+    <string name="snoozed_nag_mode">⚠️ Snoozed (Nag Mode)</string>
+    <string name="repetition_format">Repetition %1$d/%2$d</string>
+    <string name="snoozed">Snoozed</string>
+    
+    <!-- Add/Edit Reminder Screen -->
+    <string name="new_reminder">New Reminder</string>
+    <string name="edit_reminder">Edit Reminder</string>
+    <string name="title">Title</string>
+    <string name="category">Category</string>
+    <string name="priority">Priority</string>
+    <string name="start_time">Start Time</string>
+    <string name="recurrence">Recurrence</string>
+    <string name="select_date">Select Date</string>
+    <string name="repeat_on">Repeat on</string>
+    <string name="nag_mode">Nag Mode</string>
+    <string name="interval">Interval</string>
+    <string name="presets">Presets</string>
+    <string name="repetitions_format">Repetitions: %d</string>
+    <string name="max_allowed_format">Max allowed: %d (Stops at midnight)</string>
+    <string name="no_repetitions_possible">No repetitions possible today (Too close to midnight)</string>
+    <string name="scheduling_mode">Scheduling Mode</string>
+    <string name="flexible_drift">Flexible (Drift)</string>
+    <string name="strict_anchored">Strict (Anchored)</string>
+    
+    <!-- Priority Levels -->
+    <string name="priority_high">HIGH</string>
+    <string name="priority_medium">MEDIUM</string>
+    <string name="priority_low">LOW</string>
+    
+    <!-- Recurrence Types -->
+    <string name="recurrence_one_time">ONE TIME</string>
+    <string name="recurrence_daily">DAILY</string>
+    <string name="recurrence_weekly">WEEKLY</string>
+    
+    <!-- Time Units -->
+    <string name="minutes">Minutes</string>
+    <string name="hours">Hours</string>
+    
+    <!-- Day Labels (Short) -->
+    <string name="day_sunday_short">S</string>
+    <string name="day_monday_short">M</string>
+    <string name="day_tuesday_short">T</string>
+    <string name="day_wednesday_short">W</string>
+    <string name="day_thursday_short">T</string>
+    <string name="day_friday_short">F</string>
+    <string name="day_saturday_short">S</string>
+    
+    <!-- Warning Dialog -->
+    <string name="limited_repetitions_warning">Limited Repetitions Warning</string>
+    <string name="limited_repetitions_message">You are scheduling a Daily sequence late at night.\n\nTo prevent conflicts with tomorrow\'s schedule, \'Nag Mode\' sequences are reset at midnight (11:59 PM).\n\nResult: You may not get as many repetitions as you expect before the day ends.</string>
+    <string name="i_understand">I Understand</string>
+    
+    <!-- Permission Banner -->
+    <string name="exact_alarm_permission_required">Exact Alarm Permission Required</string>
+    <string name="exact_alarm_permission_message">To ensure your reminders fire on time, please grant the \'Alarms &amp; Reminders\' permission.</string>
+    <string name="grant_permission">Grant Permission</string>
+    
+    <!-- Alarm Screen -->
+    <string name="alarm">Alarm</string>
+    <string name="reminders_due_format">%d Reminders Due</string>
+    <string name="im_doing_it_stop_all">I\'M DOING IT (STOP ALL)</string>
+    <string name="snooze_all">SNOOZE ALL</string>
+    <string name="im_doing_it_stop">I\'M DOING IT (STOP)</string>
+    <string name="snooze">SNOOZE</string>
+    
+    <!-- Settings Screen -->
+    <string name="data">Data</string>
+    <string name="view_history_log">View History Log</string>
+    
+    <!-- History Screen -->
+    <string name="history_log">History Log</string>
+    <string name="no_history_yet">No history yet.</string>
+    <string name="delete_history_title">Delete History?</string>
+    <string name="delete_history_message">This action cannot be undone.</string>
+    <string name="completed_format">Completed: %s</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">Settings</string>
+    <string name="cd_add_reminder">Add Reminder</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_save">Save</string>
+    <string name="cd_delete">Delete</string>
+    <string name="cd_alarm">Alarm</string>
+    <string name="cd_snoozed">Snoozed</string>
+    <string name="cd_history">History</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_granted">Notification Permission Granted</string>
+    <string name="notification_permission_denied">Notification Permission Denied</string>
+    <string name="exact_alarm_permission_missing">Exact Alarm Permission Missing</string>
+    
+    <!-- Debug/Log Messages -->
+    <string name="reminder">Reminder</string>
+    <string name="done">Done</string>
+    <string name="standard">Standard</string>
+    
+    <!-- Time Presets -->
+    <string name="preset_15m">15m</string>
+    <string name="preset_30m">30m</string>
+    <string name="preset_1h">1h</string>
+    <string name="preset_2h">2h</string>
 </resources>

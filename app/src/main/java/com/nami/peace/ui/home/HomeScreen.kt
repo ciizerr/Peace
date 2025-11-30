@@ -27,6 +27,8 @@ import com.nami.peace.domain.model.Reminder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.res.stringResource
+import com.nami.peace.R
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -45,13 +47,13 @@ fun HomeScreen(
             TopAppBar(
                 title = { 
                     Text(
-                        "My Schedule", 
+                        stringResource(R.string.my_schedule), 
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                     ) 
                 },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.cd_settings))
                     }
                 }
             )
@@ -62,7 +64,7 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Reminder")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_reminder))
             }
         }
     ) { padding ->
@@ -77,7 +79,7 @@ fun HomeScreen(
             if (nextUp != null) {
                 item {
                     Text(
-                        "Next Up", 
+                        stringResource(R.string.next_up), 
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
                     )
@@ -130,7 +132,7 @@ fun HomeScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete",
+                                    contentDescription = stringResource(R.string.cd_delete),
                                     tint = Color.White
                                 )
                             }
@@ -157,7 +159,7 @@ fun HomeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "No reminders scheduled.\nEnjoy your peace.",
+                            stringResource(R.string.no_reminders_message),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -219,7 +221,7 @@ fun HeroReminderCard(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            "Repetition ${reminder.currentRepetitionIndex + 1}/${reminder.nagTotalRepetitions}",
+                            stringResource(R.string.repetition_format, reminder.currentRepetitionIndex + 1, reminder.nagTotalRepetitions),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelMedium,
                             color = Color.White
@@ -231,7 +233,7 @@ fun HeroReminderCard(
             if (reminder.isInNestedSnoozeLoop) {
                 Icon(
                     Icons.Default.Warning,
-                    contentDescription = "Snoozed",
+                    contentDescription = stringResource(R.string.cd_snoozed),
                     tint = Color.White,
                     modifier = Modifier.align(Alignment.TopEnd)
                 )
@@ -278,7 +280,7 @@ fun UpcomingReminderCard(
             ) {
                 if (isNextUp) {
                     Text(
-                        "Next Reminder",
+                        stringResource(R.string.next_reminder),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
@@ -297,7 +299,7 @@ fun UpcomingReminderCard(
                 )
                 if (reminder.isInNestedSnoozeLoop) {
                     Text(
-                        "⚠️ Snoozed (Nag Mode)",
+                        stringResource(R.string.snoozed_nag_mode),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.error
                     )
