@@ -2,7 +2,9 @@ package com.nami.peace.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nami.peace.domain.model.Attachment
 import com.nami.peace.domain.model.Reminder
+import com.nami.peace.domain.repository.AttachmentRepository
 import com.nami.peace.domain.repository.ReminderRepository
 import com.nami.peace.scheduler.AlarmScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,13 +18,24 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: ReminderRepository,
+    private val attachmentRepository: AttachmentRepository,
     private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    
+    private val _allAttachments = MutableStateFlow<List<Attachment>>(emptyList())
+    val allAttachments: StateFlow<List<Attachment>> = _allAttachments.asStateFlow()
 
     init {
+        // Load all attachments for background
+        viewModelScope.launch {
+            attachmentRepository.getAllAttachments().collectLatest { attachments ->
+                _allAttachments.value = attachments
+            }
+        }
+        
         viewModelScope.launch {
             repository.getReminders().collectLatest { reminders ->
                 // Filter out completed reminders and sort by time

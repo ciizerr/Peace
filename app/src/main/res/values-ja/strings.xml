@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peace</string>
+    
+    <!-- Common -->
+    <string name="back">戻る</string>
+    <string name="save">保存</string>
+    <string name="delete">削除</string>
+    <string name="cancel">キャンセル</string>
+    <string name="settings">設定</string>
+    
+    <!-- Home Screen -->
+    <string name="my_schedule">マイスケジュール</string>
+    <string name="next_up">次</string>
+    <string name="add_reminder">リマインダーを追加</string>
+    <string name="next_reminder">次のリマインダー</string>
+    <string name="no_reminders_message">予定されたリマインダーはありません。\n平和をお楽しみください。</string>
+    <string name="snoozed_nag_mode">⚠️ スヌーズ済み（ナグモード）</string>
+    <string name="repetition_format">繰り返し %1$d/%2$d</string>
+    <string name="snoozed">スヌーズ済み</string>
+    
+    <!-- Add/Edit Reminder Screen -->
+    <string name="new_reminder">新しいリマインダー</string>
+    <string name="edit_reminder">リマインダーを編集</string>
+    <string name="title">タイトル</string>
+    <string name="category">カテゴリー</string>
+    <string name="priority">優先度</string>
+    <string name="start_time">開始時刻</string>
+    <string name="recurrence">繰り返し</string>
+    <string name="select_date">日付を選択</string>
+    <string name="repeat_on">繰り返し</string>
+    <string name="nag_mode">ナグモード</string>
+    <string name="interval">間隔</string>
+    <string name="presets">プリセット</string>
+    <string name="repetitions_format">繰り返し回数: %d</string>
+    <string name="max_allowed_format">最大許可: %d（深夜に停止）</string>
+    <string name="no_repetitions_possible">今日は繰り返し不可（深夜に近すぎます）</string>
+    <string name="scheduling_mode">スケジュールモード</string>
+    <string name="flexible_drift">柔軟（ドリフト）</string>
+    <string name="strict_anchored">厳格（固定）</string>
+    
+    <!-- Priority Levels -->
+    <string name="priority_high">高</string>
+    <string name="priority_medium">中</string>
+    <string name="priority_low">低</string>
+    
+    <!-- Recurrence Types -->
+    <string name="recurrence_one_time">1回のみ</string>
+    <string name="recurrence_daily">毎日</string>
+    <string name="recurrence_weekly">毎週</string>
+    
+    <!-- Time Units -->
+    <string name="minutes">分</string>
+    <string name="hours">時間</string>
+    
+    <!-- Day Labels (Short) -->
+    <string name="day_sunday_short">日</string>
+    <string name="day_monday_short">月</string>
+    <string name="day_tuesday_short">火</string>
+    <string name="day_wednesday_short">水</string>
+    <string name="day_thursday_short">木</string>
+    <string name="day_friday_short">金</string>
+    <string name="day_saturday_short">土</string>
+    
+    <!-- Warning Dialog -->
+    <string name="limited_repetitions_warning">繰り返し制限の警告</string>
+    <string name="limited_repetitions_message">夜遅くに毎日のシーケンスをスケジュールしています。\n\n明日のスケジュールとの競合を防ぐため、「ナグモード」シーケンスは深夜（午後11時59分）にリセットされます。\n\n結果：1日が終わる前に期待する繰り返し回数を得られない可能性があります。</string>
+    <string name="i_understand">理解しました</string>
+    
+    <!-- Permission Banner -->
+    <string name="exact_alarm_permission_required">正確なアラーム権限が必要</string>
+    <string name="exact_alarm_permission_message">リマインダーが時間通りに起動するように、「アラームとリマインダー」の権限を付与してください。</string>
+    <string name="grant_permission">権限を付与</string>
+    
+    <!-- Alarm Screen -->
+    <string name="alarm">アラーム</string>
+    <string name="reminders_due_format">%d 件のリマインダー期限</string>
+    <string name="im_doing_it_stop_all">やっています（すべて停止）</string>
+    <string name="snooze_all">すべてスヌーズ</string>
+    <string name="im_doing_it_stop">やっています（停止）</string>
+    <string name="snooze">スヌーズ</string>
+    
+    <!-- Settings Screen -->
+    <string name="data">データ</string>
+    <string name="view_history_log">履歴ログを表示</string>
+    
+    <!-- History Screen -->
+    <string name="history_log">履歴ログ</string>
+    <string name="no_history_yet">まだ履歴がありません。</string>
+    <string name="delete_history_title">履歴を削除しますか？</string>
+    <string name="delete_history_message">この操作は元に戻せません。</string>
+    <string name="completed_format">完了: %s</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">設定</string>
+    <string name="cd_add_reminder">リマインダーを追加</string>
+    <string name="cd_back">戻る</string>
+    <string name="cd_save">保存</string>
+    <string name="cd_delete">削除</string>
+    <string name="cd_alarm">アラーム</string>
+    <string name="cd_snoozed">スヌーズ済み</string>
+    
+    <!-- Notification -->
+    <string name="notification_panic_loop_indicator">⚠️ パニックループ有効</string>
+    <string name="notification_panic_loop_message">スヌーズ済み - 2分ごとに繰り返されます</string>
+    <string name="cd_history">履歴</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_granted">通知権限が付与されました</string>
+    <string name="notification_permission_denied">通知権限が拒否されました</string>
+    <string name="exact_alarm_permission_missing">正確なアラーム権限がありません</string>
+    
+    <!-- Debug/Log Messages -->
+    <string name="reminder">リマインダー</string>
+    <string name="done">完了</string>
+    <string name="standard">標準</string>
+    
+    <!-- Time Presets -->
+    <string name="preset_15m">15分</string>
+    <string name="preset_30m">30分</string>
+    <string name="preset_1h">1時間</string>
+    <string name="preset_2h">2時間</string>
+    
+    <!-- Alarm Sound Picker -->
+    <string name="select_alarm_sound">アラーム音を選択</string>
+    <string name="pick_custom_sound">カスタム音を選択</string>
+    <string name="cd_pick_custom_sound">カスタム音を選択</string>
+    <string name="close">閉じる</string>
+    <string name="alarm_sound">アラーム音</string>
+    <string name="default_alarm">デフォルトアラーム</string>
+    <string name="custom_sound">カスタム音</string>
+    <string name="cd_test_sound">音をテスト</string>
+    <string name="cd_change_alarm_sound">アラーム音を変更</string>
+    
+    <!-- Language Selection -->
+    <string name="language">言語</string>
+    <string name="select_language">言語を選択</string>
+    <string name="system_default">システムデフォルト</string>
+    <string name="language_changed">言語が変更されました</string>
+    <string name="cd_language_settings">言語設定</string>
+    
+    <!-- Sharing -->
+    <string name="share">共有</string>
+    <string name="share_reminder">リマインダーを共有</string>
+    <string name="share_confirmation">リマインダーが正常に共有されました！</string>
+    <string name="reminder_details">リマインダーの詳細</string>
+</resources>

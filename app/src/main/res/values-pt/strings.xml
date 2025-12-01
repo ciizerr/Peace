@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peace</string>
+    
+    <!-- Common -->
+    <string name="back">Voltar</string>
+    <string name="save">Salvar</string>
+    <string name="delete">Excluir</string>
+    <string name="cancel">Cancelar</string>
+    <string name="settings">Configurações</string>
+    
+    <!-- Home Screen -->
+    <string name="my_schedule">Minha Agenda</string>
+    <string name="next_up">Próximo</string>
+    <string name="add_reminder">Adicionar Lembrete</string>
+    <string name="next_reminder">Próximo Lembrete</string>
+    <string name="no_reminders_message">Nenhum lembrete agendado.\nAproveite sua paz.</string>
+    <string name="snoozed_nag_mode">⚠️ Adiado (Modo Insistente)</string>
+    <string name="repetition_format">Repetição %1$d/%2$d</string>
+    <string name="snoozed">Adiado</string>
+    
+    <!-- Add/Edit Reminder Screen -->
+    <string name="new_reminder">Novo Lembrete</string>
+    <string name="edit_reminder">Editar Lembrete</string>
+    <string name="title">Título</string>
+    <string name="category">Categoria</string>
+    <string name="priority">Prioridade</string>
+    <string name="start_time">Hora de Início</string>
+    <string name="recurrence">Recorrência</string>
+    <string name="select_date">Selecionar Data</string>
+    <string name="repeat_on">Repetir em</string>
+    <string name="nag_mode">Modo Insistente</string>
+    <string name="interval">Intervalo</string>
+    <string name="presets">Predefinições</string>
+    <string name="repetitions_format">Repetições: %d</string>
+    <string name="max_allowed_format">Máximo permitido: %d (Para à meia-noite)</string>
+    <string name="no_repetitions_possible">Nenhuma repetição possível hoje (Muito perto da meia-noite)</string>
+    <string name="scheduling_mode">Modo de Agendamento</string>
+    <string name="flexible_drift">Flexível (Deriva)</string>
+    <string name="strict_anchored">Estrito (Ancorado)</string>
+    
+    <!-- Priority Levels -->
+    <string name="priority_high">ALTA</string>
+    <string name="priority_medium">MÉDIA</string>
+    <string name="priority_low">BAIXA</string>
+    
+    <!-- Recurrence Types -->
+    <string name="recurrence_one_time">UMA VEZ</string>
+    <string name="recurrence_daily">DIÁRIO</string>
+    <string name="recurrence_weekly">SEMANAL</string>
+    
+    <!-- Time Units -->
+    <string name="minutes">Minutos</string>
+    <string name="hours">Horas</string>
+    
+    <!-- Day Labels (Short) -->
+    <string name="day_sunday_short">D</string>
+    <string name="day_monday_short">S</string>
+    <string name="day_tuesday_short">T</string>
+    <string name="day_wednesday_short">Q</string>
+    <string name="day_thursday_short">Q</string>
+    <string name="day_friday_short">S</string>
+    <string name="day_saturday_short">S</string>
+    
+    <!-- Warning Dialog -->
+    <string name="limited_repetitions_warning">Aviso de Repetições Limitadas</string>
+    <string name="limited_repetitions_message">Você está agendando uma sequência diária tarde da noite.\n\nPara evitar conflitos com a agenda de amanhã, as sequências do \'Modo Insistente\' são reiniciadas à meia-noite (23:59).\n\nResultado: Você pode não obter tantas repetições quanto espera antes do fim do dia.</string>
+    <string name="i_understand">Eu Entendo</string>
+    
+    <!-- Permission Banner -->
+    <string name="exact_alarm_permission_required">Permissão de Alarme Exato Necessária</string>
+    <string name="exact_alarm_permission_message">Para garantir que seus lembretes disparem no horário, conceda a permissão \'Alarmes e Lembretes\'.</string>
+    <string name="grant_permission">Conceder Permissão</string>
+    
+    <!-- Alarm Screen -->
+    <string name="alarm">Alarme</string>
+    <string name="reminders_due_format">%d Lembretes Pendentes</string>
+    <string name="im_doing_it_stop_all">ESTOU FAZENDO (PARAR TODOS)</string>
+    <string name="snooze_all">ADIAR TODOS</string>
+    <string name="im_doing_it_stop">ESTOU FAZENDO (PARAR)</string>
+    <string name="snooze">ADIAR</string>
+    
+    <!-- Settings Screen -->
+    <string name="data">Dados</string>
+    <string name="view_history_log">Ver Histórico</string>
+    
+    <!-- History Screen -->
+    <string name="history_log">Histórico</string>
+    <string name="no_history_yet">Ainda sem histórico.</string>
+    <string name="delete_history_title">Excluir Histórico?</string>
+    <string name="delete_history_message">Esta ação não pode ser desfeita.</string>
+    <string name="completed_format">Concluído: %s</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">Configurações</string>
+    <string name="cd_add_reminder">Adicionar Lembrete</string>
+    <string name="cd_back">Voltar</string>
+    <string name="cd_save">Salvar</string>
+    <string name="cd_delete">Excluir</string>
+    <string name="cd_alarm">Alarme</string>
+    <string name="cd_snoozed">Adiado</string>
+    
+    <!-- Notification -->
+    <string name="notification_panic_loop_indicator">⚠️ LOOP DE PÂNICO ATIVO</string>
+    <string name="notification_panic_loop_message">Adiado - Repetirá a cada 2 minutos</string>
+    <string name="cd_history">Histórico</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_granted">Permissão de Notificação Concedida</string>
+    <string name="notification_permission_denied">Permissão de Notificação Negada</string>
+    <string name="exact_alarm_permission_missing">Permissão de Alarme Exato Ausente</string>
+    
+    <!-- Debug/Log Messages -->
+    <string name="reminder">Lembrete</string>
+    <string name="done">Concluído</string>
+    <string name="standard">Padrão</string>
+    
+    <!-- Time Presets -->
+    <string name="preset_15m">15m</string>
+    <string name="preset_30m">30m</string>
+    <string name="preset_1h">1h</string>
+    <string name="preset_2h">2h</string>
+    
+    <!-- Alarm Sound Picker -->
+    <string name="select_alarm_sound">Selecionar Som de Alarme</string>
+    <string name="pick_custom_sound">Escolher Som Personalizado</string>
+    <string name="cd_pick_custom_sound">Escolher som personalizado</string>
+    <string name="close">Fechar</string>
+    <string name="alarm_sound">Som de Alarme</string>
+    <string name="default_alarm">Alarme Padrão</string>
+    <string name="custom_sound">Som Personalizado</string>
+    <string name="cd_test_sound">Testar som</string>
+    <string name="cd_change_alarm_sound">Alterar som de alarme</string>
+    
+    <!-- Language Selection -->
+    <string name="language">Idioma</string>
+    <string name="select_language">Selecionar Idioma</string>
+    <string name="system_default">Padrão do Sistema</string>
+    <string name="language_changed">Idioma alterado</string>
+    <string name="cd_language_settings">Configurações de idioma</string>
+    
+    <!-- Sharing -->
+    <string name="share">Compartilhar</string>
+    <string name="share_reminder">Compartilhar lembrete</string>
+    <string name="share_confirmation">Lembrete compartilhado com sucesso!</string>
+    <string name="reminder_details">Detalhes do lembrete</string>
+</resources>

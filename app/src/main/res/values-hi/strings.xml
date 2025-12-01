@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peace</string>
+    
+    <!-- Common -->
+    <string name="back">वापस</string>
+    <string name="save">सहेजें</string>
+    <string name="delete">हटाएं</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="settings">सेटिंग्स</string>
+    
+    <!-- Home Screen -->
+    <string name="my_schedule">मेरा शेड्यूल</string>
+    <string name="next_up">अगला</string>
+    <string name="add_reminder">रिमाइंडर जोड़ें</string>
+    <string name="next_reminder">अगला रिमाइंडर</string>
+    <string name="no_reminders_message">कोई रिमाइंडर शेड्यूल नहीं है।\nअपनी शांति का आनंद लें।</string>
+    <string name="snoozed_nag_mode">⚠️ स्नूज़ किया गया (नैग मोड)</string>
+    <string name="repetition_format">पुनरावृत्ति %1$d/%2$d</string>
+    <string name="snoozed">स्नूज़ किया गया</string>
+    
+    <!-- Add/Edit Reminder Screen -->
+    <string name="new_reminder">नया रिमाइंडर</string>
+    <string name="edit_reminder">रिमाइंडर संपादित करें</string>
+    <string name="title">शीर्षक</string>
+    <string name="category">श्रेणी</string>
+    <string name="priority">प्राथमिकता</string>
+    <string name="start_time">प्रारंभ समय</string>
+    <string name="recurrence">पुनरावृत्ति</string>
+    <string name="select_date">तारीख चुनें</string>
+    <string name="repeat_on">दोहराएं</string>
+    <string name="nag_mode">नैग मोड</string>
+    <string name="interval">अंतराल</string>
+    <string name="presets">प्रीसेट</string>
+    <string name="repetitions_format">पुनरावृत्तियां: %d</string>
+    <string name="max_allowed_format">अधिकतम अनुमत: %d (आधी रात को रुकता है)</string>
+    <string name="no_repetitions_possible">आज कोई पुनरावृत्ति संभव नहीं (आधी रात के बहुत करीब)</string>
+    <string name="scheduling_mode">शेड्यूलिंग मोड</string>
+    <string name="flexible_drift">लचीला (ड्रिफ्ट)</string>
+    <string name="strict_anchored">सख्त (एंकर्ड)</string>
+    
+    <!-- Priority Levels -->
+    <string name="priority_high">उच्च</string>
+    <string name="priority_medium">मध्यम</string>
+    <string name="priority_low">निम्न</string>
+    
+    <!-- Recurrence Types -->
+    <string name="recurrence_one_time">एक बार</string>
+    <string name="recurrence_daily">दैनिक</string>
+    <string name="recurrence_weekly">साप्ताहिक</string>
+    
+    <!-- Time Units -->
+    <string name="minutes">मिनट</string>
+    <string name="hours">घंटे</string>
+    
+    <!-- Day Labels (Short) -->
+    <string name="day_sunday_short">र</string>
+    <string name="day_monday_short">सो</string>
+    <string name="day_tuesday_short">मं</string>
+    <string name="day_wednesday_short">बु</string>
+    <string name="day_thursday_short">गु</string>
+    <string name="day_friday_short">शु</string>
+    <string name="day_saturday_short">श</string>
+    
+    <!-- Warning Dialog -->
+    <string name="limited_repetitions_warning">सीमित पुनरावृत्ति चेतावनी</string>
+    <string name="limited_repetitions_message">आप रात में देर से एक दैनिक अनुक्रम शेड्यूल कर रहे हैं।\n\nकल के शेड्यूल के साथ संघर्ष को रोकने के लिए, \'नैग मोड\' अनुक्रम आधी रात (11:59 PM) पर रीसेट हो जाते हैं।\n\nपरिणाम: दिन समाप्त होने से पहले आपको उतनी पुनरावृत्तियां नहीं मिल सकती जितनी आप उम्मीद करते हैं।</string>
+    <string name="i_understand">मैं समझता हूं</string>
+    
+    <!-- Permission Banner -->
+    <string name="exact_alarm_permission_required">सटीक अलार्म अनुमति आवश्यक</string>
+    <string name="exact_alarm_permission_message">यह सुनिश्चित करने के लिए कि आपके रिमाइंडर समय पर सक्रिय हों, कृपया \'अलार्म और रिमाइंडर\' अनुमति दें।</string>
+    <string name="grant_permission">अनुमति दें</string>
+    
+    <!-- Alarm Screen -->
+    <string name="alarm">अलार्म</string>
+    <string name="reminders_due_format">%d रिमाइंडर बकाया</string>
+    <string name="im_doing_it_stop_all">मैं कर रहा हूं (सभी बंद करें)</string>
+    <string name="snooze_all">सभी स्नूज़ करें</string>
+    <string name="im_doing_it_stop">मैं कर रहा हूं (बंद करें)</string>
+    <string name="snooze">स्नूज़</string>
+    
+    <!-- Settings Screen -->
+    <string name="data">डेटा</string>
+    <string name="view_history_log">इतिहास लॉग देखें</string>
+    
+    <!-- History Screen -->
+    <string name="history_log">इतिहास लॉग</string>
+    <string name="no_history_yet">अभी तक कोई इतिहास नहीं।</string>
+    <string name="delete_history_title">इतिहास हटाएं?</string>
+    <string name="delete_history_message">यह क्रिया पूर्ववत नहीं की जा सकती।</string>
+    <string name="completed_format">पूर्ण: %s</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">सेटिंग्स</string>
+    <string name="cd_add_reminder">रिमाइंडर जोड़ें</string>
+    <string name="cd_back">वापस</string>
+    <string name="cd_save">सहेजें</string>
+    <string name="cd_delete">हटाएं</string>
+    <string name="cd_alarm">अलार्म</string>
+    <string name="cd_snoozed">स्नूज़ किया गया</string>
+    
+    <!-- Notification -->
+    <string name="notification_panic_loop_indicator">⚠️ पैनिक लूप सक्रिय</string>
+    <string name="notification_panic_loop_message">स्नूज़ किया गया - हर 2 मिनट में दोहराया जाएगा</string>
+    <string name="cd_history">इतिहास</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_granted">सूचना अनुमति दी गई</string>
+    <string name="notification_permission_denied">सूचना अनुमति अस्वीकृत</string>
+    <string name="exact_alarm_permission_missing">सटीक अलार्म अनुमति गायब</string>
+    
+    <!-- Debug/Log Messages -->
+    <string name="reminder">रिमाइंडर</string>
+    <string name="done">पूर्ण</string>
+    <string name="standard">मानक</string>
+    
+    <!-- Time Presets -->
+    <string name="preset_15m">15मि</string>
+    <string name="preset_30m">30मि</string>
+    <string name="preset_1h">1घं</string>
+    <string name="preset_2h">2घं</string>
+    
+    <!-- Alarm Sound Picker -->
+    <string name="select_alarm_sound">अलार्म ध्वनि चुनें</string>
+    <string name="pick_custom_sound">कस्टम ध्वनि चुनें</string>
+    <string name="cd_pick_custom_sound">कस्टम ध्वनि चुनें</string>
+    <string name="close">बंद करें</string>
+    <string name="alarm_sound">अलार्म ध्वनि</string>
+    <string name="default_alarm">डिफ़ॉल्ट अलार्म</string>
+    <string name="custom_sound">कस्टम ध्वनि</string>
+    <string name="cd_test_sound">ध्वनि परीक्षण करें</string>
+    <string name="cd_change_alarm_sound">अलार्म ध्वनि बदलें</string>
+    
+    <!-- Language Selection -->
+    <string name="language">भाषा</string>
+    <string name="select_language">भाषा चुनें</string>
+    <string name="system_default">सिस्टम डिफ़ॉल्ट</string>
+    <string name="language_changed">भाषा बदल गई</string>
+    <string name="cd_language_settings">भाषा सेटिंग्स</string>
+    
+    <!-- Sharing -->
+    <string name="share">साझा करें</string>
+    <string name="share_reminder">रिमाइंडर साझा करें</string>
+    <string name="share_confirmation">रिमाइंडर सफलतापूर्वक साझा किया गया!</string>
+    <string name="reminder_details">रिमाइंडर विवरण</string>
+</resources>

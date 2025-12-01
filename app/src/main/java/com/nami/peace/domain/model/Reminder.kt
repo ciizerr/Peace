@@ -18,5 +18,7 @@ data class Reminder(
     val isStrictSchedulingEnabled: Boolean = false,
     val dateInMillis: Long? = null,
     val daysOfWeek: List<Int> = emptyList(), // 1=Sun, 2=Mon, ..., 7=Sat
-    val originalStartTimeInMillis: Long = startTimeInMillis // Default to startTime for new/migration
+    val originalStartTimeInMillis: Long = startTimeInMillis, // Default to startTime for new/migration
+    val customAlarmSoundUri: String? = null,
+    val customAlarmSoundName: String? = null
 )

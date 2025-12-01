@@ -3,8 +3,11 @@ package com.nami.peace.ui.history
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import com.nami.peace.ui.components.PeaceIcon
+import com.nami.peace.util.icon.IconManager
+import com.nami.peace.util.icon.IoniconsManager
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,6 +31,8 @@ fun HistoryDetailScreen(
     onNavigateUp: () -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val iconManager: IconManager = remember { IoniconsManager(context) }
     val historyItem by viewModel.getHistoryItem(historyId).collectAsState(initial = null)
 
     Scaffold(
@@ -36,7 +41,11 @@ fun HistoryDetailScreen(
                 title = { Text("History Detail") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        PeaceIcon(
+                            iconName = "arrow_back",
+                            contentDescription = "Back",
+                            iconManager = iconManager
+                        )
                     }
                 }
             )

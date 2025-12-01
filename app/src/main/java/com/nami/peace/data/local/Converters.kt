@@ -36,6 +36,7 @@ class Converters {
     fun toReminderCategory(category: String): ReminderCategory {
         return ReminderCategory.valueOf(category)
     }
+    
     @TypeConverter
     fun fromStringToListInt(value: String?): List<Int> {
         return if (value.isNullOrEmpty()) {
@@ -48,5 +49,35 @@ class Converters {
     @TypeConverter
     fun fromListIntToString(list: List<Int>?): String {
         return list?.joinToString(",") ?: ""
+    }
+    
+    @TypeConverter
+    fun fromGardenTheme(theme: GardenTheme): String {
+        return theme.name
+    }
+    
+    @TypeConverter
+    fun toGardenTheme(theme: String): GardenTheme {
+        return GardenTheme.valueOf(theme)
+    }
+    
+    @TypeConverter
+    fun fromSuggestionType(type: SuggestionType): String {
+        return type.name
+    }
+    
+    @TypeConverter
+    fun toSuggestionType(type: String): SuggestionType {
+        return SuggestionType.valueOf(type)
+    }
+    
+    @TypeConverter
+    fun fromSuggestionStatus(status: SuggestionStatus): String {
+        return status.name
+    }
+    
+    @TypeConverter
+    fun toSuggestionStatus(status: String): SuggestionStatus {
+        return SuggestionStatus.valueOf(status)
     }
 }

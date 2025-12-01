@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peace</string>
+    
+    <!-- Common -->
+    <string name="back">Zurück</string>
+    <string name="save">Speichern</string>
+    <string name="delete">Löschen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="settings">Einstellungen</string>
+    
+    <!-- Home Screen -->
+    <string name="my_schedule">Mein Zeitplan</string>
+    <string name="next_up">Als Nächstes</string>
+    <string name="add_reminder">Erinnerung Hinzufügen</string>
+    <string name="next_reminder">Nächste Erinnerung</string>
+    <string name="no_reminders_message">Keine Erinnerungen geplant.\nGenieße deine Ruhe.</string>
+    <string name="snoozed_nag_mode">⚠️ Verschoben (Nag-Modus)</string>
+    <string name="repetition_format">Wiederholung %1$d/%2$d</string>
+    <string name="snoozed">Verschoben</string>
+    
+    <!-- Add/Edit Reminder Screen -->
+    <string name="new_reminder">Neue Erinnerung</string>
+    <string name="edit_reminder">Erinnerung Bearbeiten</string>
+    <string name="title">Titel</string>
+    <string name="category">Kategorie</string>
+    <string name="priority">Priorität</string>
+    <string name="start_time">Startzeit</string>
+    <string name="recurrence">Wiederholung</string>
+    <string name="select_date">Datum Auswählen</string>
+    <string name="repeat_on">Wiederholen am</string>
+    <string name="nag_mode">Nag-Modus</string>
+    <string name="interval">Intervall</string>
+    <string name="presets">Voreinstellungen</string>
+    <string name="repetitions_format">Wiederholungen: %d</string>
+    <string name="max_allowed_format">Maximal erlaubt: %d (Stoppt um Mitternacht)</string>
+    <string name="no_repetitions_possible">Keine Wiederholungen heute möglich (Zu nah an Mitternacht)</string>
+    <string name="scheduling_mode">Planungsmodus</string>
+    <string name="flexible_drift">Flexibel (Drift)</string>
+    <string name="strict_anchored">Strikt (Verankert)</string>
+    
+    <!-- Priority Levels -->
+    <string name="priority_high">HOCH</string>
+    <string name="priority_medium">MITTEL</string>
+    <string name="priority_low">NIEDRIG</string>
+    
+    <!-- Recurrence Types -->
+    <string name="recurrence_one_time">EINMALIG</string>
+    <string name="recurrence_daily">TÄGLICH</string>
+    <string name="recurrence_weekly">WÖCHENTLICH</string>
+    
+    <!-- Time Units -->
+    <string name="minutes">Minuten</string>
+    <string name="hours">Stunden</string>
+    
+    <!-- Day Labels (Short) -->
+    <string name="day_sunday_short">S</string>
+    <string name="day_monday_short">M</string>
+    <string name="day_tuesday_short">D</string>
+    <string name="day_wednesday_short">M</string>
+    <string name="day_thursday_short">D</string>
+    <string name="day_friday_short">F</string>
+    <string name="day_saturday_short">S</string>
+    
+    <!-- Warning Dialog -->
+    <string name="limited_repetitions_warning">Warnung: Begrenzte Wiederholungen</string>
+    <string name="limited_repetitions_message">Sie planen eine tägliche Sequenz spät in der Nacht.\n\nUm Konflikte mit dem morgigen Zeitplan zu vermeiden, werden \'Nag-Modus\'-Sequenzen um Mitternacht (23:59 Uhr) zurückgesetzt.\n\nErgebnis: Sie erhalten möglicherweise nicht so viele Wiederholungen wie erwartet, bevor der Tag endet.</string>
+    <string name="i_understand">Ich Verstehe</string>
+    
+    <!-- Permission Banner -->
+    <string name="exact_alarm_permission_required">Exakte Alarm-Berechtigung Erforderlich</string>
+    <string name="exact_alarm_permission_message">Um sicherzustellen, dass Ihre Erinnerungen pünktlich ausgelöst werden, gewähren Sie bitte die Berechtigung \'Alarme &amp; Erinnerungen\'.</string>
+    <string name="grant_permission">Berechtigung Erteilen</string>
+    
+    <!-- Alarm Screen -->
+    <string name="alarm">Alarm</string>
+    <string name="reminders_due_format">%d Erinnerungen Fällig</string>
+    <string name="im_doing_it_stop_all">ICH MACHE ES (ALLE STOPPEN)</string>
+    <string name="snooze_all">ALLE VERSCHIEBEN</string>
+    <string name="im_doing_it_stop">ICH MACHE ES (STOPPEN)</string>
+    <string name="snooze">VERSCHIEBEN</string>
+    
+    <!-- Settings Screen -->
+    <string name="data">Daten</string>
+    <string name="view_history_log">Verlauf Anzeigen</string>
+    
+    <!-- History Screen -->
+    <string name="history_log">Verlauf</string>
+    <string name="no_history_yet">Noch kein Verlauf.</string>
+    <string name="delete_history_title">Verlauf Löschen?</string>
+    <string name="delete_history_message">Diese Aktion kann nicht rückgängig gemacht werden.</string>
+    <string name="completed_format">Abgeschlossen: %s</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">Einstellungen</string>
+    <string name="cd_add_reminder">Erinnerung Hinzufügen</string>
+    <string name="cd_back">Zurück</string>
+    <string name="cd_save">Speichern</string>
+    <string name="cd_delete">Löschen</string>
+    <string name="cd_alarm">Alarm</string>
+    <string name="cd_snoozed">Verschoben</string>
+    
+    <!-- Notification -->
+    <string name="notification_panic_loop_indicator">⚠️ PANIKSCHLEIFE AKTIV</string>
+    <string name="notification_panic_loop_message">Verschoben - Wird alle 2 Minuten wiederholt</string>
+    <string name="cd_history">Verlauf</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_granted">Benachrichtigungsberechtigung Erteilt</string>
+    <string name="notification_permission_denied">Benachrichtigungsberechtigung Verweigert</string>
+    <string name="exact_alarm_permission_missing">Exakte Alarm-Berechtigung Fehlt</string>
+    
+    <!-- Debug/Log Messages -->
+    <string name="reminder">Erinnerung</string>
+    <string name="done">Fertig</string>
+    <string name="standard">Standard</string>
+    
+    <!-- Time Presets -->
+    <string name="preset_15m">15m</string>
+    <string name="preset_30m">30m</string>
+    <string name="preset_1h">1h</string>
+    <string name="preset_2h">2h</string>
+    
+    <!-- Alarm Sound Picker -->
+    <string name="select_alarm_sound">Alarmton Auswählen</string>
+    <string name="pick_custom_sound">Benutzerdefinierten Ton Wählen</string>
+    <string name="cd_pick_custom_sound">Benutzerdefinierten Ton wählen</string>
+    <string name="close">Schließen</string>
+    <string name="alarm_sound">Alarmton</string>
+    <string name="default_alarm">Standard-Alarm</string>
+    <string name="custom_sound">Benutzerdefinierter Ton</string>
+    <string name="cd_test_sound">Ton testen</string>
+    <string name="cd_change_alarm_sound">Alarmton ändern</string>
+    
+    <!-- Language Selection -->
+    <string name="language">Sprache</string>
+    <string name="select_language">Sprache Auswählen</string>
+    <string name="system_default">Systemstandard</string>
+    <string name="language_changed">Sprache geändert</string>
+    <string name="cd_language_settings">Spracheinstellungen</string>
+    
+    <!-- Sharing -->
+    <string name="share">Teilen</string>
+    <string name="share_reminder">Erinnerung teilen</string>
+    <string name="share_confirmation">Erinnerung erfolgreich geteilt!</string>
+    <string name="reminder_details">Erinnerungsdetails</string>
+</resources>

@@ -99,6 +99,10 @@
     <string name="cd_delete">Eliminar</string>
     <string name="cd_alarm">Alarma</string>
     <string name="cd_snoozed">Pospuesto</string>
+    
+    <!-- Notification -->
+    <string name="notification_panic_loop_indicator">⚠️ BUCLE DE PÁNICO ACTIVO</string>
+    <string name="notification_panic_loop_message">Pospuesto - Se repetirá cada 2 minutos</string>
     <string name="cd_history">Historial</string>
     
     <!-- Notification Permission -->
@@ -116,4 +120,28 @@
     <string name="preset_30m">30m</string>
     <string name="preset_1h">1h</string>
     <string name="preset_2h">2h</string>
+    
+    <!-- Alarm Sound Picker -->
+    <string name="select_alarm_sound">Seleccionar Sonido de Alarma</string>
+    <string name="pick_custom_sound">Elegir Sonido Personalizado</string>
+    <string name="cd_pick_custom_sound">Elegir sonido personalizado</string>
+    <string name="close">Cerrar</string>
+    <string name="alarm_sound">Sonido de Alarma</string>
+    <string name="default_alarm">Alarma Predeterminada</string>
+    <string name="custom_sound">Sonido Personalizado</string>
+    <string name="cd_test_sound">Probar sonido</string>
+    <string name="cd_change_alarm_sound">Cambiar sonido de alarma</string>
+    
+    <!-- Language Selection -->
+    <string name="language">Idioma</string>
+    <string name="select_language">Seleccionar Idioma</string>
+    <string name="system_default">Predeterminado del Sistema</string>
+    <string name="language_changed">Idioma cambiado</string>
+    <string name="cd_language_settings">Configuración de idioma</string>
+    
+    <!-- Sharing -->
+    <string name="share">Compartir</string>
+    <string name="share_reminder">Compartir recordatorio</string>
+    <string name="share_confirmation">¡Recordatorio compartido con éxito!</string>
+    <string name="reminder_details">Detalles del recordatorio</string>
 </resources>

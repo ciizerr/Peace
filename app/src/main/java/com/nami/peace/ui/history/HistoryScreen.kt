@@ -4,9 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
+import com.nami.peace.ui.components.PeaceIcon
+import com.nami.peace.util.icon.IconManager
+import com.nami.peace.util.icon.IoniconsManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,8 @@ fun HistoryScreen(
     onNavigateToDetail: (Int) -> Unit,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val iconManager: IconManager = remember { IoniconsManager(context) }
     val historyList by viewModel.history.collectAsState()
     var itemToDelete by remember { mutableStateOf<HistoryEntity?>(null) }
 
@@ -60,7 +63,11 @@ fun HistoryScreen(
                 title = { Text(stringResource(R.string.history_log)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
+                        PeaceIcon(
+                            iconName = "arrow_back",
+                            contentDescription = stringResource(R.string.cd_back),
+                            iconManager = iconManager
+                        )
                     }
                 }
             )
@@ -91,7 +98,8 @@ fun HistoryScreen(
                     HistoryItem(
                         item = item,
                         onClick = { onNavigateToDetail(item.id) },
-                        onDelete = { itemToDelete = item }
+                        onDelete = { itemToDelete = item },
+                        iconManager = iconManager
                     )
                 }
             }
@@ -103,7 +111,8 @@ fun HistoryScreen(
 fun HistoryItem(
     item: HistoryEntity,
     onClick: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    iconManager: IconManager
 ) {
     Card(
         modifier = Modifier
@@ -132,10 +141,11 @@ fun HistoryItem(
             }
             
             IconButton(onClick = onDelete) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
+                PeaceIcon(
+                    iconName = "trash",
                     contentDescription = stringResource(R.string.cd_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    iconManager = iconManager
                 )
             }
         }

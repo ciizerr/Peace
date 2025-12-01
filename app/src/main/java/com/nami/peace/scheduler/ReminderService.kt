@@ -12,6 +12,8 @@ import androidx.core.app.NotificationCompat
 import com.nami.peace.MainActivity
 import com.nami.peace.R
 import com.nami.peace.domain.repository.ReminderRepository
+import com.nami.peace.util.icon.IoniconsManager
+import com.nami.peace.util.alarm.AlarmSoundManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +25,12 @@ class ReminderService : Service() {
 
     @Inject
     lateinit var repository: ReminderRepository
+    
+    @Inject
+    lateinit var alarmSoundManager: AlarmSoundManager
+    
+    @Inject
+    lateinit var notificationHelper: com.nami.peace.util.notification.ReminderNotificationHelper
 
     private var wakeLock: android.os.PowerManager.WakeLock? = null
 
@@ -41,15 +49,21 @@ class ReminderService : Service() {
             CoroutineScope(Dispatchers.IO).launch {
                 val reminder = repository.getReminderById(reminderId)
                 if (reminder != null) {
-                    // 2. Play Sound
-                    com.nami.peace.util.SoundManager.playAlarmSound(this@ReminderService)
+                    // 2. Play Sound (with custom sound support)
+                    alarmSoundManager.setWakeLock(wakeLock!!)
+                    alarmSoundManager.playAlarmSoundFromUri(reminder.customAlarmSoundUri)
                     
-                    // 3. Show Notification (Start Foreground) with bundled IDs
-                    showNotification(reminder, bundledIds)
+                    // 3. Show Notification (Start Foreground)
+                    // Check if we should show bundled notification
+                    if (bundledIds.size > 1) {
+                        showBundledNotification(bundledIds)
+                    } else {
+                        showNotification(reminder, bundledIds)
+                    }
 
                     // 4. Timeout Logic (1 Minute)
                     kotlinx.coroutines.delay(60 * 1000L)
-                    com.nami.peace.util.SoundManager.stopAlarmSound()
+                    alarmSoundManager.stopAlarmSound()
                     com.nami.peace.util.DebugLogger.log("Ringtone Timeout: Sound stopped after 1 minute.")
                 } else {
                     stopSelf()
@@ -64,7 +78,7 @@ class ReminderService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         // 4. Stop Sound and Release WakeLock
-        com.nami.peace.util.SoundManager.stopAlarmSound()
+        alarmSoundManager.stopAlarmSound()
         
         wakeLock?.let {
             if (it.isHeld) it.release()
@@ -73,6 +87,65 @@ class ReminderService : Service() {
     }
 
     private fun showNotification(reminder: com.nami.peace.domain.model.Reminder, bundledIds: ArrayList<Int> = arrayListOf(reminder.id)) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                // Create custom notification using the helper
+                val notificationBuilder = notificationHelper.createReminderNotification(reminder)
+                val notification = notificationBuilder.build()
+                
+                startForeground(reminder.id, notification)
+            } catch (e: Exception) {
+                com.nami.peace.util.DebugLogger.log("Error creating custom notification: ${e.message}")
+                e.printStackTrace()
+                
+                // Fallback to simple notification
+                showFallbackNotification(reminder)
+            }
+        }
+    }
+    
+    /**
+     * Shows a bundled notification for multiple simultaneous reminders.
+     * Implements Requirement 14.5
+     */
+    private fun showBundledNotification(bundledIds: List<Int>) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                // Fetch all reminders
+                val reminders = bundledIds.mapNotNull { id ->
+                    repository.getReminderById(id)
+                }
+                
+                if (reminders.isEmpty()) {
+                    com.nami.peace.util.DebugLogger.log("No reminders found for bundled notification")
+                    stopSelf()
+                    return@launch
+                }
+                
+                // Create bundled notification
+                val notificationBuilder = notificationHelper.createBundledNotification(reminders)
+                val notification = notificationBuilder.build()
+                
+                // Use a fixed ID for bundled notifications
+                startForeground(999999, notification)
+                
+                com.nami.peace.util.DebugLogger.log("Showing bundled notification for ${reminders.size} reminders")
+            } catch (e: Exception) {
+                com.nami.peace.util.DebugLogger.log("Error creating bundled notification: ${e.message}")
+                e.printStackTrace()
+                
+                // Fallback to showing the first reminder
+                val firstReminder = repository.getReminderById(bundledIds.first())
+                if (firstReminder != null) {
+                    showFallbackNotification(firstReminder)
+                } else {
+                    stopSelf()
+                }
+            }
+        }
+    }
+    
+    private fun showFallbackNotification(reminder: com.nami.peace.domain.model.Reminder) {
         val channelId = "reminder_channel"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -100,7 +173,6 @@ class ReminderService : Service() {
             putExtra("REMINDER_ID", reminder.id)
             putExtra("REMINDER_TITLE", reminder.title)
             putExtra("REMINDER_PRIORITY", reminder.priority.name)
-            putIntegerArrayListExtra("BUNDLED_REMINDER_IDS", bundledIds)
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,
@@ -126,6 +198,10 @@ class ReminderService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Get dismiss icon from Ionicons
+        val iconManager = IoniconsManager(this)
+        val dismissIconResId = iconManager.getIcon("close") ?: iconManager.getFallbackIcon("close")
+        
         val notification = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(reminder.category.iconResId)
             .setContentTitle(titleText)
@@ -134,8 +210,8 @@ class ReminderService : Service() {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setAutoCancel(true)
-            .setOngoing(true) // Make it ongoing so it can't be swiped away easily
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Dismiss", stopSoundPendingIntent)
+            .setOngoing(true)
+            .addAction(dismissIconResId, "Dismiss", stopSoundPendingIntent)
             .setDeleteIntent(stopSoundPendingIntent)
             .build()
 

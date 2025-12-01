@@ -1,11 +1,27 @@
 package com.nami.peace.ui.reminder
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import com.nami.peace.R
+import com.nami.peace.ui.components.AddNoteDialog
+import com.nami.peace.ui.components.AttachmentGrid
+import com.nami.peace.ui.components.BackgroundWrapper
+import com.nami.peace.ui.components.FullScreenImageViewer
+import com.nami.peace.ui.components.ImagePickerDialog
+import com.nami.peace.ui.components.NoteList
+import com.nami.peace.ui.components.PeaceIcon
+import com.nami.peace.ui.settings.SettingsViewModel
+import com.nami.peace.util.background.BackgroundImageManager
+import com.nami.peace.util.icon.IconManager
+import com.nami.peace.util.icon.IoniconsManager
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -13,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,17 +42,75 @@ import java.util.*
 fun ReminderDetailScreen(
     onNavigateUp: () -> Unit,
     onEditReminder: (Int) -> Unit,
-    viewModel: ReminderDetailViewModel = hiltViewModel()
+    viewModel: ReminderDetailViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    backgroundImageManager: BackgroundImageManager? = null
 ) {
+    val context = LocalContext.current
+    val iconManager: IconManager = remember { IoniconsManager(context) }
     val uiState by viewModel.uiState
+    
+    // Background settings
+    val blurIntensity by settingsViewModel.blurIntensity.collectAsState()
+    val slideshowEnabled by settingsViewModel.slideshowEnabled.collectAsState()
+    
+    // Feature toggles - get from settings view model
+    val attachmentsEnabled by settingsViewModel.attachmentsEnabled.collectAsState()
 
+    // Handle share confirmation toast
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    LaunchedEffect(uiState.showShareConfirmation) {
+        if (uiState.showShareConfirmation) {
+            snackbarHostState.showSnackbar(
+                message = context.getString(R.string.share_confirmation),
+                duration = SnackbarDuration.Short
+            )
+            viewModel.hideShareConfirmation()
+        }
+    }
+    
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Reminder Details") },
+                title = { Text(stringResource(R.string.reminder_details)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        PeaceIcon(
+                            iconName = "arrow_back",
+                            contentDescription = stringResource(R.string.back),
+                            iconManager = iconManager
+                        )
+                    }
+                },
+                actions = {
+                    // Share button
+                    if (uiState.reminder != null) {
+                        IconButton(
+                            onClick = {
+                                val shareLink = viewModel.generateShareLink()
+                                if (shareLink != null) {
+                                    val sendIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, shareLink)
+                                        type = "text/plain"
+                                    }
+                                    val shareIntent = Intent.createChooser(
+                                        sendIntent,
+                                        context.getString(R.string.share_reminder)
+                                    )
+                                    context.startActivity(shareIntent)
+                                    viewModel.showShareConfirmation()
+                                }
+                            }
+                        ) {
+                            PeaceIcon(
+                                iconName = "share",
+                                contentDescription = stringResource(R.string.share),
+                                iconManager = iconManager
+                            )
+                        }
                     }
                 }
             )
@@ -43,20 +118,32 @@ fun ReminderDetailScreen(
         floatingActionButton = {
             if (uiState.reminder != null) {
                 FloatingActionButton(onClick = { onEditReminder(uiState.reminder!!.id) }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                    PeaceIcon(
+                        iconName = "create",
+                        contentDescription = "Edit",
+                        iconManager = iconManager
+                    )
                 }
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else {
-                val reminder = uiState.reminder
-                if (reminder != null) {
-                    Column(
+        BackgroundWrapper(
+            attachments = uiState.attachments,
+            blurIntensity = blurIntensity,
+            slideshowEnabled = slideshowEnabled,
+            backgroundImageManager = backgroundImageManager,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                } else {
+                    val reminder = uiState.reminder
+                    if (reminder != null) {
+                        Column(
                         modifier = Modifier
                             .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
@@ -191,11 +278,114 @@ fun ReminderDetailScreen(
                                 }
                             }
                         }
+                        
+                        // Notes Section (only show if attachments feature is enabled)
+                        if (attachmentsEnabled) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Notes",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                
+                                Button(
+                                    onClick = { viewModel.showAddNoteDialog() },
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    PeaceIcon(
+                                        iconName = "add",
+                                        contentDescription = "Add note",
+                                        iconManager = iconManager,
+                                        size = 20.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Add Note")
+                                }
+                            }
+                            
+                            NoteList(
+                                notes = uiState.notes,
+                                onDelete = { note -> viewModel.deleteNote(note) },
+                                iconManager = iconManager,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            
+                            // Attachments Section
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Attachments",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                
+                                Button(
+                                    onClick = { viewModel.showImagePickerDialog() },
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    PeaceIcon(
+                                        iconName = "image",
+                                        contentDescription = "Add image",
+                                        iconManager = iconManager,
+                                        size = 20.dp
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Add Image")
+                                }
+                            }
+                            
+                            AttachmentGrid(
+                                attachments = uiState.attachments,
+                                onDelete = { attachment -> viewModel.deleteAttachment(attachment) },
+                                onAttachmentClick = { attachment -> viewModel.showFullScreenImage(attachment) },
+                                iconManager = iconManager,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
-                } else {
-                    Text("Reminder not found", modifier = Modifier.align(Alignment.Center))
+                    } else {
+                        Text("Reminder not found", modifier = Modifier.align(Alignment.Center))
+                    }
                 }
             }
+        }
+    }
+    
+    // Dialogs (only show if attachments feature is enabled)
+    if (attachmentsEnabled) {
+        if (uiState.showAddNoteDialog) {
+            AddNoteDialog(
+                onDismiss = { viewModel.hideAddNoteDialog() },
+                onConfirm = { content -> viewModel.addNote(content) },
+                iconManager = iconManager
+            )
+        }
+        
+        if (uiState.showImagePickerDialog) {
+            ImagePickerDialog(
+                onDismiss = { viewModel.hideImagePickerDialog() },
+                onImageSelected = { uri -> viewModel.addAttachment(uri) },
+                iconManager = iconManager
+            )
+        }
+        
+        uiState.selectedAttachment?.let { attachment ->
+            FullScreenImageViewer(
+                attachment = attachment,
+                onDismiss = { viewModel.hideFullScreenImage() },
+                iconManager = iconManager
+            )
         }
     }
 }

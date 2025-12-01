@@ -104,7 +104,49 @@ class MainActivity : ComponentActivity() {
                         composable("settings") {
                             com.nami.peace.ui.settings.SettingsScreen(
                                 onNavigateUp = { navController.popBackStack() },
-                                onNavigateToHistory = { navController.navigate("history") }
+                                onNavigateToHistory = { navController.navigate("history") },
+                                onNavigateToFontSettings = { navController.navigate("font_settings") },
+                                onNavigateToBackgroundSettings = { navController.navigate("background_settings") },
+                                onNavigateToLanguageSettings = { navController.navigate("language_settings") },
+                                onNavigateToCalendarSync = { navController.navigate("calendar_sync") },
+                                onNavigateToPeaceGarden = { navController.navigate("peace_garden") },
+                                onNavigateToMLSuggestions = { navController.navigate("ml_suggestions") },
+                                onNavigateToFeatureSettings = { navController.navigate("feature_settings") }
+                            )
+                        }
+                        composable("font_settings") {
+                            com.nami.peace.ui.settings.FontSettingsScreen(
+                                onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable("background_settings") {
+                            com.nami.peace.ui.settings.BackgroundSettingsScreen(
+                                onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable("language_settings") {
+                            com.nami.peace.ui.settings.LanguageSettingsScreen(
+                                onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable("calendar_sync") {
+                            com.nami.peace.ui.settings.CalendarSyncSettingsScreen(
+                                onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable("peace_garden") {
+                            com.nami.peace.ui.garden.PeaceGardenScreen(
+                                onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable("ml_suggestions") {
+                            com.nami.peace.ui.suggestions.SuggestionsScreen(
+                                onNavigateUp = { navController.popBackStack() }
+                            )
+                        }
+                        composable("feature_settings") {
+                            com.nami.peace.ui.settings.FeatureSettingsScreen(
+                                onNavigateUp = { navController.popBackStack() }
                             )
                         }
                         composable("history") {

@@ -90,6 +90,10 @@
     <string name="delete_history_message">This action cannot be undone.</string>
     <string name="completed_format">Completed: %s</string>
     
+    <!-- Notification -->
+    <string name="notification_panic_loop_indicator">⚠️ PANIC LOOP ACTIVE</string>
+    <string name="notification_panic_loop_message">Snoozed - Will repeat every 2 minutes</string>
+    
     <!-- Content Descriptions -->
     <string name="cd_settings">Settings</string>
     <string name="cd_add_reminder">Add Reminder</string>
@@ -99,6 +103,78 @@
     <string name="cd_alarm">Alarm</string>
     <string name="cd_snoozed">Snoozed</string>
     <string name="cd_history">History</string>
+    <string name="cd_edit">Edit</string>
+    <string name="cd_close">Close</string>
+    <string name="cd_cancel">Cancel</string>
+    <string name="cd_complete">Complete</string>
+    <string name="cd_snooze">Snooze</string>
+    <string name="cd_dismiss">Dismiss</string>
+    <string name="cd_share">Share</string>
+    <string name="cd_more_options">More options</string>
+    <string name="cd_expand">Expand</string>
+    <string name="cd_collapse">Collapse</string>
+    <string name="cd_checkbox">Checkbox</string>
+    <string name="cd_checked">Checked</string>
+    <string name="cd_unchecked">Unchecked</string>
+    <string name="cd_priority_high">High priority</string>
+    <string name="cd_priority_medium">Medium priority</string>
+    <string name="cd_priority_low">Low priority</string>
+    <string name="cd_category_icon">Category icon</string>
+    <string name="cd_reminder_item">Reminder item</string>
+    <string name="cd_subtask_item">Subtask item</string>
+    <string name="cd_note_item">Note item</string>
+    <string name="cd_attachment_item">Attachment item</string>
+    <string name="cd_add_subtask">Add subtask</string>
+    <string name="cd_add_note">Add note</string>
+    <string name="cd_add_attachment">Add attachment</string>
+    <string name="cd_remove_subtask">Remove subtask</string>
+    <string name="cd_remove_note">Remove note</string>
+    <string name="cd_remove_attachment">Remove attachment</string>
+    <string name="cd_progress_bar">Progress bar</string>
+    <string name="cd_progress_format">%d percent complete</string>
+    <string name="cd_garden_theme">Garden theme</string>
+    <string name="cd_growth_stage">Growth stage</string>
+    <string name="cd_streak_counter">Streak counter</string>
+    <string name="cd_milestone">Milestone</string>
+    <string name="cd_widget">Widget</string>
+    <string name="cd_notification">Notification</string>
+    <string name="cd_calendar_sync">Calendar sync</string>
+    <string name="cd_blur_slider">Blur intensity slider</string>
+    <string name="cd_font_padding_slider">Font padding slider</string>
+    <string name="cd_font_preview">Font preview</string>
+    <string name="cd_icon_preview">Icon preview</string>
+    <string name="cd_theme_preview">Theme preview</string>
+    <string name="cd_suggestion_item">Suggestion item</string>
+    <string name="cd_apply_suggestion">Apply suggestion</string>
+    <string name="cd_dismiss_suggestion">Dismiss suggestion</string>
+    <string name="cd_feature_toggle">Feature toggle</string>
+    <string name="cd_language_option">Language option</string>
+    <string name="cd_font_option">Font option</string>
+    <string name="cd_sound_option">Sound option</string>
+    <string name="cd_play_sound">Play sound</string>
+    <string name="cd_stop_sound">Stop sound</string>
+    <string name="cd_image_thumbnail">Image thumbnail</string>
+    <string name="cd_full_image">Full image</string>
+    <string name="cd_slideshow_toggle">Slideshow toggle</string>
+    <string name="cd_sync_now">Sync now</string>
+    <string name="cd_refresh">Refresh</string>
+    <string name="cd_filter">Filter</string>
+    <string name="cd_sort">Sort</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_menu">Menu</string>
+    <string name="cd_navigation_drawer">Navigation drawer</string>
+    <string name="cd_tab">Tab</string>
+    <string name="cd_switch">Switch</string>
+    <string name="cd_radio_button">Radio button</string>
+    <string name="cd_date_picker">Date picker</string>
+    <string name="cd_time_picker">Time picker</string>
+    <string name="cd_dropdown">Dropdown</string>
+    <string name="cd_dialog">Dialog</string>
+    <string name="cd_loading">Loading</string>
+    <string name="cd_error">Error</string>
+    <string name="cd_success">Success</string>
+    <string name="cd_warning">Warning</string>
+    <string name="cd_info">Information</string>
     
     <!-- Notification Permission -->
     <string name="notification_permission_granted">Notification Permission Granted</string>
@@ -115,4 +191,118 @@
     <string name="preset_30m">30m</string>
     <string name="preset_1h">1h</string>
     <string name="preset_2h">2h</string>
+    
+    <!-- Alarm Sound Picker -->
+    <string name="select_alarm_sound">Select Alarm Sound</string>
+    <string name="pick_custom_sound">Pick Custom Sound</string>
+    <string name="cd_pick_custom_sound">Pick custom sound</string>
+    <string name="close">Close</string>
+    <string name="alarm_sound">Alarm Sound</string>
+    <string name="default_alarm">Default Alarm</string>
+    <string name="custom_sound">Custom Sound</string>
+    <string name="cd_test_sound">Test sound</string>
+    <string name="cd_change_alarm_sound">Change alarm sound</string>
+    
+    <!-- Language Selection -->
+    <string name="language">Language</string>
+    <string name="select_language">Select Language</string>
+    <string name="system_default">System Default</string>
+    <string name="language_changed">Language changed</string>
+    <string name="cd_language_settings">Language settings</string>
+    
+    <!-- Peace Garden -->
+    <string name="peace_garden">Peace Garden</string>
+    <string name="garden_theme">Garden Theme</string>
+    <string name="tasks_completed_format">%d Tasks Completed</string>
+    <string name="next_stage_format">Next: %s</string>
+    <string name="tasks_until_next_stage_format">%d tasks until next stage</string>
+    <string name="current_streak">Current Streak</string>
+    <string name="longest_streak">Longest Streak</string>
+    <string name="days_format">%d days</string>
+    <string name="next_milestone">Next Milestone</string>
+    <string name="days_until_milestone_format">%d days until milestone</string>
+    <string name="achievements">Achievements</string>
+    <string name="milestone_achieved">Milestone achieved</string>
+    <string name="milestone_days_format">%d Day Streak</string>
+    <string name="completed">Completed</string>
+    
+    <!-- Calendar Sync -->
+    <string name="calendar_sync">Calendar Sync</string>
+    <string name="calendar_sync_settings">Calendar Sync Settings</string>
+    <string name="enable_calendar_sync">Enable Calendar Sync</string>
+    <string name="calendar_sync_description">Sync your reminders to Google Calendar</string>
+    <string name="sync_now">Sync Now</string>
+    <string name="syncing">Syncing…</string>
+    <string name="sync_statistics">Sync Statistics</string>
+    <string name="last_sync">Last Sync</string>
+    <string name="never_synced">Never synced</string>
+    <string name="synced_reminders">Synced Reminders</string>
+    <string name="reminders_synced_format">%d reminders synced</string>
+    <string name="sync_successful">Sync successful</string>
+    <string name="sync_failed">Sync failed</string>
+    <string name="not_authenticated">Not authenticated with Google</string>
+    <string name="authenticate_with_google">Authenticate with Google</string>
+    <string name="authentication_required">Authentication Required</string>
+    <string name="authentication_required_message">Please sign in with your Google account to enable calendar sync</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sync_error">Sync Error</string>
+    <string name="network_error">Network error. Please check your connection.</string>
+    <string name="permission_denied">Calendar permission denied</string>
+    <string name="retry">Retry</string>
+    <string name="cd_calendar_sync_settings">Calendar sync settings</string>
+    
+    <!-- Deep Link Strings -->
+    <string name="deep_link_loading">Importing reminder…</string>
+    <string name="deep_link_success">Reminder "%1$s" imported successfully!</string>
+    <string name="deep_link_error_no_data">No reminder data found in link</string>
+    <string name="deep_link_error_invalid_format">Invalid reminder link format</string>
+    <string name="deep_link_error_invalid_data">Unable to read reminder data from link</string>
+    <string name="deep_link_error_validation">Invalid reminder: %1$s</string>
+    <string name="deep_link_error_general">Failed to import reminder. Please try again.</string>
+    
+    <!-- Sharing -->
+    <string name="share">Share</string>
+    <string name="share_reminder">Share Reminder</string>
+    <string name="share_confirmation">Reminder shared successfully!</string>
+    <string name="reminder_details">Reminder Details</string>
+    
+    <!-- ML Suggestions -->
+    <string name="ml_suggestions">ML Suggestions</string>
+    <string name="ml_suggestions_title">Smart Suggestions</string>
+    <string name="ml_suggestions_header">Based on your usage patterns, here are some suggestions to optimize your productivity:</string>
+    <string name="ml_suggestions_empty_title">No Suggestions Yet</string>
+    <string name="ml_suggestions_empty_message">Keep using Peace for at least 7 days to receive personalized suggestions based on your habits and patterns.</string>
+    <string name="ml_suggestions_apply">Apply</string>
+    <string name="ml_suggestions_dismiss">Dismiss</string>
+    <string name="ml_suggestion_type_optimal_time">Optimal Time</string>
+    <string name="ml_suggestion_type_priority">Priority Adjustment</string>
+    <string name="ml_suggestion_type_recurring">Recurring Pattern</string>
+    <string name="ml_suggestion_type_break">Break Reminder</string>
+    <string name="ml_suggestion_type_habit">Habit Formation</string>
+    <string name="ml_suggestion_type_template">Template Creation</string>
+    <string name="ml_suggestion_type_focus">Focus Session</string>
+    <string name="cd_ml_suggestions">ML suggestions</string>
+    
+    <!-- Feature Toggles -->
+    <string name="feature_settings">Feature Settings</string>
+    <string name="cd_feature_settings">Feature Settings</string>
+    <string name="features_section">Features</string>
+    <string name="feature_subtasks">Subtasks &amp; Checklists</string>
+    <string name="feature_subtasks_desc">Break down reminders into smaller tasks with checkboxes and progress tracking</string>
+    <string name="feature_attachments">Notes &amp; Attachments</string>
+    <string name="feature_attachments_desc">Add notes and image attachments to your reminders for rich context</string>
+    <string name="feature_widgets">Home Screen Widgets</string>
+    <string name="feature_widgets_desc">View and manage reminders directly from your home screen</string>
+    <string name="feature_ml_suggestions">Smart Suggestions</string>
+    <string name="feature_ml_suggestions_desc">Receive AI-powered suggestions based on your usage patterns</string>
+    <string name="feature_calendar_sync">Google Calendar Sync</string>
+    <string name="feature_calendar_sync_desc">Sync your reminders to Google Calendar for unified scheduling</string>
+    <string name="feature_enabled">Enabled</string>
+    <string name="feature_disabled">Disabled</string>
+    
+    <!-- Widgets -->
+    <string name="today_widget_description">View today\'s reminders at a glance</string>
+    <string name="garden_widget_description">Track your Peace Garden progress and streak</string>
+    <string name="quick_add_widget_description">Quickly add reminders using natural language</string>
+    <string name="loading">Loading…</string>
 </resources>

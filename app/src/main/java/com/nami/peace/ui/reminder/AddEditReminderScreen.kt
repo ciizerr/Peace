@@ -6,9 +6,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import com.nami.peace.ui.components.PeaceIcon
+import com.nami.peace.util.icon.IconManager
+import com.nami.peace.util.icon.IoniconsManager
+import androidx.compose.runtime.remember
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +28,7 @@ import java.text.SimpleDateFormat
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.res.stringResource
 import com.nami.peace.R
+import com.nami.peace.ui.components.AlarmSoundPickerDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +38,7 @@ fun AddEditReminderScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val iconManager: IconManager = remember { IoniconsManager(context) }
 
     Scaffold(
         topBar = {
@@ -43,7 +46,11 @@ fun AddEditReminderScreen(
                 title = { Text(stringResource(R.string.new_reminder)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
+                        PeaceIcon(
+                            iconName = "arrow_back",
+                            contentDescription = stringResource(R.string.cd_back),
+                            iconManager = iconManager
+                        )
                     }
                 },
                 actions = {
@@ -51,7 +58,11 @@ fun AddEditReminderScreen(
                         viewModel.onEvent(AddEditReminderEvent.SaveReminder)
                         onNavigateUp()
                     }) {
-                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.cd_save))
+                        PeaceIcon(
+                            iconName = "checkmark",
+                            contentDescription = stringResource(R.string.cd_save),
+                            iconManager = iconManager
+                        )
                     }
                 }
             )
@@ -338,6 +349,63 @@ fun AddEditReminderScreen(
                 )
             }
 
+            // Alarm Sound Selection
+            Text(stringResource(R.string.alarm_sound), style = MaterialTheme.typography.titleMedium)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            val currentSound = uiState.selectedAlarmSound
+                            Text(
+                                text = currentSound?.name ?: stringResource(R.string.default_alarm),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            if (currentSound != null && !currentSound.isSystem) {
+                                Text(
+                                    text = stringResource(R.string.custom_sound),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        
+                        Row {
+                            // Test sound button
+                            val currentSound = uiState.selectedAlarmSound
+                            if (currentSound != null) {
+                                IconButton(onClick = {
+                                    viewModel.onEvent(AddEditReminderEvent.PlayAlarmSoundPreview(currentSound))
+                                }) {
+                                    PeaceIcon(
+                                        iconName = "play-circle",
+                                        contentDescription = stringResource(R.string.cd_test_sound),
+                                        iconManager = iconManager
+                                    )
+                                }
+                            }
+                            
+                            // Change sound button
+                            IconButton(onClick = {
+                                viewModel.onEvent(AddEditReminderEvent.ShowAlarmSoundPicker(true))
+                            }) {
+                                PeaceIcon(
+                                    iconName = "musical-notes",
+                                    contentDescription = stringResource(R.string.cd_change_alarm_sound),
+                                    iconManager = iconManager
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // Permission Banner
             val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
@@ -378,6 +446,33 @@ fun AddEditReminderScreen(
                     }
                 }
             }
+        }
+        
+        // Alarm Sound Picker Dialog
+        if (uiState.showAlarmSoundPicker) {
+            AlarmSoundPickerDialog(
+                currentSound = uiState.selectedAlarmSound,
+                availableSounds = uiState.availableAlarmSounds,
+                onSoundSelected = { sound ->
+                    viewModel.onEvent(AddEditReminderEvent.AlarmSoundSelected(sound))
+                    viewModel.onEvent(AddEditReminderEvent.ShowAlarmSoundPicker(false))
+                },
+                onDismiss = {
+                    viewModel.onEvent(AddEditReminderEvent.StopAlarmSoundPreview)
+                    viewModel.onEvent(AddEditReminderEvent.ShowAlarmSoundPicker(false))
+                },
+                onPlayPreview = { sound ->
+                    viewModel.onEvent(AddEditReminderEvent.PlayAlarmSoundPreview(sound))
+                },
+                onStopPreview = {
+                    viewModel.onEvent(AddEditReminderEvent.StopAlarmSoundPreview)
+                },
+                onPickCustomSound = { uri, name ->
+                    viewModel.onEvent(AddEditReminderEvent.CustomAlarmSoundPicked(uri, name))
+                    viewModel.onEvent(AddEditReminderEvent.ShowAlarmSoundPicker(false))
+                },
+                iconManager = iconManager as IoniconsManager
+            )
         }
     }
 }

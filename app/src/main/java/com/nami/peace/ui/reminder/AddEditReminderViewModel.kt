@@ -1,15 +1,20 @@
 package com.nami.peace.ui.reminder
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nami.peace.domain.model.AlarmSound
 import com.nami.peace.domain.model.PriorityLevel
 import com.nami.peace.domain.model.RecurrenceType
 import com.nami.peace.domain.model.Reminder
 import com.nami.peace.domain.model.ReminderCategory
 import com.nami.peace.domain.repository.ReminderRepository
 import com.nami.peace.domain.usecase.CalculateMaxRepetitionsUseCase
+import com.nami.peace.domain.usecase.GetAlarmSoundsUseCase
 import com.nami.peace.scheduler.AlarmScheduler
+import com.nami.peace.util.alarm.AlarmSoundManager
+import com.nami.peace.widget.WidgetUpdateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +28,9 @@ class AddEditReminderViewModel @Inject constructor(
     private val repository: ReminderRepository,
     private val calculateMaxRepetitionsUseCase: CalculateMaxRepetitionsUseCase,
     private val alarmScheduler: AlarmScheduler,
+    private val getAlarmSoundsUseCase: GetAlarmSoundsUseCase,
+    private val alarmSoundManager: AlarmSoundManager,
+    private val widgetUpdateManager: WidgetUpdateManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -30,6 +38,12 @@ class AddEditReminderViewModel @Inject constructor(
     val uiState: StateFlow<AddEditReminderUiState> = _uiState.asStateFlow()
 
     init {
+        // Load available alarm sounds
+        viewModelScope.launch {
+            val sounds = getAlarmSoundsUseCase.getAllSystemSounds()
+            _uiState.value = _uiState.value.copy(availableAlarmSounds = sounds)
+        }
+        
         val reminderId = savedStateHandle.get<Int>("reminderId")
         if (reminderId != null && reminderId != -1) {
             viewModelScope.launch {
@@ -43,6 +57,16 @@ class AddEditReminderViewModel @Inject constructor(
                         }
                     } else {
                         "15" to TimeUnit.MINUTES
+                    }
+
+                    // Load custom alarm sound if set
+                    val customSound = if (reminder.customAlarmSoundUri != null && reminder.customAlarmSoundName != null) {
+                        alarmSoundManager.createCustomSound(
+                            Uri.parse(reminder.customAlarmSoundUri),
+                            reminder.customAlarmSoundName
+                        )
+                    } else {
+                        null
                     }
 
                     _uiState.value = _uiState.value.copy(
@@ -59,7 +83,8 @@ class AddEditReminderViewModel @Inject constructor(
                         category = reminder.category,
                         isStrictSchedulingEnabled = reminder.isStrictSchedulingEnabled,
                         dateInMillis = reminder.dateInMillis,
-                        daysOfWeek = reminder.daysOfWeek
+                        daysOfWeek = reminder.daysOfWeek,
+                        selectedAlarmSound = customSound
                     )
                     recalculateMaxRepetitions()
                 }
@@ -152,10 +177,32 @@ class AddEditReminderViewModel @Inject constructor(
                 }
                 _uiState.value = _uiState.value.copy(daysOfWeek = currentDays)
             }
+            is AddEditReminderEvent.AlarmSoundSelected -> {
+                _uiState.value = _uiState.value.copy(selectedAlarmSound = event.sound)
+            }
+            is AddEditReminderEvent.ShowAlarmSoundPicker -> {
+                _uiState.value = _uiState.value.copy(showAlarmSoundPicker = event.show)
+            }
+            is AddEditReminderEvent.PlayAlarmSoundPreview -> {
+                alarmSoundManager.playPreview(event.sound)
+            }
+            is AddEditReminderEvent.StopAlarmSoundPreview -> {
+                alarmSoundManager.stopPreview()
+            }
+            is AddEditReminderEvent.CustomAlarmSoundPicked -> {
+                val customSound = alarmSoundManager.createCustomSound(event.uri, event.name)
+                _uiState.value = _uiState.value.copy(selectedAlarmSound = customSound)
+            }
             is AddEditReminderEvent.SaveReminder -> {
                 saveReminder()
             }
         }
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        // Stop any playing preview when ViewModel is cleared
+        alarmSoundManager.stopPreview()
     }
 
     private fun updateNagIntervalInMillis() {
@@ -207,13 +254,18 @@ class AddEditReminderViewModel @Inject constructor(
             // When saving manually, we reset the anchor (originalStartTime) to the new calculated start time.
             val reminder = tempReminder.copy(
                 startTimeInMillis = calculatedStartTime,
-                originalStartTimeInMillis = calculatedStartTime
+                originalStartTimeInMillis = calculatedStartTime,
+                customAlarmSoundUri = state.selectedAlarmSound?.uri?.toString(),
+                customAlarmSoundName = state.selectedAlarmSound?.name
             )
             
             val id = repository.insertReminder(reminder)
             
             // Schedule Alarm
             alarmScheduler.schedule(reminder.copy(id = id.toInt()))
+            
+            // Update widgets to reflect the new reminder
+            widgetUpdateManager.onReminderDataChanged()
             
             // Navigate back (handled by UI via effect or callback)
         }
@@ -237,7 +289,10 @@ data class AddEditReminderUiState(
     val showSoftWarningDialog: Boolean = false,
     val showPermissionBanner: Boolean = false,
     val dateInMillis: Long? = null,
-    val daysOfWeek: List<Int> = emptyList()
+    val daysOfWeek: List<Int> = emptyList(),
+    val selectedAlarmSound: AlarmSound? = null,
+    val availableAlarmSounds: List<AlarmSound> = emptyList(),
+    val showAlarmSoundPicker: Boolean = false
 )
 
 sealed class AddEditReminderEvent {
@@ -256,6 +311,11 @@ sealed class AddEditReminderEvent {
     data class PermissionStateChanged(val hasPermission: Boolean) : AddEditReminderEvent()
     data class DateChanged(val dateInMillis: Long?) : AddEditReminderEvent()
     data class DayToggled(val day: Int) : AddEditReminderEvent()
+    data class AlarmSoundSelected(val sound: AlarmSound?) : AddEditReminderEvent()
+    data class ShowAlarmSoundPicker(val show: Boolean) : AddEditReminderEvent()
+    data class PlayAlarmSoundPreview(val sound: AlarmSound) : AddEditReminderEvent()
+    object StopAlarmSoundPreview : AddEditReminderEvent()
+    data class CustomAlarmSoundPicked(val uri: Uri, val name: String) : AddEditReminderEvent()
     object SaveReminder : AddEditReminderEvent()
 }
 

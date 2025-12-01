@@ -6,16 +6,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Warning
+import com.nami.peace.ui.components.BackgroundWrapper
+import com.nami.peace.ui.components.PeaceIcon
+import com.nami.peace.util.background.BackgroundImageManager
+import com.nami.peace.util.icon.IconManager
+import com.nami.peace.util.icon.IoniconsManager
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -24,11 +26,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nami.peace.domain.model.PriorityLevel
 import com.nami.peace.domain.model.Reminder
+import com.nami.peace.ui.settings.SettingsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.res.stringResource
 import com.nami.peace.R
+import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -36,11 +40,20 @@ fun HomeScreen(
     onAddReminder: () -> Unit,
     onEditReminder: (Int) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    backgroundImageManager: BackgroundImageManager? = null
 ) {
+    val context = LocalContext.current
+    val iconManager: IconManager = remember { IoniconsManager(context) }
     val uiState by viewModel.uiState.collectAsState()
     val nextUp = uiState.nextUp
     val sections = uiState.sections
+    
+    // Background settings
+    val blurIntensity by settingsViewModel.blurIntensity.collectAsState()
+    val slideshowEnabled by settingsViewModel.slideshowEnabled.collectAsState()
+    val allAttachments by viewModel.allAttachments.collectAsState()
 
     Scaffold(
         topBar = {
@@ -53,7 +66,11 @@ fun HomeScreen(
                 },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.cd_settings))
+                        PeaceIcon(
+                            iconName = "settings",
+                            contentDescription = stringResource(R.string.cd_settings),
+                            iconManager = iconManager
+                        )
                     }
                 }
             )
@@ -64,17 +81,28 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_reminder))
+                PeaceIcon(
+                    iconName = "add",
+                    contentDescription = stringResource(R.string.cd_add_reminder),
+                    iconManager = iconManager
+                )
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        BackgroundWrapper(
+            attachments = allAttachments,
+            blurIntensity = blurIntensity,
+            slideshowEnabled = slideshowEnabled,
+            backgroundImageManager = backgroundImageManager,
+            modifier = Modifier.fillMaxSize()
         ) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .padding(horizontal = 16.dp)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             // Section 1: Next Up (Hero Card)
             if (nextUp != null) {
                 item {
@@ -130,10 +158,11 @@ fun HomeScreen(
                                     .padding(horizontal = 20.dp),
                                 contentAlignment = Alignment.CenterEnd
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
+                                PeaceIcon(
+                                    iconName = "trash",
                                     contentDescription = stringResource(R.string.cd_delete),
-                                    tint = Color.White
+                                    tint = Color.White,
+                                    iconManager = iconManager
                                 )
                             }
                         },
@@ -172,6 +201,7 @@ fun HomeScreen(
             item {
                 Spacer(modifier = Modifier.height(80.dp))
             }
+            }
         }
     }
 }
@@ -181,6 +211,8 @@ fun HeroReminderCard(
     reminder: Reminder,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val iconManager: IconManager = remember { IoniconsManager(context) }
     val gradientColors = when (reminder.priority) {
         PriorityLevel.HIGH -> listOf(Color(0xFFEF5350), Color(0xFFB71C1C)) // Red
         PriorityLevel.MEDIUM -> listOf(Color(0xFF42A5F5), Color(0xFF1565C0)) // Blue
@@ -231,11 +263,12 @@ fun HeroReminderCard(
             }
             
             if (reminder.isInNestedSnoozeLoop) {
-                Icon(
-                    Icons.Default.Warning,
+                PeaceIcon(
+                    iconName = "warning",
                     contentDescription = stringResource(R.string.cd_snoozed),
                     tint = Color.White,
-                    modifier = Modifier.align(Alignment.TopEnd)
+                    modifier = Modifier.align(Alignment.TopEnd),
+                    iconManager = iconManager
                 )
             }
         }

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Peace</string>
+    
+    <!-- Common -->
+    <string name="back">返回</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="cancel">取消</string>
+    <string name="settings">设置</string>
+    
+    <!-- Home Screen -->
+    <string name="my_schedule">我的日程</string>
+    <string name="next_up">下一个</string>
+    <string name="add_reminder">添加提醒</string>
+    <string name="next_reminder">下一个提醒</string>
+    <string name="no_reminders_message">没有计划的提醒。\n享受您的平静。</string>
+    <string name="snoozed_nag_mode">⚠️ 已推迟（唠叨模式）</string>
+    <string name="repetition_format">重复 %1$d/%2$d</string>
+    <string name="snoozed">已推迟</string>
+    
+    <!-- Add/Edit Reminder Screen -->
+    <string name="new_reminder">新提醒</string>
+    <string name="edit_reminder">编辑提醒</string>
+    <string name="title">标题</string>
+    <string name="category">类别</string>
+    <string name="priority">优先级</string>
+    <string name="start_time">开始时间</string>
+    <string name="recurrence">重复</string>
+    <string name="select_date">选择日期</string>
+    <string name="repeat_on">重复于</string>
+    <string name="nag_mode">唠叨模式</string>
+    <string name="interval">间隔</string>
+    <string name="presets">预设</string>
+    <string name="repetitions_format">重复次数：%d</string>
+    <string name="max_allowed_format">最大允许：%d（午夜停止）</string>
+    <string name="no_repetitions_possible">今天无法重复（太接近午夜）</string>
+    <string name="scheduling_mode">计划模式</string>
+    <string name="flexible_drift">灵活（漂移）</string>
+    <string name="strict_anchored">严格（锚定）</string>
+    
+    <!-- Priority Levels -->
+    <string name="priority_high">高</string>
+    <string name="priority_medium">中</string>
+    <string name="priority_low">低</string>
+    
+    <!-- Recurrence Types -->
+    <string name="recurrence_one_time">一次</string>
+    <string name="recurrence_daily">每天</string>
+    <string name="recurrence_weekly">每周</string>
+    
+    <!-- Time Units -->
+    <string name="minutes">分钟</string>
+    <string name="hours">小时</string>
+    
+    <!-- Day Labels (Short) -->
+    <string name="day_sunday_short">日</string>
+    <string name="day_monday_short">一</string>
+    <string name="day_tuesday_short">二</string>
+    <string name="day_wednesday_short">三</string>
+    <string name="day_thursday_short">四</string>
+    <string name="day_friday_short">五</string>
+    <string name="day_saturday_short">六</string>
+    
+    <!-- Warning Dialog -->
+    <string name="limited_repetitions_warning">有限重复警告</string>
+    <string name="limited_repetitions_message">您正在深夜安排每日序列。\n\n为了防止与明天的日程冲突，"唠叨模式"序列在午夜（晚上11:59）重置。\n\n结果：在一天结束之前，您可能无法获得预期的重复次数。</string>
+    <string name="i_understand">我明白了</string>
+    
+    <!-- Permission Banner -->
+    <string name="exact_alarm_permission_required">需要精确闹钟权限</string>
+    <string name="exact_alarm_permission_message">为确保您的提醒准时触发，请授予"闹钟和提醒"权限。</string>
+    <string name="grant_permission">授予权限</string>
+    
+    <!-- Alarm Screen -->
+    <string name="alarm">闹钟</string>
+    <string name="reminders_due_format">%d 个提醒到期</string>
+    <string name="im_doing_it_stop_all">我正在做（全部停止）</string>
+    <string name="snooze_all">全部推迟</string>
+    <string name="im_doing_it_stop">我正在做（停止）</string>
+    <string name="snooze">推迟</string>
+    
+    <!-- Settings Screen -->
+    <string name="data">数据</string>
+    <string name="view_history_log">查看历史记录</string>
+    
+    <!-- History Screen -->
+    <string name="history_log">历史记录</string>
+    <string name="no_history_yet">还没有历史记录。</string>
+    <string name="delete_history_title">删除历史记录？</string>
+    <string name="delete_history_message">此操作无法撤消。</string>
+    <string name="completed_format">已完成：%s</string>
+    
+    <!-- Content Descriptions -->
+    <string name="cd_settings">设置</string>
+    <string name="cd_add_reminder">添加提醒</string>
+    <string name="cd_back">返回</string>
+    <string name="cd_save">保存</string>
+    <string name="cd_delete">删除</string>
+    <string name="cd_alarm">闹钟</string>
+    <string name="cd_snoozed">已推迟</string>
+    
+    <!-- Notification -->
+    <string name="notification_panic_loop_indicator">⚠️ 紧急循环已激活</string>
+    <string name="notification_panic_loop_message">已推迟 - 每2分钟重复一次</string>
+    <string name="cd_history">历史记录</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_granted">已授予通知权限</string>
+    <string name="notification_permission_denied">已拒绝通知权限</string>
+    <string name="exact_alarm_permission_missing">缺少精确闹钟权限</string>
+    
+    <!-- Debug/Log Messages -->
+    <string name="reminder">提醒</string>
+    <string name="done">完成</string>
+    <string name="standard">标准</string>
+    
+    <!-- Time Presets -->
+    <string name="preset_15m">15分</string>
+    <string name="preset_30m">30分</string>
+    <string name="preset_1h">1小时</string>
+    <string name="preset_2h">2小时</string>
+    
+    <!-- Alarm Sound Picker -->
+    <string name="select_alarm_sound">选择闹钟声音</string>
+    <string name="pick_custom_sound">选择自定义声音</string>
+    <string name="cd_pick_custom_sound">选择自定义声音</string>
+    <string name="close">关闭</string>
+    <string name="alarm_sound">闹钟声音</string>
+    <string name="default_alarm">默认闹钟</string>
+    <string name="custom_sound">自定义声音</string>
+    <string name="cd_test_sound">测试声音</string>
+    <string name="cd_change_alarm_sound">更改闹钟声音</string>
+    
+    <!-- Language Selection -->
+    <string name="language">语言</string>
+    <string name="select_language">选择语言</string>
+    <string name="system_default">系统默认</string>
+    <string name="language_changed">语言已更改</string>
+    <string name="cd_language_settings">语言设置</string>
+    
+    <!-- Sharing -->
+    <string name="share">分享</string>
+    <string name="share_reminder">分享提醒</string>
+    <string name="share_confirmation">提醒分享成功！</string>
+    <string name="reminder_details">提醒详情</string>
+</resources>
