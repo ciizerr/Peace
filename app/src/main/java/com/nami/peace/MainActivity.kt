@@ -69,10 +69,10 @@ class MainActivity : ComponentActivity() {
 
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable("home") {
-                            com.nami.peace.ui.home.HomeScreen(
+                            com.nami.peace.ui.main.MainScreen(
                                 onAddReminder = { navController.navigate("add_edit") },
                                 onEditReminder = { id -> navController.navigate("detail/$id") },
-                                onNavigateToSettings = { navController.navigate("settings") }
+                                onNavigateToHistory = { navController.navigate("history") }
                             )
                         }
                         composable(
@@ -101,12 +101,12 @@ class MainActivity : ComponentActivity() {
                                 onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") }
                             )
                         }
-                        composable("settings") {
-                            com.nami.peace.ui.settings.SettingsScreen(
-                                onNavigateUp = { navController.popBackStack() },
-                                onNavigateToHistory = { navController.navigate("history") }
-                            )
-                        }
+                        // Settings is now handled within MainScreen, but we keep this route if we need direct access
+                        // or for deep linking, but MainScreen handles it via tabs.
+                        // We remove the separate "settings" route to avoid confusion, or keep it as a standalone screen?
+                        // The requirement implies Settings is a tab.
+                        // We remove "settings" route.
+                        
                         composable("history") {
                             com.nami.peace.ui.history.HistoryScreen(
                                 onNavigateUp = { navController.popBackStack() },
@@ -129,7 +129,6 @@ class MainActivity : ComponentActivity() {
                         composable("alarm") {
                             com.nami.peace.ui.alarm.AlarmScreen(
                                 onFinish = {
-                                    // If started from intent, finish activity. Else pop.
                                     if (intent?.getBooleanExtra("NAVIGATE_TO_ALARM", false) == true) {
                                         finish()
                                     } else {

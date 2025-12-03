@@ -36,6 +36,7 @@ fun HomeScreen(
     onAddReminder: () -> Unit,
     onEditReminder: (Int) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -61,6 +62,7 @@ fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddReminder,
+                modifier = Modifier.padding(bottom = bottomPadding),
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
