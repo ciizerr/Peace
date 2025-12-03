@@ -21,6 +21,7 @@ class UserPreferencesRepository @Inject constructor(
 ) {
     // Preference Keys
     private object PreferencesKeys {
+        val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
         val SELECTED_LANGUAGE = stringPreferencesKey("selected_language")
         val SELECTED_FONT = stringPreferencesKey("selected_font")
         val FONT_PADDING = intPreferencesKey("font_padding")
@@ -31,6 +32,17 @@ class UserPreferencesRepository @Inject constructor(
         val SUBTASKS_ENABLED = booleanPreferencesKey("subtasks_enabled")
         val ATTACHMENTS_ENABLED = booleanPreferencesKey("attachments_enabled")
         val WIDGETS_ENABLED = booleanPreferencesKey("widgets_enabled")
+    }
+
+    // First Launch Detection
+    val isFirstLaunch: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
+    }
+
+    suspend fun setFirstLaunchComplete() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_FIRST_LAUNCH] = false
+        }
     }
 
     // Language Selection

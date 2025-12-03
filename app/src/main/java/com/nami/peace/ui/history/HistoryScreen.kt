@@ -1,106 +1,147 @@
 package com.nami.peace.ui.history
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import com.nami.peace.ui.components.PeaceIcon
-import com.nami.peace.util.icon.IconManager
-import com.nami.peace.util.icon.IoniconsManager
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.nami.peace.data.local.HistoryEntity
+import com.nami.peace.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import androidx.compose.ui.res.stringResource
-import com.nami.peace.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
     onNavigateUp: () -> Unit,
-    onNavigateToDetail: (Int) -> Unit,
+    onNavigateToDetail: (Int) -> Unit = {},
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val iconManager: IconManager = remember { IoniconsManager(context) }
     val historyList by viewModel.history.collectAsState()
-    var itemToDelete by remember { mutableStateOf<HistoryEntity?>(null) }
 
-    if (itemToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { itemToDelete = null },
-            title = { Text(stringResource(R.string.delete_history_title)) },
-            text = { Text(stringResource(R.string.delete_history_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        itemToDelete?.let { viewModel.deleteHistoryItem(it) }
-                        itemToDelete = null
-                    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        GradientLightStart,
+                        GradientLightEnd
+                    )
+                )
+            )
+    ) {
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                    shadowElevation = 0.dp
                 ) {
-                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { itemToDelete = null }) {
-                    Text(stringResource(R.string.cancel))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 24.dp, vertical = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            IconButton(
+                                onClick = onNavigateUp,
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Icon(
+                                    Icons.Default.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Text(
+                                "History Log",
+                                style = MaterialTheme.typography.headlineSmall.copy(
+                                    fontWeight = FontWeight.W600
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
                 }
             }
-        )
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.history_log)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        PeaceIcon(
-                            iconName = "arrow_back",
-                            contentDescription = stringResource(R.string.cd_back),
-                            iconManager = iconManager
+        ) { padding ->
+            if (historyList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(96.dp)
+                                .clip(CircleShape)
+                                .background(GlowBlue),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "📜",
+                                style = MaterialTheme.typography.displayLarge
+                            )
+                        }
+                        Text(
+                            "No history yet",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.W600
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            "Completed tasks will appear here",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-            )
-        }
-    ) { padding ->
-        if (historyList.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.no_history_yet),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(historyList) { item ->
-                    HistoryItem(
-                        item = item,
-                        onClick = { onNavigateToDetail(item.id) },
-                        onDelete = { itemToDelete = item },
-                        iconManager = iconManager
-                    )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(historyList) { item ->
+                        HistoryItem(item)
+                    }
                 }
             }
         }
@@ -108,44 +149,75 @@ fun HistoryScreen(
 }
 
 @Composable
-fun HistoryItem(
-    item: HistoryEntity,
-    onClick: () -> Unit,
-    onDelete: () -> Unit,
-    iconManager: IconManager
-) {
+fun HistoryItem(item: com.nami.peace.data.local.HistoryEntity) {
+    val isDone = item.status == "Done"
+    val statusColor = if (isDone) AccentSuccess else AccentError
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .shadow(
+                elevation = 2.dp,
+                shape = MaterialTheme.shapes.large,
+                ambientColor = ShadowLight,
+                spotColor = ShadowLight
+            ),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(statusColor.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isDone) Icons.Outlined.CheckCircle else Icons.Outlined.Cancel,
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
                 Text(
-                    text = item.originalTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    item.originalTitle,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.W600
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = stringResource(R.string.completed_format, formatDateTime(item.completedTime)),
+                    formatDateTime(item.completedTime),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
-            IconButton(onClick = onDelete) {
-                PeaceIcon(
-                    iconName = "trash",
-                    contentDescription = stringResource(R.string.cd_delete),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    iconManager = iconManager
+            Surface(
+                color = statusColor.copy(alpha = 0.15f),
+                shape = MaterialTheme.shapes.extraSmall
+            ) {
+                Text(
+                    item.status,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.W600
+                    ),
+                    color = statusColor,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                 )
             }
         }

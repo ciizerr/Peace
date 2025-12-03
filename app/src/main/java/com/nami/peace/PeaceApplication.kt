@@ -1,6 +1,8 @@
 package com.nami.peace
 
 import android.app.Application
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -17,13 +19,21 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidApp
-open class PeaceApplication : Application() {
+open class PeaceApplication : Application(), Configuration.Provider {
+    
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
     
     @Inject
     lateinit var languageManager: LanguageManager
     
     @Inject
     lateinit var startupProfiler: StartupProfiler
+    
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
     
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     

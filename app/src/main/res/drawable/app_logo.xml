@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    
+    <!-- Background Circle -->
+    <path
+        android:fillColor="#F4F6F8"
+        android:pathData="M256,256m-256,0a256,256 0,1 1,512 0a256,256 0,1 1,-512 0"/>
+    
+    <!-- Zen Circle (Enso) - Gradient stroke -->
+    <path
+        android:strokeWidth="24"
+        android:strokeColor="#75B8FF"
+        android:fillColor="@android:color/transparent"
+        android:strokeLineCap="round"
+        android:pathData="M 380,256 A 124,124 0 1,1 132,256 A 124,124 0 0,1 340,180"/>
+    
+    <!-- Leaf/Plant -->
+    <group>
+        <!-- Stem -->
+        <path
+            android:fillColor="#4EC9B0"
+            android:pathData="M 256,320 L 256,240 Q 256,230 260,225"/>
+        
+        <!-- Left Leaf -->
+        <path
+            android:fillColor="#8CF0C8"
+            android:pathData="M 256,260 Q 220,250 210,240 Q 200,230 210,220 Q 220,210 240,220 Q 250,225 256,240 Z"/>
+        
+        <!-- Right Leaf -->
+        <path
+            android:fillColor="#6EDDC4"
+            android:pathData="M 256,260 Q 292,250 302,240 Q 312,230 302,220 Q 292,210 272,220 Q 262,225 256,240 Z"/>
+        
+        <!-- Top Leaf -->
+        <path
+            android:fillColor="#A8F5D8"
+            android:pathData="M 256,240 Q 256,200 266,180 Q 276,160 286,170 Q 296,180 286,200 Q 276,220 256,240 Z"/>
+    </group>
+</vector>
