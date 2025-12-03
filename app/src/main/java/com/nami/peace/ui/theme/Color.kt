@@ -17,3 +17,13 @@ val OffWhite = Color(0xFFFAFAFA)
 val DarkGray = Color(0xFF121212)
 val LightGray = Color(0xFFF0F0F0)
 val AccentRed = Color(0xFFFF5252) // For High Priority / Hero
+
+// Premium / Glassy Tokens
+val GlassyBlack = Color(0xCC121212) // 80% opacity
+val GlassyWhite = Color(0xCCFFFFFF) // 80% opacity
+val SoftShadow = Color(0x1A000000) // 10% opacity black
+val AccentBlue = Color(0xFF2979FF) // Premium Accent
+val TextPrimaryLight = Color(0xFF121212)
+val TextSecondaryLight = Color(0xFF757575)
+val TextPrimaryDark = Color(0xFFFFFFFF)
+val TextSecondaryDark = Color(0xFFB0B0B0)
