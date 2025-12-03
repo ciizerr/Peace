@@ -69,6 +69,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    
+    // Splash Screen API
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
@@ -121,6 +124,10 @@ dependencies {
 
     // Accompanist Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+    
+    // Accompanist Pager for Onboarding
+    implementation("com.google.accompanist:accompanist-pager:0.36.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.36.0")
 
     // Testing
     testImplementation(libs.junit)

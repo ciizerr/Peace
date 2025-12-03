@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    
+    <!-- Circular gradient background -->
+    <path
+        android:fillColor="#F4F6F8"
+        android:pathData="M60,60m-60,0a60,60 0,1 1,120 0a60,60 0,1 1,-120 0"/>
+    
+    <!-- Zen Circle (Enso) -->
+    <path
+        android:strokeWidth="4"
+        android:strokeColor="#75B8FF"
+        android:fillColor="@android:color/transparent"
+        android:strokeLineCap="round"
+        android:pathData="M 90,60 A 30,30 0 1,1 30,60 A 30,30 0 0,1 80,40"/>
+    
+    <!-- Simple Leaf -->
+    <group android:translateX="60" android:translateY="60">
+        <!-- Stem -->
+        <path
+            android:fillColor="#4EC9B0"
+            android:strokeWidth="2"
+            android:strokeColor="#4EC9B0"
+            android:pathData="M 0,10 L 0,-10"/>
+        
+        <!-- Leaf shape -->
+        <path
+            android:fillColor="#8CF0C8"
+            android:pathData="M 0,-10 Q -8,-5 -8,0 Q -8,5 0,8 Q 8,5 8,0 Q 8,-5 0,-10 Z"/>
+    </group>
+</vector>

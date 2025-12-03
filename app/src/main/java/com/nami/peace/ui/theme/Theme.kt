@@ -6,8 +6,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -16,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -29,42 +28,71 @@ import dagger.hilt.android.EntryPointAccessors
 
 /**
  * CompositionLocal for font padding.
- * Provides the current font padding value (0-20dp) to all composables in the tree.
  */
 val LocalFontPadding = compositionLocalOf { 0.dp }
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
-    background = DarkGray,
-    surface = DarkGray,
-    onBackground = White,
-    onSurface = White
+// Premium Light Color Scheme - Calm Morning
+private val PeaceLightColorScheme = lightColorScheme(
+    primary = LightPrimary,
+    onPrimary = LightOnPrimary,
+    primaryContainer = SerenityBlue.copy(alpha = 0.12f),
+    onPrimaryContainer = DeepCharcoal,
+    secondary = LightSecondary,
+    onSecondary = PureWhite,
+    secondaryContainer = CalmTeal.copy(alpha = 0.12f),
+    onSecondaryContainer = DeepCharcoal,
+    tertiary = LightTertiary,
+    onTertiary = DeepCharcoal,
+    tertiaryContainer = MintGlow.copy(alpha = 0.12f),
+    onTertiaryContainer = DeepCharcoal,
+    background = LightBackground,
+    onBackground = LightOnBackground,
+    surface = LightSurface,
+    onSurface = LightOnSurface,
+    surfaceVariant = LightSurfaceVariant,
+    onSurfaceVariant = LightOnSurfaceVariant,
+    surfaceTint = SerenityBlue.copy(alpha = 0.05f),
+    error = AccentError,
+    onError = PureWhite,
+    errorContainer = AccentError.copy(alpha = 0.12f),
+    onErrorContainer = AccentError,
+    outline = Color(0xFFD1D5DB),
+    outlineVariant = Color(0xFFE5E7EB),
+    scrim = Color(0x80000000)
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-    background = OffWhite,
-    surface = White,
-    onBackground = Black,
-    onSurface = Black
+// Premium AMOLED Dark Color Scheme - Peaceful Night
+private val PeaceDarkColorScheme = darkColorScheme(
+    primary = DarkPrimary,
+    onPrimary = DarkOnPrimary,
+    primaryContainer = DarkPrimary.copy(alpha = 0.15f),
+    onPrimaryContainer = DarkOnSurface,
+    secondary = DarkSecondary,
+    onSecondary = Color(0xFF003826),
+    secondaryContainer = DarkSecondary.copy(alpha = 0.15f),
+    onSecondaryContainer = DarkOnSurface,
+    tertiary = DarkTertiary,
+    onTertiary = Color(0xFF003826),
+    tertiaryContainer = DarkTertiary.copy(alpha = 0.15f),
+    onTertiaryContainer = DarkOnSurface,
+    background = DarkBackground,
+    onBackground = DarkOnBackground,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkOnSurfaceVariant,
+    surfaceTint = DarkPrimary.copy(alpha = 0.08f),
+    error = AccentError,
+    onError = Color.White,
+    errorContainer = AccentError.copy(alpha = 0.15f),
+    onErrorContainer = AccentError.copy(alpha = 0.8f),
+    outline = Color(0xFF374151),
+    outlineVariant = Color(0xFF1F2937),
+    scrim = Color(0xCC000000)
 )
 
 /**
- * Composable function that remembers and provides the current font family based on user preferences.
- * 
- * This function:
- * - Reads the selected font from UserPreferencesRepository
- * - Loads the font using FontManager
- * - Falls back to system font if the selected font is null or not found
- * - Returns a FontFamily that can be used in Typography
- *
- * @param fontManager The FontManager instance for loading fonts
- * @param preferencesRepository The UserPreferencesRepository for reading font preferences
- * @return The selected FontFamily or system default
+ * Remembers and provides the current font family based on user preferences.
  */
 @Composable
 fun rememberFontFamily(
@@ -83,78 +111,38 @@ fun rememberFontFamily(
 }
 
 /**
- * Main theme composable for the Peace app.
+ * Main theme composable for the Peace app with premium design.
  * 
- * This theme:
- * - Supports dark/light themes with dynamic colors on Android 12+
- * - Loads custom fonts from user preferences
- * - Applies font padding from user preferences
- * - Provides custom typography to all text elements
- * 
- * @param darkTheme Whether to use dark theme (defaults to system setting)
- * @param dynamicColor Whether to use dynamic colors on Android 12+ (defaults to true)
- * @param content The composable content to be themed
+ * Features:
+ * - Premium color palette (Serenity Blue, Calm Teal, Mint Glow)
+ * - AMOLED dark mode support
+ * - Smooth, rounded shapes
+ * - Elegant typography
  */
 @Composable
 fun PeaceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current
-    
-    // Get FontManager and PreferencesRepository from Hilt
-    val fontManager = remember {
-        val appContext = context.applicationContext
-        val entryPoint = EntryPointAccessors.fromApplication(
-            appContext,
-            FontManagerEntryPoint::class.java
-        )
-        entryPoint.fontManager()
-    }
-    
-    val preferencesRepository = remember {
-        val appContext = context.applicationContext
-        val entryPoint = EntryPointAccessors.fromApplication(
-            appContext,
-            PreferencesRepositoryEntryPoint::class.java
-        )
-        entryPoint.preferencesRepository()
-    }
-    
-    // Get custom font family from preferences
-    val fontFamily = rememberFontFamily(fontManager, preferencesRepository)
-    
-    // Get font padding from preferences
-    val fontPaddingValue by preferencesRepository.fontPadding.collectAsState(initial = 0)
-    val fontPadding = fontPaddingValue.dp
-    
-    // Create custom typography with the selected font
-    val customTypography = createCustomTypography(fontFamily, fontPadding)
-    
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    // Use premium color schemes
+    val colorScheme = if (darkTheme) PeaceDarkColorScheme else PeaceLightColorScheme
     
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
+            // Set status bar color
+            window.statusBarColor = if (darkTheme) Color.Black.toArgb() else Color.White.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
-    // Provide font padding via CompositionLocal
-    CompositionLocalProvider(LocalFontPadding provides fontPadding) {
+    // Provide default font padding
+    CompositionLocalProvider(LocalFontPadding provides 0.dp) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = customTypography,
+            typography = Typography,
+            shapes = PeaceShapes,
             content = content
         )
     }
