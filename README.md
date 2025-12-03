@@ -2,7 +2,7 @@
 > *A Comprehensive, AI-Powered Productivity Suite*
 
 <div align="center">
-  <img src="app/src/main/res/drawable/app_logo.png" alt="Peace App Logo" width="120" height="120" />
+  <img src="app/src/main/res/drawable/app_icon.jpg" alt="Peace App Logo" width="120" height="120" />
   <br/>
   <br/>
   <p>
