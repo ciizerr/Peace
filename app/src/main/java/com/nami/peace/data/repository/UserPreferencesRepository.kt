@@ -19,6 +19,7 @@ class UserPreferencesRepository @Inject constructor(
     private val BLUR_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("blur_enabled")
     private val SHADOWS_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("shadows_enabled")
     private val BLUR_STRENGTH = androidx.datastore.preferences.core.floatPreferencesKey("blur_strength")
+    private val BLUR_TINT_ALPHA = androidx.datastore.preferences.core.floatPreferencesKey("blur_tint_alpha")
     private val SHADOW_STYLE = androidx.datastore.preferences.core.stringPreferencesKey("shadow_style")
 
     val blurEnabled: Flow<Boolean> = dataStore.data
@@ -34,6 +35,11 @@ class UserPreferencesRepository @Inject constructor(
     val blurStrength: Flow<Float> = dataStore.data
         .map { preferences ->
             preferences[BLUR_STRENGTH] ?: 12f
+        }
+
+    val blurTintAlpha: Flow<Float> = dataStore.data
+        .map { preferences ->
+            preferences[BLUR_TINT_ALPHA] ?: 0.5f
         }
 
     val shadowStyle: Flow<String> = dataStore.data
@@ -56,6 +62,12 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setBlurStrength(strength: Float) {
         dataStore.edit { preferences ->
             preferences[BLUR_STRENGTH] = strength
+        }
+    }
+
+    suspend fun setBlurTintAlpha(alpha: Float) {
+        dataStore.edit { preferences ->
+            preferences[BLUR_TINT_ALPHA] = alpha
         }
     }
 

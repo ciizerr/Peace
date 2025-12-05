@@ -24,6 +24,9 @@ class SettingsViewModel @Inject constructor(
     val blurStrength: StateFlow<Float> = userPreferencesRepository.blurStrength
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 12f)
 
+    val blurTintAlpha: StateFlow<Float> = userPreferencesRepository.blurTintAlpha
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.5f)
+
     val shadowStyle: StateFlow<String> = userPreferencesRepository.shadowStyle
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Subtle")
 
@@ -42,6 +45,12 @@ class SettingsViewModel @Inject constructor(
     fun setBlurStrength(strength: Float) {
         viewModelScope.launch {
             userPreferencesRepository.setBlurStrength(strength)
+        }
+    }
+
+    fun setBlurTintAlpha(alpha: Float) {
+        viewModelScope.launch {
+            userPreferencesRepository.setBlurTintAlpha(alpha)
         }
     }
 
