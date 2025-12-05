@@ -74,6 +74,10 @@ Most reminder apps are stressful lists. **Peace** is designed around the philoso
 
 We believe in calm collaboration. If you have ideas to make Peace even more serene, feel free to open an issue or submit a pull request.
 
+## 🙏 Acknowledgments
+
+- **[Haze](https://github.com/chrisbanes/haze)** by [Chris Banes](https://github.com/chrisbanes): Used for the beautiful glassmorphism background blur effects.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
