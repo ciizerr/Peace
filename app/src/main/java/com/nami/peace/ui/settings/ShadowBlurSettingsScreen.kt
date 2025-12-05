@@ -147,7 +147,7 @@ fun ShadowBlurSettingsScreen(
                         Slider(
                             value = blurTintAlpha,
                             onValueChange = { viewModel.setBlurTintAlpha(it) },
-                            valueRange = 0f..1f,
+                            valueRange = 0f..0.5f,
                             steps = 19 // 5% increments
                         )
                         Text(
