@@ -1,5 +1,11 @@
 package com.nami.peace.ui.main
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -45,10 +51,12 @@ fun MainScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { MainTab.values().size })
     val scope = rememberCoroutineScope()
+    val hazeState = remember { HazeState() }
     
     val blurEnabled by settingsViewModel.blurEnabled.collectAsState()
     val shadowsEnabled by settingsViewModel.shadowsEnabled.collectAsState()
     val blurStrength by settingsViewModel.blurStrength.collectAsState()
+    val blurTintAlpha by settingsViewModel.blurTintAlpha.collectAsState()
     
     // Bottom Bar Visibility Logic
     var isBottomBarVisible by remember { mutableStateOf(true) }
@@ -81,7 +89,8 @@ fun MainScreen(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(nestedScrollConnection),
+        modifier = Modifier
+            .nestedScroll(nestedScrollConnection),
         bottomBar = {
             Box(contentAlignment = Alignment.BottomCenter) {
                 // Main Bottom Bar
@@ -91,7 +100,10 @@ fun MainScreen(
                         scope.launch { pagerState.animateScrollToPage(tab.ordinal) }
                     },
                     isVisible = isBottomBarVisible && selectedTab != MainTab.Settings,
+                    hazeState = hazeState,
                     blurEnabled = blurEnabled,
+                    blurStrength = blurStrength,
+                    blurTintAlpha = blurTintAlpha,
                     shadowsEnabled = shadowsEnabled
                 )
                 
@@ -102,7 +114,10 @@ fun MainScreen(
                         selectedCategory = category
                     },
                     isVisible = isBottomBarVisible && selectedTab == MainTab.Settings,
+                    hazeState = hazeState,
                     blurEnabled = blurEnabled,
+                    blurStrength = blurStrength,
+                    blurTintAlpha = blurTintAlpha,
                     shadowsEnabled = shadowsEnabled
                 )
             }
@@ -112,6 +127,7 @@ fun MainScreen(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
+                .haze(state = hazeState)
                 .padding(bottom = 0.dp), // We handle padding internally or let content go behind
             userScrollEnabled = selectedTab != MainTab.Settings // Disable swipe out of Settings if needed, or allow it.
             // Requirement: "Disable swipe in Settings-subscreen category pages"

@@ -41,6 +41,7 @@ fun ShadowBlurSettingsScreen(
     val blurEnabled by viewModel.blurEnabled.collectAsState()
     val shadowsEnabled by viewModel.shadowsEnabled.collectAsState()
     val blurStrength by viewModel.blurStrength.collectAsState()
+    val blurTintAlpha by viewModel.blurTintAlpha.collectAsState()
     val shadowStyle by viewModel.shadowStyle.collectAsState()
     val isBlurSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
@@ -125,8 +126,32 @@ fun ShadowBlurSettingsScreen(
                             valueRange = 5f..30f,
                             steps = 24
                         )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Tint Opacity",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "${(blurTintAlpha * 100).toInt()}%",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Slider(
+                            value = blurTintAlpha,
+                            onValueChange = { viewModel.setBlurTintAlpha(it) },
+                            valueRange = 0f..1f,
+                            steps = 19 // 5% increments
+                        )
                         Text(
-                            text = "Adjusts the frosted glass blur intensity",
+                            text = "Adjusts the opacity of the glass tint",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )

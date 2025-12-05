@@ -50,6 +50,9 @@ import com.nami.peace.ui.theme.AccentBlue
 import com.nami.peace.ui.theme.GlassyBlack
 import com.nami.peace.ui.theme.GlassyWhite
 import com.nami.peace.ui.theme.SoftShadow
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeChild
 
 enum class MainTab(val title: String, val icon: ImageVector, val route: String) {
     Dashboard("Dashboard", Icons.Filled.Dashboard, "dashboard"),
@@ -71,52 +74,56 @@ fun FloatingBottomBar(
     selectedTab: MainTab,
     onTabSelected: (MainTab) -> Unit,
     isVisible: Boolean,
+    hazeState: HazeState? = null,
     blurEnabled: Boolean = true,
-    shadowsEnabled: Boolean = true,
-    modifier: Modifier = Modifier
+    blurStrength: Float = 12f,
+    blurTintAlpha: Float = 0.5f,
+    modifier: Modifier = Modifier,
+    shadowsEnabled: Boolean = true
 ) {
     AnimatedVisibility(
         visible = isVisible,
         enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(200)),
-        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(200)),
-        modifier = modifier
+        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(200))
     ) {
         val shape = RoundedCornerShape(24.dp)
         val shadowElevation = if (shadowsEnabled) 8.dp else 0.dp
         val isDark = isSystemInDarkTheme()
         
+        // Z-Index Fix: Root Box contains content
         Box(
             modifier = Modifier
                 .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
                 .shadow(elevation = shadowElevation, shape = shape, spotColor = SoftShadow)
                 .height(72.dp)
                 .fillMaxWidth()
+                .then(modifier)
         ) {
-            // Background Layer with Blur Effect (blurs content behind)
+            // Background Layer: Applies Haze OR Fallback Color
+            // This is the first child, so it renders BEHIND the Row (zIndex 0 by default)
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .clip(shape)
-                    .graphicsLayer {
-                        if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            // Apply blur to background layer only
-                            val blurEffect = android.graphics.RenderEffect.createBlurEffect(
-                                25f, 25f,
-                                android.graphics.Shader.TileMode.CLAMP
+                    .then(
+                        if (blurEnabled && hazeState != null) {
+                            Modifier.hazeChild(
+                                state = hazeState,
+                                shape = shape,
+                                style = HazeStyle(
+                                    blurRadius = blurStrength.dp,
+                                    tint = if (isDark) Color.Black.copy(alpha = blurTintAlpha) else Color.White.copy(alpha = blurTintAlpha)
+                                )
                             )
-                            renderEffect = blurEffect.asComposeRenderEffect()
-                        }
-                        // Set alpha for translucency
-                        alpha = if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            0.7f // 70% opacity for blur mode
                         } else {
-                            0.95f // 95% opacity for fallback
+                            Modifier.background(
+                                (if (isDark) GlassyBlack else GlassyWhite).copy(alpha = 0.9f)
+                            )
                         }
-                    }
-                    .background(if (isDark) GlassyBlack else GlassyWhite)
+                    )
             )
             
-            // Foreground Content Layer (Sharp icons and text - NO blur applied)
+            // Foreground Content Layer
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -166,9 +173,12 @@ fun CategoryCarouselBar(
     selectedCategory: SettingsCategory,
     onCategorySelected: (SettingsCategory) -> Unit,
     isVisible: Boolean,
+    hazeState: HazeState? = null,
     blurEnabled: Boolean = true,
-    shadowsEnabled: Boolean = true,
-    modifier: Modifier = Modifier
+    blurStrength: Float = 12f,
+    blurTintAlpha: Float = 0.5f,
+    modifier: Modifier = Modifier,
+    shadowsEnabled: Boolean = true
 ) {
     AnimatedVisibility(
         visible = isVisible,
@@ -187,28 +197,28 @@ fun CategoryCarouselBar(
                 .height(72.dp)
                 .fillMaxWidth()
         ) {
-            // Background Layer with Blur Effect (blurs content behind)
+            // Background Layer: Applies Haze OR Fallback Color
+            // This is the first child, so it renders BEHIND the Row (zIndex 0 by default)
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .clip(shape)
-                    .graphicsLayer {
-                        if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            // Apply blur to background layer only
-                            val blurEffect = android.graphics.RenderEffect.createBlurEffect(
-                                25f, 25f,
-                                android.graphics.Shader.TileMode.CLAMP
+                    .then(
+                        if (blurEnabled && hazeState != null) {
+                            Modifier.hazeChild(
+                                state = hazeState,
+                                shape = shape,
+                                style = HazeStyle(
+                                    blurRadius = blurStrength.dp,
+                                    tint = if (isDark) Color.Black.copy(alpha = blurTintAlpha) else Color.White.copy(alpha = blurTintAlpha)
+                                )
                             )
-                            renderEffect = blurEffect.asComposeRenderEffect()
-                        }
-                        // Set alpha for translucency
-                        alpha = if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            0.7f // 70% opacity for blur mode
                         } else {
-                            0.95f // 95% opacity for fallback
+                            Modifier.background(
+                                (if (isDark) GlassyBlack else GlassyWhite).copy(alpha = 0.9f)
+                            )
                         }
-                    }
-                    .background(if (isDark) GlassyBlack else GlassyWhite)
+                    )
             )
             
             // Foreground Content Layer (Sharp text - NO blur applied)
