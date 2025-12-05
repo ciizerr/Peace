@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun PlaceholderScreen(
-    title: String = "404 — Not Implemented Yet",
-    subtitle: String = "This screen is currently a placeholder. You can go back to Home or request this feature.",
+    title: String = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_title),
+    subtitle: String = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_subtitle),
     onBack: (() -> Unit)? = null,
     onRequestFeature: (() -> Unit)? = null
 ) {
@@ -105,12 +105,12 @@ fun PlaceholderScreen(
             ) {
                 if (onBack != null) {
                     Button(onClick = onBack) {
-                        Text("Go Home")
+                        Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.action_go_home))
                     }
                 }
                 
                 OutlinedButton(onClick = { onRequestFeature?.invoke() }) {
-                    Text("Request Feature")
+                        Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.action_request_feature))
                 }
             }
         }

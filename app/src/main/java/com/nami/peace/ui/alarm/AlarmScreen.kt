@@ -44,7 +44,7 @@ fun AlarmScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "It's time to",
+                    text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.alarm_time_to),
                     style = MaterialTheme.typography.headlineSmall,
                     color = White.copy(alpha = 0.8f)
                 )
@@ -60,14 +60,14 @@ fun AlarmScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = White, contentColor = AccentRed),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Mark Done")
+                    Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.alarm_mark_done))
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 TextButton(
                     onClick = { viewModel.snooze(hero) },
                     colors = ButtonDefaults.textButtonColors(contentColor = White.copy(alpha = 0.7f))
                 ) {
-                    Text("Snooze (Micro-Loop)")
+                    Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.alarm_snooze_micro))
                 }
             }
         }
@@ -80,7 +80,7 @@ fun AlarmScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Also due:",
+                        text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.alarm_also_due),
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )

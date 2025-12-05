@@ -33,10 +33,10 @@ fun HistoryDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("History Detail") },
+                title = { Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.back))
                     }
                 }
             )
@@ -86,12 +86,12 @@ fun HistoryDetailContent(item: HistoryEntity) {
         Divider()
 
         // Details Grid
-        DetailRow("Completed On", formatDate(item.completedTime))
-        DetailRow("Priority", item.priority.name)
-        DetailRow("Category", item.category.name)
+        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_completed_on), formatDate(item.completedTime))
+        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.priority), item.priority.name)
+        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.category), item.category.name)
         
         item.nagInfo?.let {
-            DetailRow("Nag Stats", it)
+            DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_nag_stats), it)
         }
     }
 }

@@ -115,4 +115,70 @@
     <string name="preset_30m">30m</string>
     <string name="preset_1h">1h</string>
     <string name="preset_2h">2h</string>
+    <!-- Tab Titles -->
+    <string name="tab_dashboard">Dashboard</string>
+    <string name="tab_alarms">Alarms</string>
+    <string name="tab_tasks">Tasks</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Settings Categories -->
+    <string name="settings_overview">Overview</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_nav_style">Navigation Style</string>
+    <string name="settings_shadow_blur">Shadows &amp; Blur</string>
+    <string name="settings_about">About</string>
+
+    <!-- Shadow & Blur Settings -->
+    <string name="settings_blur_effect_title">Blur Effect</string>
+    <string name="settings_enable_blur">Enable Blur (Android 12+)</string>
+    <string name="settings_blur_supported_desc">Frosted glass effect behind navigation bars</string>
+    <string name="settings_blur_unsupported_desc">Requires Android 12+. Using semi-transparent fallback.</string>
+    <string name="settings_blur_strength">Blur Strength</string>
+    <string name="settings_tint_opacity">Tint Opacity</string>
+    <string name="settings_tint_opacity_desc">Adjusts the opacity of the glass tint</string>
+    <string name="settings_shadow_style_title">Shadow Style</string>
+    <string name="settings_enable_shadows">Enable Shadows</string>
+    <string name="settings_shadow_intensity">Intensity</string>
+    <string name="shadow_none">None</string>
+    <string name="shadow_subtle">Subtle</string>
+    <string name="shadow_medium">Medium</string>
+    <string name="shadow_heavy">Heavy</string>
+
+    <!-- General Settings -->
+    <string name="settings_appearance_title">Appearance Settings</string>
+    <string name="settings_appearance_subtitle">Customize the look and feel of the app.</string>
+    <string name="settings_nav_style_title">Navigation Style</string>
+    <string name="settings_nav_style_subtitle">Choose your preferred navigation bar style.</string>
+    <string name="settings_about_title">About Peace</string>
+    <string name="settings_back_to_main">Back to Settings</string>
+    <string name="settings_data_storage">Data &amp; Storage</string>
+    
+    <!-- Details Screens -->
+    <string name="history_detail_title">History Detail</string>
+    <string name="history_completed_on">Completed On</string>
+    <string name="history_nag_stats">Nag Stats</string>
+    <string name="reminder_details_title">Reminder Details</string>
+    <string name="action_edit">Edit</string>
+    <string name="reminder_original_time">Original Time</string>
+    <string name="recurrence_one_time_label">One Time</string>
+    <string name="recurrence_weekly_prefix">Weekly on</string>
+    <string name="status_enabled">Enabled</string>
+    <string name="status_disabled">Disabled</string>
+    <string name="reminder_sequence_progress">Sequence Progress</string>
+    <string name="rep_prefix">Rep</string>
+    <string name="status_next">Next</string>
+    <string name="status_upcoming">Upcoming</string>
+    <string name="reminder_not_found">Reminder not found</string>
+
+    <!-- Alarm Screen -->
+    <string name="alarm_time_to">It\'s time to</string>
+    <string name="alarm_mark_done">Mark Done</string>
+    <string name="alarm_snooze_micro">Snooze (Micro-Loop)</string>
+    <string name="alarm_also_due">Also due:</string>
+
+    <!-- Placeholder Screen -->
+    <string name="placeholder_title">404 — Not Implemented Yet</string>
+    <string name="placeholder_subtitle">This screen is currently a placeholder. You can go back to Home or request this feature.</string>
+    <string name="action_go_home">Go Home</string>
+    <string name="action_request_feature">Request Feature</string>
 </resources>

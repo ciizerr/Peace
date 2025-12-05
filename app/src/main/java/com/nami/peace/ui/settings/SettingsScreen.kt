@@ -99,7 +99,7 @@ fun SettingsCategoryItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = category.title,
+                text = stringResource(category.titleRes),
                 style = MaterialTheme.typography.bodyLarge
             )
             Icon(

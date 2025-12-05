@@ -89,7 +89,7 @@ fun MainScreen(
                 FloatingBottomBar(
                     selectedTab = selectedTab,
                     onTabSelected = { tab ->
-                        scope.launch { pagerState.animateScrollToPage(tab.ordinal) }
+                        scope.launch { pagerState.animateScrollToPage(tab.ordinal, animationSpec = tween(300)) }
                     },
                     isVisible = isBottomBarVisible && selectedTab != MainTab.Settings,
                     hazeState = hazeState,

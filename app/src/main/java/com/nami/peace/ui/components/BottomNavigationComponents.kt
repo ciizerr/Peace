@@ -3,6 +3,7 @@ package com.nami.peace.ui.components
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -50,21 +52,24 @@ import com.nami.peace.ui.theme.GlassyWhite
 import com.nami.peace.ui.theme.SoftShadow
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.nami.peace.R
 import dev.chrisbanes.haze.hazeChild
 
-enum class MainTab(val title: String, val icon: ImageVector, val route: String) {
-    Dashboard("Dashboard", Icons.Filled.Dashboard, "dashboard"),
-    Alarms("Alarms", Icons.Filled.Notifications, "alarms"),
-    Tasks("Tasks", Icons.Filled.DoneAll, "tasks"),
-    Settings("Settings", Icons.Filled.Settings, "settings")
+enum class MainTab(@StringRes val titleRes: Int, val icon: ImageVector, val route: String) {
+    Dashboard(R.string.tab_dashboard, Icons.Filled.Dashboard, "dashboard"),
+    Alarms(R.string.tab_alarms, Icons.Filled.Notifications, "alarms"),
+    Tasks(R.string.tab_tasks, Icons.Filled.DoneAll, "tasks"),
+    Settings(R.string.tab_settings, Icons.Filled.Settings, "settings")
 }
 
-enum class SettingsCategory(val title: String, val route: String) {
-    Overview("Overview", "settings_overview"),
-    Appearance("Appearance", "settings_appearance"),
-    NavStyle("Navigation Style", "settings_nav_style"),
-    ShadowBlur("Shadows & Blur", "settings_shadow_blur"),
-    About("About", "settings_about")
+enum class SettingsCategory(@StringRes val titleRes: Int, val route: String) {
+    Overview(R.string.settings_overview, "settings_overview"),
+    Appearance(R.string.settings_appearance, "settings_appearance"),
+    NavStyle(R.string.settings_nav_style, "settings_nav_style"),
+    ShadowBlur(R.string.settings_shadow_blur, "settings_shadow_blur"),
+    About(R.string.settings_about, "settings_about")
 }
 
 @Composable
@@ -133,32 +138,56 @@ fun FloatingBottomBar(
                     val isSelected = selectedTab == tab
                     val interactionSource = remember { MutableInteractionSource() }
                     
+                    val tabWeight by animateFloatAsState(
+                        targetValue = if (isSelected) 2f else 1f,
+                        label = "weight",
+                        animationSpec = tween(300)
+                    )
+                    
                     Box(
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(tabWeight)
                             .height(72.dp)
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null,
-                                onClick = { onTabSelected(tab) }
-                            ),
+                            .padding(vertical = 12.dp, horizontal = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isSelected) {
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .clip(CircleShape)
-                                    .background(AccentBlue.copy(alpha = 0.1f))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(if (isSelected) AccentBlue.copy(alpha = 0.1f) else Color.Transparent)
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null,
+                                    onClick = { onTabSelected(tab) }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = tab.icon,
+                                contentDescription = stringResource(tab.titleRes),
+                                tint = if (isSelected) AccentBlue else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                modifier = Modifier.size(24.dp)
                             )
+                            
+                            AnimatedVisibility(
+                                visible = isSelected,
+                                enter = androidx.compose.animation.fadeIn(tween(150, delayMillis = 150)) + androidx.compose.animation.expandHorizontally(tween(300)),
+                                exit = androidx.compose.animation.fadeOut(tween(150)) + androidx.compose.animation.shrinkHorizontally(tween(300))
+                            ) {
+                                Row {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = stringResource(tab.titleRes),
+                                        color = AccentBlue,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
                         }
-                        
-                        Icon(
-                            imageVector = tab.icon,
-                            contentDescription = tab.title,
-                            tint = if (isSelected) AccentBlue else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.size(24.dp)
-                        )
                     }
                 }
             }
@@ -238,7 +267,7 @@ fun CategoryCarouselBar(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = category.title,
+                            text = stringResource(category.titleRes),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) AccentBlue else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)

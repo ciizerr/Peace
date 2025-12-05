@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.nami.peace.ui.components.PlaceholderScreen
 import com.nami.peace.ui.components.SettingsCategory
 
@@ -25,13 +26,13 @@ fun SettingsContent(
             onNavigateToCategory = onNavigateToCategory
         )
         SettingsCategory.Appearance -> PlaceholderScreen(
-            title = "Appearance Settings",
-            subtitle = "Customize the look and feel of the app.",
+            title = stringResource(com.nami.peace.R.string.settings_appearance_title),
+            subtitle = stringResource(com.nami.peace.R.string.settings_appearance_subtitle),
             onBack = { onNavigateToCategory(SettingsCategory.Overview) }
         )
         SettingsCategory.NavStyle -> PlaceholderScreen(
-            title = "Navigation Style",
-            subtitle = "Choose your preferred navigation bar style.",
+            title = stringResource(com.nami.peace.R.string.settings_nav_style_title),
+            subtitle = stringResource(com.nami.peace.R.string.settings_nav_style_subtitle),
             onBack = { onNavigateToCategory(SettingsCategory.Overview) }
         )
         SettingsCategory.ShadowBlur -> ShadowBlurSettingsScreen(
@@ -46,14 +47,14 @@ fun SettingsContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
                 ) {
-                    Text("About Peace", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
+                    Text(stringResource(com.nami.peace.R.string.settings_about_title), style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
                     androidx.compose.material3.Button(onClick = onNavigateToHistory) {
-                        Text("View History Log")
+                        Text(stringResource(com.nami.peace.R.string.view_history_log))
                     }
                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
                     androidx.compose.material3.OutlinedButton(onClick = { onNavigateToCategory(SettingsCategory.Overview) }) {
-                        Text("Back to Settings")
+                        Text(stringResource(com.nami.peace.R.string.settings_back_to_main))
                     }
                 }
             }
