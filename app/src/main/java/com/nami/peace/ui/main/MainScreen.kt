@@ -48,6 +48,7 @@ fun MainScreen(
     
     val blurEnabled by settingsViewModel.blurEnabled.collectAsState()
     val shadowsEnabled by settingsViewModel.shadowsEnabled.collectAsState()
+    val blurStrength by settingsViewModel.blurStrength.collectAsState()
     
     // Bottom Bar Visibility Logic
     var isBottomBarVisible by remember { mutableStateOf(true) }

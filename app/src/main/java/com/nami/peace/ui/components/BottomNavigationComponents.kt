@@ -83,6 +83,7 @@ fun FloatingBottomBar(
     ) {
         val shape = RoundedCornerShape(24.dp)
         val shadowElevation = if (shadowsEnabled) 8.dp else 0.dp
+        val isDark = isSystemInDarkTheme()
         
         Box(
             modifier = Modifier
@@ -91,33 +92,35 @@ fun FloatingBottomBar(
                 .height(72.dp)
                 .fillMaxWidth()
         ) {
-            // Background Layer (Blurred)
+            // Background Layer with Blur Effect (blurs content behind)
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .clip(shape)
                     .graphicsLayer {
                         if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            // Apply blur to background layer only
                             val blurEffect = android.graphics.RenderEffect.createBlurEffect(
-                                30f,
-                                30f,
+                                25f, 25f,
                                 android.graphics.Shader.TileMode.CLAMP
                             )
                             renderEffect = blurEffect.asComposeRenderEffect()
-                            alpha = 0.80f
-                        } else {
-                            alpha = 0.95f
                         }
-                        this.shape = shape
-                        clip = true
+                        // Set alpha for translucency
+                        alpha = if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            0.7f // 70% opacity for blur mode
+                        } else {
+                            0.95f // 95% opacity for fallback
+                        }
                     }
-                    .background(if (isSystemInDarkTheme()) GlassyBlack else GlassyWhite)
+                    .background(if (isDark) GlassyBlack else GlassyWhite)
             )
-
-            // Content Layer (Sharp)
+            
+            // Foreground Content Layer (Sharp icons and text - NO blur applied)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .zIndex(1f),
+                    .zIndex(1f), // Ensure content is above background
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -175,6 +178,7 @@ fun CategoryCarouselBar(
     ) {
         val shape = RoundedCornerShape(24.dp)
         val shadowElevation = if (shadowsEnabled) 8.dp else 0.dp
+        val isDark = isSystemInDarkTheme()
         
         Box(
             modifier = Modifier
@@ -183,31 +187,35 @@ fun CategoryCarouselBar(
                 .height(72.dp)
                 .fillMaxWidth()
         ) {
-            // Background Layer (Blurred)
+            // Background Layer with Blur Effect (blurs content behind)
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .clip(shape)
                     .graphicsLayer {
                         if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            // Apply blur to background layer only
                             val blurEffect = android.graphics.RenderEffect.createBlurEffect(
-                                30f,
-                                30f,
+                                25f, 25f,
                                 android.graphics.Shader.TileMode.CLAMP
                             )
                             renderEffect = blurEffect.asComposeRenderEffect()
-                            alpha = 0.80f
-                        } else {
-                            alpha = 0.95f
                         }
-                        this.shape = shape
-                        clip = true
+                        // Set alpha for translucency
+                        alpha = if (blurEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            0.7f // 70% opacity for blur mode
+                        } else {
+                            0.95f // 95% opacity for fallback
+                        }
                     }
-                    .background(if (isSystemInDarkTheme()) GlassyBlack else GlassyWhite)
+                    .background(if (isDark) GlassyBlack else GlassyWhite)
             )
-
-            // Content Layer (Sharp)
+            
+            // Foreground Content Layer (Sharp text - NO blur applied)
             LazyRow(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .zIndex(1f), // Ensure content is above background
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {

@@ -78,16 +78,22 @@ fun ShadowBlurSettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Enable Background Blur",
+                            text = "Enable Blur (Android 12+)",
                             style = MaterialTheme.typography.bodyLarge
                         )
-                        if (!isBlurSupported) {
-                            Text(
-                                text = "Requires Android 12L+. Using fallback.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
+                        Text(
+                            text = if (isBlurSupported) {
+                                "Frosted glass effect behind navigation bars"
+                            } else {
+                                "Requires Android 12+. Using semi-transparent fallback."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isBlurSupported) {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            }
+                        )
                     }
                     Switch(
                         checked = blurEnabled && isBlurSupported,
@@ -98,15 +104,31 @@ fun ShadowBlurSettingsScreen(
 
                 if (blurEnabled && isBlurSupported) {
                     Column {
-                        Text(
-                            text = "Blur Strength: ${blurStrength.toInt()}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Blur Strength",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "${blurStrength.toInt()}px",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         Slider(
                             value = blurStrength,
                             onValueChange = { viewModel.setBlurStrength(it) },
-                            valueRange = 0f..30f,
-                            steps = 29
+                            valueRange = 5f..30f,
+                            steps = 24
+                        )
+                        Text(
+                            text = "Adjusts the frosted glass blur intensity",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     }
                 }
