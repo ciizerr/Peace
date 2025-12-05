@@ -43,8 +43,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.zIndex
 import com.nami.peace.ui.theme.AccentBlue
 import com.nami.peace.ui.theme.GlassyBlack
@@ -210,7 +208,7 @@ fun CategoryCarouselBar(
                                 shape = shape,
                                 style = HazeStyle(
                                     blurRadius = blurStrength.dp,
-                                    tint = if (isDark) Color.Black.copy(alpha = blurTintAlpha) else Color.White.copy(alpha = blurTintAlpha)
+                                    tint = if (isDark) GlassyBlack.copy(alpha = blurTintAlpha) else GlassyWhite.copy(alpha = blurTintAlpha)
                                 )
                             )
                         } else {

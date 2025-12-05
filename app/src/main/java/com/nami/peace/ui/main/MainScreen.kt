@@ -74,19 +74,11 @@ fun MainScreen(
     }
 
     // Settings Category State
-    var selectedCategory by remember { mutableStateOf(SettingsCategory.Overview) }
     val settingsPagerState = rememberPagerState(pageCount = { SettingsCategory.values().size })
+    val selectedCategory by remember { derivedStateOf { SettingsCategory.values()[settingsPagerState.currentPage] } }
 
     // Sync Main Tab Selection
     val selectedTab by remember { derivedStateOf { MainTab.values()[pagerState.currentPage] } }
-    
-    // Sync Settings Category Selection
-    LaunchedEffect(settingsPagerState.currentPage) {
-        selectedCategory = SettingsCategory.values()[settingsPagerState.currentPage]
-    }
-    LaunchedEffect(selectedCategory) {
-        settingsPagerState.animateScrollToPage(selectedCategory.ordinal)
-    }
 
     Scaffold(
         modifier = Modifier
@@ -107,11 +99,10 @@ fun MainScreen(
                     shadowsEnabled = shadowsEnabled
                 )
                 
-                // Settings Category Bar
                 CategoryCarouselBar(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { category ->
-                        selectedCategory = category
+                        scope.launch { settingsPagerState.animateScrollToPage(category.ordinal) }
                     },
                     isVisible = isBottomBarVisible && selectedTab == MainTab.Settings,
                     hazeState = hazeState,
