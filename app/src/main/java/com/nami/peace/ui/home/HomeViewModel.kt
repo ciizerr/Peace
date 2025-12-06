@@ -83,6 +83,15 @@ class HomeViewModel @Inject constructor(
             alarmScheduler.cancel(reminder)
         }
     }
+
+    fun deleteReminders(reminders: List<Reminder>) {
+        viewModelScope.launch {
+            reminders.forEach { reminder ->
+                repository.deleteReminder(reminder)
+                alarmScheduler.cancel(reminder)
+            }
+        }
+    }
 }
 
 data class HomeUiState(

@@ -88,6 +88,8 @@
     <string name="no_history_yet">No history yet.</string>
     <string name="delete_history_title">Delete History?</string>
     <string name="delete_history_message">This action cannot be undone.</string>
+    <string name="delete_bulk_title">Delete Reminders?</string>
+    <string name="delete_bulk_message">Delete %d selected reminders?</string>
     <string name="completed_format">Completed: %s</string>
     
     <!-- Content Descriptions -->

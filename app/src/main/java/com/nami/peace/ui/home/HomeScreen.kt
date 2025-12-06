@@ -33,8 +33,21 @@ import com.nami.peace.R
 import com.nami.peace.ui.components.GlassyTopAppBar
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 
-@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+import androidx.compose.ui.draw.clip
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun HomeScreen(
     onAddReminder: () -> Unit,
@@ -50,6 +63,51 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val nextUp = uiState.nextUp
     val sections = uiState.sections
+    
+    // Selection Mode State
+    var selectedIds by remember { mutableStateOf(emptySet<Int>()) }
+    val isSelectionMode = selectedIds.isNotEmpty()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Toggle Selection Helper
+    val toggleSelection: (Int) -> Unit = { id ->
+        selectedIds = if (selectedIds.contains(id)) {
+            selectedIds - id
+        } else {
+            selectedIds + id
+        }
+    }
+
+    // Exit Selection Mode on Back Press
+    BackHandler(enabled = isSelectionMode) {
+        selectedIds = emptySet()
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.delete_bulk_title)) },
+            text = { Text(stringResource(R.string.delete_bulk_message, selectedIds.size)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val allReminders = (uiState.nextUp?.let { listOf(it) } ?: emptyList()) + uiState.sections.values.flatten()
+                        val toDelete = allReminders.filter { selectedIds.contains(it.id) }
+                        viewModel.deleteReminders(toDelete)
+                        selectedIds = emptySet()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -61,8 +119,10 @@ fun HomeScreen(
                     ) 
                 },
                 actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.cd_settings))
+                    if (!isSelectionMode) {
+                        IconButton(onClick = onNavigateToSettings) {
+                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.cd_settings))
+                        }
                     }
                 },
                 hazeState = hazeState,
@@ -72,13 +132,35 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
+            val fabContainerColor by animateColorAsState(
+                if (isSelectionMode) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            )
+            val fabContentColor by animateColorAsState(
+                if (isSelectionMode) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary
+            )
+
             FloatingActionButton(
-                onClick = onAddReminder,
+                onClick = { 
+                    if (isSelectionMode) {
+                        showDeleteDialog = true
+                    } else {
+                        onAddReminder()
+                    }
+                },
                 modifier = Modifier.padding(bottom = bottomPadding),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = fabContainerColor,
+                contentColor = fabContentColor
             ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_reminder))
+                AnimatedContent(
+                    targetState = isSelectionMode,
+                    label = "fab_icon"
+                ) { selectionMode ->
+                    if (selectionMode) {
+                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete))
+                    } else {
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.cd_add_reminder))
+                    }
+                }
             }
         }
     ) { padding ->
@@ -117,7 +199,15 @@ fun HomeScreen(
                     )
                     HeroReminderCard(
                         reminder = nextUp,
-                        onClick = { onEditReminder(nextUp.id) }
+                        isSelected = selectedIds.contains(nextUp.id),
+                        onLongClick = { toggleSelection(nextUp.id) },
+                        onClick = { 
+                            if (isSelectionMode) {
+                                toggleSelection(nextUp.id)
+                            } else {
+                                onEditReminder(nextUp.id) 
+                            }
+                        }
                     )
                 }
             }
@@ -173,8 +263,16 @@ fun HomeScreen(
                             UpcomingReminderCard(
                                 reminder = reminder,
                                 isNextUp = (reminder.id == nextUp?.id),
+                                isSelected = selectedIds.contains(reminder.id),
                                 onToggle = { viewModel.toggleReminder(reminder) },
-                                onClick = { onEditReminder(reminder.id) }
+                                onLongClick = { toggleSelection(reminder.id) },
+                                onClick = { 
+                                    if (isSelectionMode) {
+                                        toggleSelection(reminder.id)
+                                    } else {
+                                        onEditReminder(reminder.id) 
+                                    }
+                                }
                             )
                         },
                         enableDismissFromStartToEnd = false
@@ -208,24 +306,39 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HeroReminderCard(
     reminder: Reminder,
+    isSelected: Boolean = false,
+    onLongClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
-    val gradientColors = when (reminder.priority) {
-        PriorityLevel.HIGH -> listOf(Color(0xFFEF5350), Color(0xFFB71C1C)) // Red
-        PriorityLevel.MEDIUM -> listOf(Color(0xFF42A5F5), Color(0xFF1565C0)) // Blue
-        PriorityLevel.LOW -> listOf(Color(0xFF66BB6A), Color(0xFF2E7D32)) // Green
+    val gradientColors = if (isSelected) {
+        listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), MaterialTheme.colorScheme.primary)
+    } else {
+        when (reminder.priority) {
+            PriorityLevel.HIGH -> listOf(Color(0xFFEF5350), Color(0xFFB71C1C)) // Red
+            PriorityLevel.MEDIUM -> listOf(Color(0xFF42A5F5), Color(0xFF1565C0)) // Blue
+            PriorityLevel.LOW -> listOf(Color(0xFF66BB6A), Color(0xFF2E7D32)) // Green
+        }
     }
+
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+    val borderWidth = if (isSelected) 3.dp else 0.dp
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(180.dp)
-            .clickable(onClick = onClick),
+            .clip(RoundedCornerShape(24.dp))
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        border = androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
     ) {
         Box(
             modifier = Modifier
@@ -274,11 +387,14 @@ fun HeroReminderCard(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun UpcomingReminderCard(
     reminder: Reminder,
     isNextUp: Boolean = false,
+    isSelected: Boolean = false,
     onToggle: (Boolean) -> Unit,
+    onLongClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
     val stripColor = when (reminder.priority) {
@@ -287,11 +403,24 @@ fun UpcomingReminderCard(
         PriorityLevel.LOW -> Color(0xFF66BB6A)
     }
 
+    val containerColor = if (isSelected) 
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) 
+    else 
+        MaterialTheme.colorScheme.surfaceVariant
+
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+    val borderWidth = if (isSelected) 2.dp else 0.dp
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            .clip(CardDefaults.shape)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
