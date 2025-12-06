@@ -20,23 +20,18 @@ fun SettingsContent(
     onNavigateToCategory: (SettingsCategory) -> Unit
 ) {
     when (category) {
-        SettingsCategory.Overview -> SettingsScreen(
-            onNavigateUp = onNavigateToDashboard,
-            onNavigateToHistory = onNavigateToHistory,
-            onNavigateToCategory = onNavigateToCategory
-        )
         SettingsCategory.Appearance -> PlaceholderScreen(
             title = stringResource(com.nami.peace.R.string.settings_appearance_title),
             subtitle = stringResource(com.nami.peace.R.string.settings_appearance_subtitle),
-            onBack = { onNavigateToCategory(SettingsCategory.Overview) }
+            onBack = onNavigateToDashboard
         )
         SettingsCategory.NavStyle -> PlaceholderScreen(
             title = stringResource(com.nami.peace.R.string.settings_nav_style_title),
             subtitle = stringResource(com.nami.peace.R.string.settings_nav_style_subtitle),
-            onBack = { onNavigateToCategory(SettingsCategory.Overview) }
+            onBack = onNavigateToDashboard
         )
         SettingsCategory.ShadowBlur -> ShadowBlurSettingsScreen(
-            onBack = { onNavigateToCategory(SettingsCategory.Overview) }
+            onBack = onNavigateToDashboard
         )
         SettingsCategory.About -> {
             Box(
@@ -53,7 +48,7 @@ fun SettingsContent(
                         Text(stringResource(com.nami.peace.R.string.view_history_log))
                     }
                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
-                    androidx.compose.material3.OutlinedButton(onClick = { onNavigateToCategory(SettingsCategory.Overview) }) {
+                    androidx.compose.material3.OutlinedButton(onClick = onNavigateToDashboard) {
                         Text(stringResource(com.nami.peace.R.string.settings_back_to_main))
                     }
                 }

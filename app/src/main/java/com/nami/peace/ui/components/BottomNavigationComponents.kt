@@ -8,8 +8,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -65,7 +67,6 @@ enum class MainTab(@StringRes val titleRes: Int, val icon: ImageVector, val rout
 }
 
 enum class SettingsCategory(@StringRes val titleRes: Int, val route: String) {
-    Overview(R.string.pref_overview, "settings_overview"),
     Appearance(R.string.pref_appearance, "settings_appearance"),
     NavStyle(R.string.pref_nav_style, "settings_nav_style"),
     ShadowBlur(R.string.pref_shadow_blur, "settings_shadow_blur"),
@@ -82,7 +83,8 @@ fun FloatingBottomBar(
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
     modifier: Modifier = Modifier,
-    shadowsEnabled: Boolean = true
+    shadowsEnabled: Boolean = true,
+    shadowStyle: String = "Medium"
 ) {
     AnimatedVisibility(
         visible = isVisible,
@@ -90,14 +92,34 @@ fun FloatingBottomBar(
         exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(200))
     ) {
         val shape = RoundedCornerShape(24.dp)
-        val shadowElevation = if (shadowsEnabled) 8.dp else 0.dp
-        val isDark = isSystemInDarkTheme()
         
+        // Shadow Logic
+        val (baseElevation, baseAlpha) = when (shadowStyle) {
+            "None" -> 0.dp to 0f
+            "Subtle" -> 4.dp to 0.1f
+            "Medium" -> 8.dp to 0.25f
+            "Heavy" -> 16.dp to 0.6f
+            else -> 8.dp to 0.25f
+        }
+        
+        // If blur is enabled, we DISABLE the system shadow to prevent artifacts.
+        // Instead, we use a Border to define the edges (Glassmorphism).
+        val effectiveElevation = if (shadowsEnabled && shadowStyle != "None" && !blurEnabled) baseElevation else 0.dp
+        
+        val isDark = isSystemInDarkTheme()
+        val shadowColor = SoftShadow.copy(alpha = baseAlpha)
+        
+        // Border Logic for Glass Mode
+        val showBorder = blurEnabled && shadowsEnabled && shadowStyle != "None"
+        val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
+        val borderModifier = if (showBorder) Modifier.border(1.dp, borderColor, shape) else Modifier
+
         // Z-Index Fix: Root Box contains content
         Box(
             modifier = Modifier
                 .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
-                .shadow(elevation = shadowElevation, shape = shape, spotColor = SoftShadow)
+                .shadow(elevation = effectiveElevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
+                .then(borderModifier)
                 .height(72.dp)
                 .fillMaxWidth()
                 .then(modifier)
@@ -204,7 +226,8 @@ fun CategoryCarouselBar(
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
     modifier: Modifier = Modifier,
-    shadowsEnabled: Boolean = true
+    shadowsEnabled: Boolean = true,
+    shadowStyle: String = "Medium"
 ) {
     AnimatedVisibility(
         visible = isVisible,
@@ -213,18 +236,37 @@ fun CategoryCarouselBar(
         modifier = modifier
     ) {
         val shape = RoundedCornerShape(24.dp)
-        val shadowElevation = if (shadowsEnabled) 8.dp else 0.dp
-        val isDark = isSystemInDarkTheme()
         
+        // Shadow Logic
+        val (baseElevation, baseAlpha) = when (shadowStyle) {
+            "None" -> 0.dp to 0f
+            "Subtle" -> 4.dp to 0.1f
+            "Medium" -> 8.dp to 0.25f
+            "Heavy" -> 16.dp to 0.6f
+            else -> 8.dp to 0.25f
+        }
+        
+        // If blur is enabled, we DISABLE the system shadow to prevent artifacts.
+        // Instead, we use a Border to define the edges (Glassmorphism).
+        val effectiveElevation = if (shadowsEnabled && shadowStyle != "None" && !blurEnabled) baseElevation else 0.dp
+        
+        val isDark = isSystemInDarkTheme()
+        val shadowColor = SoftShadow.copy(alpha = baseAlpha)
+        
+        // Border Logic for Glass Mode
+        val showBorder = blurEnabled && shadowsEnabled && shadowStyle != "None"
+        val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
+        val borderModifier = if (showBorder) Modifier.border(1.dp, borderColor, shape) else Modifier
+
         Box(
             modifier = Modifier
                 .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
-                .shadow(elevation = shadowElevation, shape = shape, spotColor = SoftShadow)
+                .shadow(elevation = effectiveElevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
+                .then(borderModifier)
                 .height(72.dp)
                 .fillMaxWidth()
         ) {
-            // Background Layer: Applies Haze OR Fallback Color
-            // This is the first child, so it renders BEHIND the Row (zIndex 0 by default)
+            // Background Layer
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -236,7 +278,7 @@ fun CategoryCarouselBar(
                                 shape = shape,
                                 style = HazeStyle(
                                     blurRadius = blurStrength.dp,
-                                    tint = if (isDark) GlassyBlack.copy(alpha = blurTintAlpha) else GlassyWhite.copy(alpha = blurTintAlpha)
+                                    tint = if (isDark) Color.Black.copy(alpha = blurTintAlpha) else Color.White.copy(alpha = blurTintAlpha)
                                 )
                             )
                         } else {
@@ -246,39 +288,33 @@ fun CategoryCarouselBar(
                         }
                     )
             )
-            
-            // Foreground Content Layer (Sharp text - NO blur applied)
+
+            // Foreground Content
             LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .zIndex(1f), // Ensure content is above background
+                modifier = Modifier.fillMaxSize().zIndex(1f),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 items(SettingsCategory.values()) { category ->
                     val isSelected = selectedCategory == category
                     
-                    Box(
+                     Box(
                         modifier = Modifier
-                            .height(72.dp)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(16.dp))
                             .clickable { onCategorySelected(category) }
                             .padding(horizontal = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = stringResource(category.titleRes),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) AccentBlue else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            color = if (isSelected) AccentBlue else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )
                     }
                 }
             }
         }
     }
-}
-
-@Composable
-fun isSystemInDarkTheme(): Boolean {
-    return androidx.compose.foundation.isSystemInDarkTheme()
 }

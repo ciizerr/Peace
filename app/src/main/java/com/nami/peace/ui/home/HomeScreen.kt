@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
@@ -114,13 +115,27 @@ fun HomeScreen(
         topBar = {
             GlassyTopAppBar(
                 title = { 
-                    Text(
-                        stringResource(R.string.my_schedule), 
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                    ) 
+                    if (isSelectionMode) {
+                        Text(
+                            "${selectedIds.size} Selected", // Will use interpolation
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    } else {
+                        Text(
+                            stringResource(R.string.my_schedule), 
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
                 },
                 actions = {
-                    if (!isSelectionMode) {
+                    if (isSelectionMode) {
+                        IconButton(onClick = { selectedIds = emptySet() }) {
+                            Icon(
+                                imageVector = Icons.Default.Close, 
+                                contentDescription = stringResource(R.string.cd_close_selection)
+                            )
+                        }
+                    } else {
                         IconButton(onClick = onProfileClick) {
                             Icon(
                                 imageVector = Icons.Default.AccountCircle, 
@@ -235,52 +250,19 @@ fun HomeScreen(
                 }
                 
                 items(reminders, key = { it.id }) { reminder ->
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = {
-                            if (it == SwipeToDismissBoxValue.EndToStart) {
-                                viewModel.deleteReminder(reminder)
-                                true
+                    UpcomingReminderCard(
+                        reminder = reminder,
+                        isNextUp = (reminder.id == nextUp?.id),
+                        isSelected = selectedIds.contains(reminder.id),
+                        onToggle = { viewModel.toggleReminder(reminder) },
+                        onLongClick = { toggleSelection(reminder.id) },
+                        onClick = { 
+                            if (isSelectionMode) {
+                                toggleSelection(reminder.id)
                             } else {
-                                false
+                                onEditReminder(reminder.id) 
                             }
                         }
-                    )
-
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        backgroundContent = {
-                            val color = Color(0xFFE57373) // Soft Red
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(color, RoundedCornerShape(12.dp))
-                                    .padding(horizontal = 20.dp),
-                                contentAlignment = Alignment.CenterEnd
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = stringResource(R.string.cd_delete),
-                                    tint = Color.White
-                                )
-                            }
-                        },
-                        content = {
-                            UpcomingReminderCard(
-                                reminder = reminder,
-                                isNextUp = (reminder.id == nextUp?.id),
-                                isSelected = selectedIds.contains(reminder.id),
-                                onToggle = { viewModel.toggleReminder(reminder) },
-                                onLongClick = { toggleSelection(reminder.id) },
-                                onClick = { 
-                                    if (isSelectionMode) {
-                                        toggleSelection(reminder.id)
-                                    } else {
-                                        onEditReminder(reminder.id) 
-                                    }
-                                }
-                            )
-                        },
-                        enableDismissFromStartToEnd = false
                     )
                 }
             }

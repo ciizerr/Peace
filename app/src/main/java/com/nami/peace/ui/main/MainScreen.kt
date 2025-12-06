@@ -55,6 +55,7 @@ fun MainScreen(
     
     val blurEnabled by settingsViewModel.blurEnabled.collectAsState()
     val shadowsEnabled by settingsViewModel.shadowsEnabled.collectAsState()
+    val shadowStyle by settingsViewModel.shadowStyle.collectAsState()
     val blurStrength by settingsViewModel.blurStrength.collectAsState()
     val blurTintAlpha by settingsViewModel.blurTintAlpha.collectAsState()
     
@@ -80,6 +81,13 @@ fun MainScreen(
     // Sync Main Tab Selection
     val selectedTab by remember { derivedStateOf { MainTab.values()[pagerState.currentPage] } }
 
+    // Swipe Redirect: Settings -> Dashboard (Skip Tasks and Alarms)
+    LaunchedEffect(pagerState.currentPage, pagerState.targetPage) {
+        if (pagerState.currentPage == MainTab.Settings.ordinal && pagerState.targetPage == MainTab.Tasks.ordinal) {
+             pagerState.scrollToPage(MainTab.Dashboard.ordinal)
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(nestedScrollConnection),
@@ -96,9 +104,11 @@ fun MainScreen(
                     blurEnabled = blurEnabled,
                     blurStrength = blurStrength,
                     blurTintAlpha = blurTintAlpha,
-                    shadowsEnabled = shadowsEnabled
+                    shadowsEnabled = shadowsEnabled,
+                    shadowStyle = shadowStyle
                 )
                 
+                // Settings Category Carousel
                 CategoryCarouselBar(
                     selectedCategory = selectedCategory,
                     onCategorySelected = { category ->
@@ -109,7 +119,8 @@ fun MainScreen(
                     blurEnabled = blurEnabled,
                     blurStrength = blurStrength,
                     blurTintAlpha = blurTintAlpha,
-                    shadowsEnabled = shadowsEnabled
+                    shadowsEnabled = shadowsEnabled,
+                    shadowStyle = shadowStyle
                 )
             }
         }
@@ -119,10 +130,9 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = 0.dp), // We handle padding internally or let content go behind
-            userScrollEnabled = selectedTab != MainTab.Settings // Disable swipe out of Settings if needed, or allow it.
-            // Requirement: "Disable swipe in Settings-subscreen category pages"
-            // If we are in Settings, we want the swipe to control the Categories, not the Main Tabs.
-            // So we disable the Main Pager scroll when in Settings.
+            userScrollEnabled = selectedTab != MainTab.Settings || settingsPagerState.currentPage == 0
+            // If we are in Settings (and not on the first page), we want the swipe to control the Categories.
+            // If on first page (Appearance), swipe back should go to Dashboard (via Redirect logic).
         ) { page ->
             val tab = MainTab.values()[page]
             

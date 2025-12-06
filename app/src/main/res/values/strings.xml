@@ -91,13 +91,13 @@
     <string name="delete_bulk_title">Delete Reminders?</string>
     <string name="delete_bulk_message">Delete %d selected reminders?</string>
     <string name="completed_format">Completed: %s</string>
-    
     <!-- Content Descriptions -->
     <string name="cd_settings">Settings</string>
     <string name="cd_add_reminder">Add Reminder</string>
     <string name="cd_back">Back</string>
     <string name="cd_save">Save</string>
     <string name="cd_delete">Delete</string>
+    <string name="cd_close_selection">Close Selection</string>
     <string name="cd_alarm">Alarm</string>
     <string name="cd_snoozed">Snoozed</string>
     <string name="cd_profile">Profile</string>
