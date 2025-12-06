@@ -118,7 +118,6 @@ fun MainScreen(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .haze(state = hazeState)
                 .padding(bottom = 0.dp), // We handle padding internally or let content go behind
             userScrollEnabled = selectedTab != MainTab.Settings // Disable swipe out of Settings if needed, or allow it.
             // Requirement: "Disable swipe in Settings-subscreen category pages"

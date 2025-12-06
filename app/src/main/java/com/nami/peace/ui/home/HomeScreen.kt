@@ -32,6 +32,7 @@ import com.nami.peace.R
 
 import com.nami.peace.ui.components.GlassyTopAppBar
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
 
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
@@ -83,9 +84,27 @@ fun HomeScreen(
     ) { padding ->
         LazyColumn(
             modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .then(
+                    if (hazeState != null) {
+                        Modifier.haze(
+                            state = hazeState,
+                            style = dev.chrisbanes.haze.HazeStyle(
+                                 tint = if (androidx.compose.foundation.isSystemInDarkTheme()) 
+                                     com.nami.peace.ui.theme.GlassyBlack.copy(alpha = blurTintAlpha) 
+                                 else 
+                                     com.nami.peace.ui.theme.GlassyWhite.copy(alpha = blurTintAlpha),
+                                 blurRadius = blurStrength.dp
+                            )    
+                        )
+                    } else Modifier
+                ),
+            contentPadding = PaddingValues(
+                top = padding.calculateTopPadding() + 8.dp, // Add some extra top padding if needed, or just use scaffold padding
+                bottom = padding.calculateBottomPadding() + 80.dp + bottomPadding, // Combine scaffold + manual bottom padding
+                start = 16.dp,
+                end = 16.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Section 1: Next Up (Hero Card)
