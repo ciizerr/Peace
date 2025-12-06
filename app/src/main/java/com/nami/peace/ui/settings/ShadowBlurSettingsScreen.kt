@@ -48,7 +48,7 @@ fun ShadowBlurSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_blur)) },
+                title = { Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.pref_shadow_blur)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.back))
@@ -67,7 +67,7 @@ fun ShadowBlurSettingsScreen(
             // Blur Section
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_effect_title),
+                    text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_title),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -79,14 +79,14 @@ fun ShadowBlurSettingsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_enable_blur),
+                            text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_enable),
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Text(
                             text = if (isBlurSupported) {
-                                androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_supported_desc)
+                                androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_desc)
                             } else {
-                                androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_unsupported_desc)
+                                androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_desc_unsupported)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isBlurSupported) {
@@ -135,7 +135,7 @@ fun ShadowBlurSettingsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_tint_opacity),
+                                text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_blur_tint),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
@@ -164,7 +164,7 @@ fun ShadowBlurSettingsScreen(
             // Shadow Section
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_style_title),
+                    text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_title),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -175,7 +175,7 @@ fun ShadowBlurSettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_enable_shadows),
+                        text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_enable),
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Switch(
@@ -203,10 +203,10 @@ fun ShadowBlurSettingsScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 val label = when(option) {
-                                    "None" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.shadow_none)
-                                    "Subtle" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.shadow_subtle)
-                                    "Medium" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.shadow_medium)
-                                    "Heavy" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.shadow_heavy)
+                                    "None" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_none)
+                                    "Subtle" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_subtle)
+                                    "Medium" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_medium)
+                                    "Heavy" -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.settings_shadow_heavy)
                                     else -> option
                                 }
                                 Text(text = label)

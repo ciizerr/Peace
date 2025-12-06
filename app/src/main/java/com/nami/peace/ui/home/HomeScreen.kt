@@ -30,6 +30,9 @@ import java.util.Locale
 import androidx.compose.ui.res.stringResource
 import com.nami.peace.R
 
+import com.nami.peace.ui.components.GlassyTopAppBar
+import dev.chrisbanes.haze.HazeState
+
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
@@ -37,7 +40,11 @@ fun HomeScreen(
     onEditReminder: (Int) -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    hazeState: HazeState? = null,
+    blurEnabled: Boolean = true,
+    blurStrength: Float = 12f,
+    blurTintAlpha: Float = 0.5f,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val nextUp = uiState.nextUp
@@ -45,7 +52,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            GlassyTopAppBar(
                 title = { 
                     Text(
                         stringResource(R.string.my_schedule), 
@@ -56,7 +63,11 @@ fun HomeScreen(
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.cd_settings))
                     }
-                }
+                },
+                hazeState = hazeState,
+                blurEnabled = blurEnabled,
+                blurStrength = blurStrength,
+                blurTintAlpha = blurTintAlpha
             )
         },
         floatingActionButton = {

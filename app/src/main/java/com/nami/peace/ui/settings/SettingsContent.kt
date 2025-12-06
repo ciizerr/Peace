@@ -47,7 +47,7 @@ fun SettingsContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
                 ) {
-                    Text(stringResource(com.nami.peace.R.string.settings_about_title), style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
+                    Text(stringResource(com.nami.peace.R.string.pref_about), style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
                     androidx.compose.material3.Button(onClick = onNavigateToHistory) {
                         Text(stringResource(com.nami.peace.R.string.view_history_log))

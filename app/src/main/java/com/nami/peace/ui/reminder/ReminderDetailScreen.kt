@@ -32,7 +32,7 @@ fun ReminderDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_details_title)) },
+                title = { Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_detail_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(Icons.Default.ArrowBack, contentDescription = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.back))
@@ -43,7 +43,7 @@ fun ReminderDetailScreen(
         floatingActionButton = {
             if (uiState.reminder != null) {
                 FloatingActionButton(onClick = { onEditReminder(uiState.reminder!!.id) }) {
-                    Icon(Icons.Default.Edit, contentDescription = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.action_edit))
+                    Icon(Icons.Default.Edit, contentDescription = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_action_edit))
                 }
             }
         }
@@ -93,18 +93,18 @@ fun ReminderDetailScreen(
 
                         // Info Cards
                         DetailCard(
-                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_original_time),
+                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_label_original_time),
                             value = formatTime(reminder.originalStartTimeInMillis)
                         )
 
                         DetailCard(
-                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.recurrence),
+                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_label_recurrence),
                             value = when (reminder.recurrenceType) {
                                 com.nami.peace.domain.model.RecurrenceType.ONE_TIME -> {
                                     if (reminder.dateInMillis != null) {
-                                        androidx.compose.ui.res.stringResource(com.nami.peace.R.string.recurrence_one_time_label) + ": " + SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(reminder.dateInMillis))
+                                        androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_recurrence_one_time) + ": " + SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(reminder.dateInMillis))
                                     } else {
-                                        androidx.compose.ui.res.stringResource(com.nami.peace.R.string.recurrence_one_time_label)
+                                        androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_recurrence_one_time)
                                     }
                                 }
                                 com.nami.peace.domain.model.RecurrenceType.WEEKLY -> {
@@ -125,25 +125,25 @@ fun ReminderDetailScreen(
                                         )
                                     }
                                     val days = dayStrings.joinToString(", ")
-                                    androidx.compose.ui.res.stringResource(com.nami.peace.R.string.recurrence_weekly_prefix) + " $days"
+                                    androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_recurrence_weekly_prefix) + " $days"
                                 }
                                 else -> reminder.recurrenceType.name
                             }
                         )
 
                         DetailCard(
-                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.scheduling_mode),
+                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_label_schedule_mode),
                             value = if (reminder.isStrictSchedulingEnabled) androidx.compose.ui.res.stringResource(com.nami.peace.R.string.strict_anchored) else androidx.compose.ui.res.stringResource(com.nami.peace.R.string.flexible_drift)
                         )
 
                         DetailCard(
-                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.nag_mode),
-                            value = if (reminder.isNagModeEnabled) androidx.compose.ui.res.stringResource(com.nami.peace.R.string.status_enabled) else androidx.compose.ui.res.stringResource(com.nami.peace.R.string.status_disabled)
+                            label = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_label_nag_mode),
+                            value = if (reminder.isNagModeEnabled) androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_status_enabled) else androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_status_disabled)
                         )
 
                         if (reminder.isNagModeEnabled) {
                             Text(
-                                text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_sequence_progress),
+                                text = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_label_sequence),
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.padding(top = 8.dp)
                             )
@@ -159,17 +159,17 @@ fun ReminderDetailScreen(
                                         val repTime = reminder.originalStartTimeInMillis + (i * interval)
                                         val status = when {
                                             i < reminder.currentRepetitionIndex -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.done)
-                                            i == reminder.currentRepetitionIndex -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.status_next)
-                                            else -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.status_upcoming)
+                                            i == reminder.currentRepetitionIndex -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_status_next)
+                                            else -> androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_status_upcoming)
                                         }
                                         
                                         val color = when (status) {
                                             androidx.compose.ui.res.stringResource(com.nami.peace.R.string.done) -> Color.Gray
-                                            androidx.compose.ui.res.stringResource(com.nami.peace.R.string.status_next) -> MaterialTheme.colorScheme.primary
+                                            androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_status_next) -> MaterialTheme.colorScheme.primary
                                             else -> MaterialTheme.colorScheme.onSurface
                                         }
                                         
-                                        val fontWeight = if (status == androidx.compose.ui.res.stringResource(com.nami.peace.R.string.status_next)) FontWeight.Bold else FontWeight.Normal
+                                        val fontWeight = if (status == androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_status_next)) FontWeight.Bold else FontWeight.Normal
                                         
                                         Row(
                                             modifier = Modifier
@@ -178,7 +178,7 @@ fun ReminderDetailScreen(
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
-                                                text = "${androidx.compose.ui.res.stringResource(com.nami.peace.R.string.rep_prefix)} ${i + 1}: ${formatTime(repTime)}",
+                                                text = "${androidx.compose.ui.res.stringResource(com.nami.peace.R.string.reminder_rep_prefix)} ${i + 1}: ${formatTime(repTime)}",
                                                 color = color,
                                                 fontWeight = fontWeight
                                             )

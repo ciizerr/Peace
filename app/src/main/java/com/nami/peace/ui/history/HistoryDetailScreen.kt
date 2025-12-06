@@ -86,12 +86,12 @@ fun HistoryDetailContent(item: HistoryEntity) {
         Divider()
 
         // Details Grid
-        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_completed_on), formatDate(item.completedTime))
-        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.priority), item.priority.name)
-        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.category), item.category.name)
+        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_label_completed), formatDate(item.completedTime))
+        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_label_priority), item.priority.name)
+        DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_label_category), item.category.name)
         
         item.nagInfo?.let {
-            DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_nag_stats), it)
+            DetailRow(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.history_label_nag_stats), it)
         }
     }
 }

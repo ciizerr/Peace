@@ -33,8 +33,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun PlaceholderScreen(
-    title: String = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_title),
-    subtitle: String = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_subtitle),
+    title: String = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_title_default),
+    subtitle: String = androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_subtitle_default),
     onBack: (() -> Unit)? = null,
     onRequestFeature: (() -> Unit)? = null
 ) {
@@ -105,12 +105,12 @@ fun PlaceholderScreen(
             ) {
                 if (onBack != null) {
                     Button(onClick = onBack) {
-                        Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.action_go_home))
+                        Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_btn_home))
                     }
                 }
                 
                 OutlinedButton(onClick = { onRequestFeature?.invoke() }) {
-                        Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.action_request_feature))
+                        Text(androidx.compose.ui.res.stringResource(com.nami.peace.R.string.placeholder_btn_request))
                 }
             }
         }

@@ -136,7 +136,11 @@ fun MainScreen(
                             onNavigateToSettings = { 
                                 scope.launch { pagerState.animateScrollToPage(MainTab.Settings.ordinal) }
                             },
-                            bottomPadding = 90.dp
+                            bottomPadding = 90.dp,
+                            hazeState = hazeState,
+                            blurEnabled = blurEnabled,
+                            blurStrength = blurStrength,
+                            blurTintAlpha = blurTintAlpha
                         )
                     }
                     MainTab.Alarms -> {

@@ -29,10 +29,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -57,7 +57,7 @@ fun SettingsScreen(
 
             // Other Actions
             Text(
-                "Data & Storage",
+                stringResource(R.string.settings_data_header),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -72,7 +72,7 @@ fun SettingsScreen(
             ) {
                 Icon(Icons.Default.History, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("View History Log")
+                Text(stringResource(R.string.settings_btn_history))
             }
         }
     }

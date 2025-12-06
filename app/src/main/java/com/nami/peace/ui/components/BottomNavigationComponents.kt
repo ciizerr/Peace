@@ -58,18 +58,18 @@ import com.nami.peace.R
 import dev.chrisbanes.haze.hazeChild
 
 enum class MainTab(@StringRes val titleRes: Int, val icon: ImageVector, val route: String) {
-    Dashboard(R.string.tab_dashboard, Icons.Filled.Dashboard, "dashboard"),
-    Alarms(R.string.tab_alarms, Icons.Filled.Notifications, "alarms"),
-    Tasks(R.string.tab_tasks, Icons.Filled.DoneAll, "tasks"),
-    Settings(R.string.tab_settings, Icons.Filled.Settings, "settings")
+    Dashboard(R.string.nav_dashboard, Icons.Filled.Dashboard, "dashboard"),
+    Alarms(R.string.nav_alarms, Icons.Filled.Notifications, "alarms"),
+    Tasks(R.string.nav_tasks, Icons.Filled.DoneAll, "tasks"),
+    Settings(R.string.nav_settings, Icons.Filled.Settings, "settings")
 }
 
 enum class SettingsCategory(@StringRes val titleRes: Int, val route: String) {
-    Overview(R.string.settings_overview, "settings_overview"),
-    Appearance(R.string.settings_appearance, "settings_appearance"),
-    NavStyle(R.string.settings_nav_style, "settings_nav_style"),
-    ShadowBlur(R.string.settings_shadow_blur, "settings_shadow_blur"),
-    About(R.string.settings_about, "settings_about")
+    Overview(R.string.pref_overview, "settings_overview"),
+    Appearance(R.string.pref_appearance, "settings_appearance"),
+    NavStyle(R.string.pref_nav_style, "settings_nav_style"),
+    ShadowBlur(R.string.pref_shadow_blur, "settings_shadow_blur"),
+    About(R.string.pref_about, "settings_about")
 }
 
 @Composable
@@ -147,21 +147,20 @@ fun FloatingBottomBar(
                     Box(
                         modifier = Modifier
                             .weight(tabWeight)
-                            .height(72.dp)
-                            .padding(vertical = 12.dp, horizontal = 4.dp),
+                            .height(72.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(if (isSelected) AccentBlue.copy(alpha = 0.1f) else Color.Transparent)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
-                                    onClick = { onTabSelected(tab) }
-                                ),
-                            verticalAlignment = Alignment.CenterVertically,
+                            Row(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(if (isSelected) AccentBlue.copy(alpha = 0.1f) else Color.Transparent)
+                                    .clickable(
+                                        interactionSource = interactionSource,
+                                        indication = null,
+                                        onClick = { onTabSelected(tab) }
+                                    )
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
