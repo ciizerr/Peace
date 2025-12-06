@@ -132,8 +132,8 @@ fun MainScreen(
                         HomeScreen(
                             onAddReminder = onAddReminder,
                             onEditReminder = onEditReminder,
-                            onNavigateToSettings = { 
-                                scope.launch { pagerState.animateScrollToPage(MainTab.Settings.ordinal) }
+                            onProfileClick = { 
+                                // TODO: Implement Profile Feature later
                             },
                             bottomPadding = 90.dp,
                             hazeState = hazeState,

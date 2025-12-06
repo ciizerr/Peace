@@ -100,6 +100,7 @@
     <string name="cd_delete">Delete</string>
     <string name="cd_alarm">Alarm</string>
     <string name="cd_snoozed">Snoozed</string>
+    <string name="cd_profile">Profile</string>
     <string name="cd_history">History</string>
     
     <!-- Notification Permission -->

@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
@@ -52,7 +53,7 @@ import androidx.compose.runtime.setValue
 fun HomeScreen(
     onAddReminder: () -> Unit,
     onEditReminder: (Int) -> Unit = {},
-    onNavigateToSettings: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     viewModel: HomeViewModel = hiltViewModel(),
     hazeState: HazeState? = null,
@@ -120,8 +121,12 @@ fun HomeScreen(
                 },
                 actions = {
                     if (!isSelectionMode) {
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.cd_settings))
+                        IconButton(onClick = onProfileClick) {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle, 
+                                contentDescription = stringResource(R.string.cd_profile),
+                                modifier = Modifier.size(60.dp)
+                            )
                         }
                     }
                 },
