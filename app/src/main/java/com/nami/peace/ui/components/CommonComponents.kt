@@ -1,6 +1,8 @@
 package com.nami.peace.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,19 +12,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nami.peace.ui.theme.AccentBlue
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.hazeChild
 
 @Composable
 fun PlaceholderScreen(
@@ -66,8 +76,89 @@ fun PlaceholderScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = AccentBlue),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(text = "Back to Previous Screen", color = androidx.compose.ui.graphics.Color.White)
+                Text(text = "Back to Previous Screen", color = Color.White)
             }
         }
+    }
+}
+
+@Composable
+fun GlassyFloatingActionButton(
+    onClick: () -> Unit,
+    icon: ImageVector,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null,
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer
+) {
+    val shape = androidx.compose.foundation.shape.CircleShape
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    
+    // Root Container
+    Box(
+        modifier = modifier
+            .size(56.dp)
+            .shadow(
+                elevation = 8.dp, 
+                shape = shape,
+                spotColor = if (isDark) Color.Black.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.2f),
+                ambientColor = if (isDark) Color.Black.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.2f)
+            )
+            .clip(shape)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = androidx.compose.material3.ripple(color = MaterialTheme.colorScheme.onPrimaryContainer),
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        // Layer 1: Pure Blur (Behind Tint)
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .then(
+                    if (hazeState != null) {
+                        Modifier.hazeChild(
+                            state = hazeState,
+                            shape = shape,
+                            style = HazeStyle(
+                                blurRadius = 12.dp,
+                                tint = Color.Transparent // Clear blur, tint handled by overlay
+                            )
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .background(
+                    if (hazeState == null) MaterialTheme.colorScheme.surface.copy(alpha = 0.5f) else Color.Transparent
+                )
+        )
+
+        // Layer 2: Tint Overlay (Consistent Color)
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(containerColor.copy(alpha = 0.45f))
+        )
+
+        // Layer 3: Border Ring (Hides Edge Artifacts)
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .border(
+                    width = 1.dp, 
+                    color = Color.White.copy(alpha = 0.3f), // Subtle highlight
+                    shape = shape
+                )
+        )
+
+        // Layer 4: Content Icon
+        Icon(
+            imageVector = icon,
+            contentDescription = contentDescription,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     }
 }

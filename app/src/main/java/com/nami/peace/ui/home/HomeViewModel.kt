@@ -22,43 +22,82 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    private val _selectedCategory = MutableStateFlow<com.nami.peace.domain.model.ReminderCategory?>(null)
+
     init {
         viewModelScope.launch {
-            repository.getReminders().collectLatest { reminders ->
-                // Filter out completed reminders and sort by time
-                val activeList = reminders.filter { !it.isCompleted }.sortedBy { it.startTimeInMillis }
+            // Combine reminders and validation of selected category
+            kotlinx.coroutines.flow.combine(
+                repository.getReminders(),
+                _selectedCategory
+            ) { reminders, category ->
+                Pair(reminders, category)
+            }.collectLatest { (reminders, category) ->
                 
-                // Identify Next Up with priority consideration
-                val enabledReminders = activeList.filter { it.isEnabled }
+                // 1. Separate Active vs Completed
+                val completed = reminders.filter { it.isCompleted }
+                val rawActive = reminders.filter { !it.isCompleted }.sortedBy { it.startTimeInMillis }
+                
+                // 2. Calculate Stats
+                // Streak: Current logic uses total completed count as a proxy for "seeds planted/grown"
+                val streakDays = completed.size 
+                
+                // 3. Determine Coach Message
+                val coachMessage = when {
+                    completed.isEmpty() && rawActive.isEmpty() -> com.nami.peace.R.string.coach_welcome
+                    rawActive.isEmpty() -> com.nami.peace.R.string.coach_all_done
+                    else -> getGreetingMessage(rawActive.size)
+                }
+
+                // 4. Filter Active List
+                val filteredActive = if (category != null) {
+                    rawActive.filter { it.category == category }
+                } else {
+                    rawActive
+                }
+                
+                // 5. Identify Next Up (from the filtered list)
+                val enabledReminders = filteredActive.filter { it.isEnabled }
                 val nextUp = if (enabledReminders.isNotEmpty()) {
-                    // Get the earliest time
                     val earliestTime = enabledReminders.first().startTimeInMillis
-                    val timeWindow = 60 * 1000L // 1 minute window
-                    
-                    // Find all reminders within the time window of the earliest
+                    val timeWindow = 60 * 1000L 
                     val simultaneousReminders = enabledReminders.filter { 
                         kotlin.math.abs(it.startTimeInMillis - earliestTime) < timeWindow
                     }
-                    
-                    // If multiple reminders at same time, pick highest priority
-                    // Priority enum: HIGH=0, MEDIUM=1, LOW=2 (lower ordinal = higher priority)
                     simultaneousReminders.minByOrNull { it.priority.ordinal }
                 } else {
                     null
                 }
                 
-                // Group the rest by date headers
-                // User wants Next Up to appear in the list as well, so we use activeList directly
-                val sections = activeList.groupBy { 
+                // 6. Group by Date
+                val sections = filteredActive.groupBy { 
                     com.nami.peace.util.DateUtils.formatDateHeader(it.startTimeInMillis) 
                 }
 
                 _uiState.value = HomeUiState(
                     nextUp = nextUp,
-                    sections = sections
+                    sections = sections,
+                    selectedFilter = category,
+                    streakDays = streakDays,
+                    coachMessage = coachMessage,
+                    activeCount = rawActive.size
                 )
             }
         }
+    }
+
+    private fun getGreetingMessage(activeCount: Int): Int {
+        val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        return when (hour) {
+            in 0..4 -> com.nami.peace.R.string.coach_night
+            in 5..11 -> com.nami.peace.R.string.coach_morning
+            in 12..17 -> com.nami.peace.R.string.coach_afternoon
+            else -> com.nami.peace.R.string.coach_evening
+        }
+    }
+
+    fun onFilterSelected(category: com.nami.peace.domain.model.ReminderCategory?) {
+        _selectedCategory.value = category
     }
 
     fun toggleReminder(reminder: Reminder) {
@@ -96,5 +135,9 @@ class HomeViewModel @Inject constructor(
 
 data class HomeUiState(
     val nextUp: Reminder? = null,
-    val sections: Map<String, List<Reminder>> = emptyMap()
+    val sections: Map<String, List<Reminder>> = emptyMap(),
+    val selectedFilter: com.nami.peace.domain.model.ReminderCategory? = null,
+    val streakDays: Int = 0,
+    val coachMessage: Int = com.nami.peace.R.string.coach_welcome,
+    val activeCount: Int = 0
 )
