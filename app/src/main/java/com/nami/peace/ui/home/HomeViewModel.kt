@@ -93,7 +93,7 @@ class HomeViewModel @Inject constructor(
                 val usedCategories = reminders.map { it.category }.distinct().sortedBy { it.ordinal }
 
                 _uiState.value = HomeUiState(
-                    userName = userName,
+                    userName = userName ?: "",
                     greetingRes = getTimeBasedGreetingResource(),
                     focusTask = focusTask,
                     morningTasks = morningTasks,
@@ -181,7 +181,7 @@ class HomeViewModel @Inject constructor(
 }
 
 data class HomeUiState(
-    val userName: String? = null,
+    val userName: String = "",
     val greetingRes: Int = com.nami.peace.R.string.coach_welcome,
     val focusTask: Reminder? = null,
     val morningTasks: List<Reminder> = emptyList(),

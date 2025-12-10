@@ -111,6 +111,16 @@ class AlarmsListViewModel @Inject constructor(
             }
         }
     }
+    
+    fun deleteReminders(reminders: List<Reminder>) {
+        viewModelScope.launch {
+            reminders.forEach { reminder ->
+                repository.deleteReminder(reminder)
+                alarmScheduler.cancel(reminder)
+            }
+            _toastMessage.send("${reminders.size} reminders deleted")
+        }
+    }
 }
 
 data class AlarmsListUiState(

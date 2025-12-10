@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -69,16 +71,75 @@ fun AlarmsListScreen(
         }
     }
 
+    // Selection Mode State
+    var selectedIds by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(emptySet<Int>()) }
+    val isSelectionMode = selectedIds.isNotEmpty()
+    var showDeleteDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
+    // Toggle Selection Helper
+    val toggleSelection: (Int) -> Unit = { id ->
+        selectedIds = if (selectedIds.contains(id)) {
+            selectedIds - id
+        } else {
+            selectedIds + id
+        }
+    }
+
+    // Exit Selection Mode on Back Press
+    androidx.activity.compose.BackHandler(enabled = isSelectionMode) {
+        selectedIds = emptySet()
+    }
+
+    // Delete Confirmation Dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(stringResource(R.string.delete_bulk_title)) },
+            text = { Text(stringResource(R.string.delete_bulk_message, selectedIds.size)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val toDelete = uiState.activeAlarms.filter { selectedIds.contains(it.id) }
+                        viewModel.deleteReminders(toDelete)
+                        selectedIds = emptySet()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = Modifier,
         containerColor = Color.Transparent,
         floatingActionButton = {
+            val fabContainerColor by androidx.compose.animation.animateColorAsState(
+                if (isSelectionMode) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                label = "fab_color"
+            )
+            
+            val fabIcon = if (isSelectionMode) Icons.Default.Delete else Icons.Default.Add
+            val fabContentDescription = if (isSelectionMode) stringResource(R.string.cd_delete) else stringResource(R.string.cd_add_reminder)
+
             com.nami.peace.ui.components.GlassyFloatingActionButton(
-                onClick = onAddReminder,
-                modifier = Modifier.padding(bottom = 100.dp), // Match content padding or bottom bar height
-                containerColor = MaterialTheme.colorScheme.primary,
-                icon = Icons.Default.Add,
-                contentDescription = stringResource(R.string.cd_add_reminder),
+                onClick = { 
+                    if (isSelectionMode) {
+                        showDeleteDialog = true
+                    } else {
+                        onAddReminder()
+                    }
+                },
+                modifier = Modifier.padding(bottom = 100.dp),
+                containerColor = fabContainerColor,
+                icon = fabIcon,
+                contentDescription = fabContentDescription,
                 hazeState = hazeState
             )
         }
@@ -118,6 +179,8 @@ fun AlarmsListScreen(
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
+                        // Disable naps selection for now or allow user to select them?
+                        // Quick Nap row creates new naps. It's not a list of items to select.
                         QuickNapRow(
                             onNap20 = { 
                                 if (!viewModel.isNapActive("Power Nap")) {
@@ -150,11 +213,13 @@ fun AlarmsListScreen(
                 items(uiState.activeAlarms, key = { it.id }) { reminder ->
                      UpcomingReminderCard(
                         reminder = reminder,
-                        isNextUp = false, // Or true if it matches nextAlarm? Let's keep it simple active list.
-                        isSelected = false,
+                        isNextUp = false,
+                        isSelected = selectedIds.contains(reminder.id),
                         onToggle = { viewModel.toggleReminder(reminder) },
-                        onLongClick = {},
-                        onClick = { onEditReminder(reminder.id) }
+                        onLongClick = { toggleSelection(reminder.id) },
+                        onClick = { 
+                            if (isSelectionMode) toggleSelection(reminder.id) else onEditReminder(reminder.id)
+                        }
                     )
                 }
             }
@@ -162,10 +227,24 @@ fun AlarmsListScreen(
             // Glassy Top Bar
             GlassyTopAppBar(
                 title = { 
-                    Text(
-                        stringResource(R.string.rhythms_title), 
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                    )
+                    if (isSelectionMode) {
+                        Text(
+                            stringResource(R.string.selected_count, selectedIds.size),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                    } else {
+                        Text(
+                            stringResource(R.string.rhythms_title), 
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                },
+                navigationIcon = {
+                    if (isSelectionMode) {
+                        IconButton(onClick = { selectedIds = emptySet() }) {
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close_selection))
+                        }
+                    }
                 },
                 modifier = Modifier.align(Alignment.TopCenter),
                 hazeState = hazeState,

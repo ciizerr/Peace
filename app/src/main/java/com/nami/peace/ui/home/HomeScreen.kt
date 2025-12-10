@@ -255,37 +255,34 @@ fun HomeScreen(
                 title = { 
                     if (isSelectionMode) {
                         Text(
-                            "${selectedIds.size} Selected", // Will use interpolation
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            stringResource(R.string.selected_count, selectedIds.size),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                         )
                     } else {
-                        // Empty title in normal mode for cleaner look over dashboard? 
-                        // Or Keep "My Schedule"? Prompt didn't specify removing it.
                         Text(
-                            stringResource(R.string.my_schedule), 
+                            stringResource(R.string.app_name),
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
                 },
-                actions = {
+                navigationIcon = {
                     if (isSelectionMode) {
                         IconButton(onClick = { selectedIds = emptySet() }) {
-                            Icon(
-                                imageVector = Icons.Default.Close, 
-                                contentDescription = stringResource(R.string.cd_close_selection)
-                            )
-                        }
-                    } else {
-                        IconButton(onClick = onProfileClick) {
-                            Icon(
-                                imageVector = Icons.Default.AccountCircle, 
-                                contentDescription = stringResource(R.string.cd_profile),
-                                modifier = Modifier.size(60.dp)
-                            )
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close_selection))
                         }
                     }
                 },
-                modifier = Modifier.align(Alignment.TopCenter), // Overlay at top
+                actions = {
+                    IconButton(onClick = onProfileClick) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = stringResource(R.string.cd_profile),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                },
+                modifier = Modifier.align(Alignment.TopCenter),
                 hazeState = hazeState,
                 blurEnabled = blurEnabled,
                 blurStrength = blurStrength,
