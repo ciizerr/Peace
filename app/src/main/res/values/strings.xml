@@ -21,12 +21,16 @@
     <string name="dashboard_streak_active">%d Day Streak</string>
     <string name="dashboard_streak_empty">Start Your Journey</string>
     <string name="coach_welcome">Welcome to Peace. 🌱\nPlant your first seed by adding a reminder.</string>
-    <string name="coach_morning">Good morning. You have %d active tasks.</string>
-    <string name="coach_afternoon">Good afternoon. Keeping the momentum?</string>
-    <string name="coach_evening">Good evening. %d tasks remaining for tonight.</string>
-    <string name="coach_night">It is late. Consider resting for tomorrow.</string>
+    <string name="greeting_morning">Good Morning</string>
+    <string name="greeting_afternoon">Good Afternoon</string>
+    <string name="greeting_evening">Good Evening</string>
+    <string name="greeting_night">Rest Well</string>
+    <string name="greeting_with_name_format">%1$s, %2$s</string>
+    
+    <string name="coach_active_message">You have %d active tasks.</string>
+    <string name="coach_default_message">One step at a time.</string>
+
     <string name="coach_all_done">All caught up. Enjoy your peace.</string>
-    <string name="coach_active_default">One step at a time. Focus on what is next.</string>
     <string name="streak_label_empty">Day 1</string>
     <string name="garden_subtitle_empty">Ready to grow?</string>
     <string name="garden_subtitle_active">%d tasks left to bloom.</string>
@@ -34,6 +38,28 @@
     <string name="snoozed_nag_mode">⚠️ Snoozed (Nag Mode)</string>
     <string name="repetition_format">Repetition %1$d/%2$d</string>
     <string name="snoozed">Snoozed</string>
+    
+    <!-- Focus Dashboard -->
+    <string name="header_focus">Today\'s Focus</string>
+    <string name="header_progress">Daily Progress</string>
+    <string name="progress_label">%d of %d Completed</string>
+    <string name="focus_empty">No immediate focus.\nEnjoy your peace.</string>
+    <string name="bucket_morning">Morning (5 AM - 12 PM)</string>
+    <string name="bucket_afternoon">Afternoon (12 PM - 6 PM)</string>
+    <string name="bucket_evening">Evening (6 PM - Night)</string>
+    
+    <!-- Rhythms (Alarms) Tab -->
+    <string name="rhythms_title">Rhythms</string>
+    <string name="rhythms_next_label">Next Alarm</string>
+    <string name="rhythms_next_empty">No alarms scheduled.\nRest well.</string>
+    <string name="rhythms_next_countdown">Rings in %s</string>
+    <string name="nap_section_title">Quick Rest</string>
+    <string name="nap_20_min">Power Nap (20m)</string>
+    <string name="nap_90_min">Sleep Cycle (90m)</string>
+    <string name="rhythms_list_header">Scheduled</string>
+    <string name="nap_dialog_title">Customize %s</string>
+    <string name="nap_duration_label">Duration (minutes)</string>
+    <string name="start_nap">Start Rest</string>
     
     <!-- Add/Edit Reminder Screen -->
     <string name="new_reminder">New Reminder</string>

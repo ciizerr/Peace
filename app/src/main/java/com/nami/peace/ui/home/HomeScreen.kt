@@ -69,8 +69,7 @@ fun HomeScreen(
     blurTintAlpha: Float = 0.5f,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val nextUp = uiState.nextUp
-    val sections = uiState.sections
+
     
     // Selection Mode State
     var selectedIds by remember { mutableStateOf(emptySet<Int>()) }
@@ -99,7 +98,7 @@ fun HomeScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val allReminders = (uiState.nextUp?.let { listOf(it) } ?: emptyList()) + uiState.sections.values.flatten()
+                        val allReminders = listOfNotNull(uiState.focusTask) + uiState.morningTasks + uiState.afternoonTasks + uiState.eveningTasks
                         val toDelete = allReminders.filter { selectedIds.contains(it.id) }
                         viewModel.deleteReminders(toDelete)
                         selectedIds = emptySet()
@@ -115,6 +114,14 @@ fun HomeScreen(
                 }
             }
         )
+    }
+
+    // Toast Observation
+    val context = androidx.compose.ui.platform.LocalContext.current
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.toastMessage.collect { message ->
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+        }
     }
 
     Scaffold(
@@ -177,122 +184,73 @@ fun HomeScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Item 1: Garden Hero
+                // Item 1: Dashboard Header (Greeting)
                 item {
-                    PeaceGardenHero(
-                        streakDays = uiState.streakDays,
-                        activeCount = uiState.activeCount,
-                        hasCompleted = uiState.streakDays > 0
+                    DashboardHeader(
+                        greetingRes = uiState.greetingRes,
+                        userName = uiState.userName
                     )
                 }
 
-                // Item 2: Peace Coach
+                // Item 2: Progress Card
                 item {
-                    val messageFormat = stringResource(uiState.coachMessage)
-                    val formattedMessage = if (uiState.coachMessage == R.string.coach_morning || uiState.coachMessage == R.string.coach_evening) {
-                         String.format(messageFormat, uiState.activeCount)
-                    } else {
-                         messageFormat
-                    }
-                    PeaceCoachCard(message = formattedMessage)
+                    PeaceProgressCard(
+                        completed = uiState.completedCount,
+                        total = uiState.totalCount
+                    )
                 }
 
-                // Item 3: Filter Row
+                // Item 3: Filter Row (Still useful to keep, maybe?)
+                // User prompt implies "Rhythm & Focus", focus hero is key.
+                // Keeping filters as it's a "Dashboard".
                 item {
                     FilterChipsRow(
+                        categories = uiState.availableCategories,
                         selectedCategory = uiState.selectedFilter,
                         onSelectCategory = viewModel::onFilterSelected
                     )
                 }
 
-                // Section 4: Next Up (Hero Card)
-                if (nextUp != null) {
-                    item {
-                        Text(
-                            stringResource(R.string.next_up), 
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
-                        )
-                        HeroReminderCard(
-                            reminder = nextUp,
-                            isSelected = selectedIds.contains(nextUp.id),
-                            onLongClick = { toggleSelection(nextUp.id) },
-                            onClick = { 
-                                if (isSelectionMode) {
-                                    toggleSelection(nextUp.id)
-                                } else {
-                                    onEditReminder(nextUp.id) 
-                                }
-                            }
-                        )
-                    }
+                // Item 4: Focus Hero Section
+                item {
+                    Text(
+                        stringResource(R.string.header_focus),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                    )
+                    
+                    FocusHeroCard(
+                         reminder = uiState.focusTask,
+                         onDone = { 
+                             if (uiState.focusTask != null) {
+                                 viewModel.markAsDone(uiState.focusTask!!)
+                             }
+                         }
+                    )
                 }
 
-                // Section 5: Grouped Lists
-                sections.forEach { (header, reminders) ->
-                    stickyHeader {
-                        // Glassy Header Background to prevent overlapping text readability issues
-                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.95f)) 
-                                .padding(vertical = 8.dp)
-                        ) {
-                            Text(
-                                header,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    
-                    items(reminders, key = { it.id }) { reminder ->
-                        UpcomingReminderCard(
-                            reminder = reminder,
-                            isNextUp = (reminder.id == nextUp?.id),
-                            isSelected = selectedIds.contains(reminder.id),
-                            onToggle = { viewModel.toggleReminder(reminder) },
-                            onLongClick = { toggleSelection(reminder.id) },
-                            onClick = { 
-                                if (isSelectionMode) {
-                                    toggleSelection(reminder.id)
-                                } else {
-                                    onEditReminder(reminder.id) 
-                                }
-                            }
-                        )
-                    }
+                // Item 5: Time Buckets
+                
+                // Morning
+                if (uiState.morningTasks.isNotEmpty()) {
+                    item { TimeBucketSection(stringResource(R.string.bucket_morning), uiState.morningTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder) }
+                }
+
+                // Afternoon
+                if (uiState.afternoonTasks.isNotEmpty()) {
+                    item { TimeBucketSection(stringResource(R.string.bucket_afternoon), uiState.afternoonTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder) }
+                }
+
+                // Evening
+                if (uiState.eveningTasks.isNotEmpty()) {
+                    item { TimeBucketSection(stringResource(R.string.bucket_evening), uiState.eveningTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder) }
                 }
                 
-                // Empty State
-                if (nextUp == null && sections.isEmpty()) {
-                    item {
-                        val emptyMessage = if (uiState.selectedFilter != null) {
-                            stringResource(R.string.dashboard_list_empty_filter)
-                        } else {
-                            stringResource(R.string.no_reminders_message)
-                        }
-                        
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 64.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                emptyMessage,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
-                    }
-                }
+                // Empty State handled by FocusHero's empty state + empty buckets essentially.
+                // If everything is empty (focusTask is null AND buckets empty), Focus Hero shows "No immediate focus".
             }
             
             // Overlay: Glassy Top App Bar
-            // We place it here manually so the list scrolls BEHIND it.
             GlassyTopAppBar(
                 title = { 
                     if (isSelectionMode) {
@@ -301,6 +259,8 @@ fun HomeScreen(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     } else {
+                        // Empty title in normal mode for cleaner look over dashboard? 
+                        // Or Keep "My Schedule"? Prompt didn't specify removing it.
                         Text(
                             stringResource(R.string.my_schedule), 
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
@@ -340,65 +300,130 @@ fun HomeScreen(
 // -----------------------------------------------------------------------------
 
 @Composable
-fun PeaceGardenHero(streakDays: Int, activeCount: Int, hasCompleted: Boolean) {
+fun DashboardHeader(greetingRes: Int, userName: String?) {
+    val baseGreeting = stringResource(greetingRes)
+    val text = if (!userName.isNullOrBlank()) {
+         stringResource(R.string.greeting_with_name_format, baseGreeting, userName)
+    } else {
+         baseGreeting
+    }
+    
+    Text(
+        text,
+        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Light),
+        color = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+}
+
+@Composable
+fun PeaceProgressCard(completed: Int, total: Int) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp), // Compacter Hero
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.5f))
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Centered Garden
-            Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    imageVector = Icons.Default.Eco,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp), // Large Eco Icon
-                    tint = Color(0xFF81C784) // Soft Green
-                )
-                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = stringResource(R.string.dashboard_garden_title),
-                    style = MaterialTheme.typography.headlineSmall,
+                    stringResource(R.string.header_progress),
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
-                // New Subtitle Logic
-                val subtitle = when {
-                    activeCount > 0 -> stringResource(R.string.garden_subtitle_active, activeCount)
-                    streakDays > 0 -> stringResource(R.string.garden_subtitle_done)
-                    else -> stringResource(R.string.garden_subtitle_empty)
-                }
-                
                 Text(
-                     text = subtitle,
-                     style = MaterialTheme.typography.bodyMedium,
-                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                 )
+                    stringResource(R.string.progress_label, completed, total),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-            
-            // Streak Pill (Top Right)
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.background.copy(alpha=0.8f) // Subtle pill
-            ) {
-                val label = if (streakDays > 0) {
-                    stringResource(R.string.dashboard_streak_active, streakDays)
-                } else {
-                    stringResource(R.string.dashboard_streak_empty)
+            Spacer(modifier = Modifier.height(12.dp))
+            val progress = if (total > 0) completed.toFloat() / total.toFloat() else 0f
+            LinearProgressIndicator(
+                progress = progress,
+                modifier = Modifier.fillMaxWidth().height(8.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+            )
+        }
+    }
+}
+
+@Composable
+fun FocusHeroCard(reminder: Reminder?, onDone: () -> Unit) {
+    if (reminder != null) {
+        val stripColor = when (reminder.priority) {
+            PriorityLevel.HIGH -> Color(0xFFEF5350)
+            PriorityLevel.MEDIUM -> Color(0xFF42A5F5)
+            PriorityLevel.LOW -> Color(0xFF66BB6A)
+        }
+    
+        Card(
+            modifier = Modifier.fillMaxWidth().height(200.dp),
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Background Gradient or Effect?
+                
+                Column(
+                    modifier = Modifier.padding(24.dp).align(Alignment.TopStart)
+                ) {
+                    // Priority Chip
+                    Surface(
+                        color = stripColor,
+                        shape = CircleShape
+                    ) {
+                        Text(
+                             reminder.priority.name,
+                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                             style = MaterialTheme.typography.labelSmall,
+                             color = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        reminder.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 2
+                    )
+                    Text(
+                         formatTime(reminder.startTimeInMillis),
+                         style = MaterialTheme.typography.titleMedium,
+                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha=0.7f)
+                    )
                 }
                 
+                Button(
+                    onClick = onDone,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.primary),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.done))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(Icons.Default.Eco, null)
+                }
+            }
+        }
+    } else {
+        // Empty State
+        Card(
+            modifier = Modifier.fillMaxWidth().height(150.dp),
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f))
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = label,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    stringResource(R.string.focus_empty),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -406,28 +431,36 @@ fun PeaceGardenHero(streakDays: Int, activeCount: Int, hasCompleted: Boolean) {
 }
 
 @Composable
-fun PeaceCoachCard(message: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = CircleShape, // Pill Shape
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.AutoAwesome,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+fun TimeBucketSection(
+    title: String, 
+    reminders: List<Reminder>,
+    selectedIds: Set<Int>,
+    isSelectionMode: Boolean,
+    onToggle: (Reminder) -> Unit,
+    onToggleSelection: (Int) -> Unit,
+    onEdit: (Int) -> Unit
+) {
+    Column(modifier = Modifier.padding(top = 16.dp)) {
+        Text(
+             title,
+             style = MaterialTheme.typography.titleSmall,
+             color = MaterialTheme.colorScheme.primary,
+             fontWeight = FontWeight.Bold,
+             modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        reminders.forEach { reminder ->
+            UpcomingReminderCard(
+                reminder = reminder,
+                isNextUp = false,
+                isSelected = selectedIds.contains(reminder.id),
+                onToggle = { onToggle(reminder) },
+                onLongClick = { onToggleSelection(reminder.id) },
+                onClick = {
+                    if (isSelectionMode) onToggleSelection(reminder.id) else onEdit(reminder.id)
+                }
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
@@ -435,11 +468,10 @@ fun PeaceCoachCard(message: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterChipsRow(
+    categories: List<com.nami.peace.domain.model.ReminderCategory>,
     selectedCategory: com.nami.peace.domain.model.ReminderCategory?,
     onSelectCategory: (com.nami.peace.domain.model.ReminderCategory?) -> Unit
 ) {
-    val categories = com.nami.peace.domain.model.ReminderCategory.values()
-    
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(vertical = 4.dp),

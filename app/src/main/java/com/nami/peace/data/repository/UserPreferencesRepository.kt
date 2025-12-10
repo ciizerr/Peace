@@ -22,6 +22,10 @@ class UserPreferencesRepository @Inject constructor(
     private val BLUR_TINT_ALPHA = androidx.datastore.preferences.core.floatPreferencesKey("blur_tint_alpha")
     private val SHADOW_STYLE = androidx.datastore.preferences.core.stringPreferencesKey("shadow_style")
 
+    // Placeholder for future Profile implementation
+    val userName: Flow<String?> = kotlinx.coroutines.flow.flowOf(null)
+
+
     val blurEnabled: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[BLUR_ENABLED] ?: (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)

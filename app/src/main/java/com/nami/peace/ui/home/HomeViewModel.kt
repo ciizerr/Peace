@@ -10,13 +10,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: ReminderRepository,
-    private val alarmScheduler: AlarmScheduler
+    private val alarmScheduler: AlarmScheduler,
+    private val userPreferencesRepository: com.nami.peace.data.repository.UserPreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -24,75 +26,108 @@ class HomeViewModel @Inject constructor(
 
     private val _selectedCategory = MutableStateFlow<com.nami.peace.domain.model.ReminderCategory?>(null)
 
+    private val _toastMessage = kotlinx.coroutines.channels.Channel<String>()
+    val toastMessage = _toastMessage.receiveAsFlow()
+
     init {
         viewModelScope.launch {
-            // Combine reminders and validation of selected category
+            // Combine reminders, category, and username
             kotlinx.coroutines.flow.combine(
                 repository.getReminders(),
-                _selectedCategory
-            ) { reminders, category ->
-                Pair(reminders, category)
-            }.collectLatest { (reminders, category) ->
+                _selectedCategory,
+                userPreferencesRepository.userName
+            ) { reminders, category, userName ->
+                Triple(reminders, category, userName)
+            }.collectLatest { (reminders, category, userName) ->
                 
                 // 1. Separate Active vs Completed
                 val completed = reminders.filter { it.isCompleted }
-                val rawActive = reminders.filter { !it.isCompleted }.sortedBy { it.startTimeInMillis }
+                val active = reminders.filter { !it.isCompleted }
+
+                // 2. Filter Active (if category selected)
+                val filteredActive = if (category != null) {
+                    active.filter { it.category == category }
+                } else {
+                    active
+                }
                 
-                // 2. Calculate Stats
-                // Streak: Current logic uses total completed count as a proxy for "seeds planted/grown"
-                val streakDays = completed.size 
+                // 3. Filter for TODAY ONLY (Dashboard Rule)
+                // We only show items scheduled for today in the dashboard view (Focus/Buckets)
+                // We also filter for ENABLED items. If a user pauses a task, it shouldn't block the Focus slot.
+                val todayActive = filteredActive.filter { 
+                    com.nami.peace.util.DateUtils.isToday(it.startTimeInMillis) && it.isEnabled 
+                }
+                val todayCompleted = completed.filter { com.nami.peace.util.DateUtils.isToday(it.startTimeInMillis) }
+
+                // 4. Sort Today Tasks: Priority (High->Low), then Time (Earliest first)
+                val sortedTodayActive = todayActive.sortedWith(
+                    compareBy<Reminder> { it.priority.ordinal } 
+                        .thenBy { it.startTimeInMillis }
+                )
+
+                // 5. Identify Focus Task (First item of Today)
+                val focusTask = sortedTodayActive.firstOrNull()
+
+
+                // 6. Bucket Remaining Tasks (Today Only)
+                val remainingTasks = if (focusTask != null) sortedTodayActive.drop(1) else emptyList()
                 
-                // 3. Determine Coach Message
-                val coachMessage = when {
-                    completed.isEmpty() && rawActive.isEmpty() -> com.nami.peace.R.string.coach_welcome
-                    rawActive.isEmpty() -> com.nami.peace.R.string.coach_all_done
-                    else -> getGreetingMessage(rawActive.size)
+                val morningTasks = ArrayList<Reminder>()
+                val afternoonTasks = ArrayList<Reminder>()
+                val eveningTasks = ArrayList<Reminder>()
+
+                remainingTasks.forEach { reminder ->
+                    val bucket = getTaskBucket(reminder.startTimeInMillis)
+                    when (bucket) {
+                        BucketEnum.Morning -> morningTasks.add(reminder)
+                        BucketEnum.Afternoon -> afternoonTasks.add(reminder)
+                        BucketEnum.Evening -> eveningTasks.add(reminder)
+                    }
                 }
 
-                // 4. Filter Active List
-                val filteredActive = if (category != null) {
-                    rawActive.filter { it.category == category }
-                } else {
-                    rawActive
-                }
+                // 7. Progress Stats (Today Only)
+                val completedCount = todayCompleted.size
+                val totalCount = todayActive.size + todayCompleted.size
                 
-                // 5. Identify Next Up (from the filtered list)
-                val enabledReminders = filteredActive.filter { it.isEnabled }
-                val nextUp = if (enabledReminders.isNotEmpty()) {
-                    val earliestTime = enabledReminders.first().startTimeInMillis
-                    val timeWindow = 60 * 1000L 
-                    val simultaneousReminders = enabledReminders.filter { 
-                        kotlin.math.abs(it.startTimeInMillis - earliestTime) < timeWindow
-                    }
-                    simultaneousReminders.minByOrNull { it.priority.ordinal }
-                } else {
-                    null
-                }
-                
-                // 6. Group by Date
-                val sections = filteredActive.groupBy { 
-                    com.nami.peace.util.DateUtils.formatDateHeader(it.startTimeInMillis) 
-                }
+                // 8. Dynamic Categories (Only show used categories)
+                val usedCategories = reminders.map { it.category }.distinct().sortedBy { it.ordinal }
 
                 _uiState.value = HomeUiState(
-                    nextUp = nextUp,
-                    sections = sections,
+                    userName = userName,
+                    greetingRes = getTimeBasedGreetingResource(),
+                    focusTask = focusTask,
+                    morningTasks = morningTasks,
+                    afternoonTasks = afternoonTasks,
+                    eveningTasks = eveningTasks,
+                    completedCount = completedCount,
+                    totalCount = totalCount,
                     selectedFilter = category,
-                    streakDays = streakDays,
-                    coachMessage = coachMessage,
-                    activeCount = rawActive.size
+                    availableCategories = usedCategories
                 )
             }
         }
     }
 
-    private fun getGreetingMessage(activeCount: Int): Int {
+    private enum class BucketEnum { Morning, Afternoon, Evening }
+
+    private fun getTaskBucket(timeInMillis: Long): BucketEnum {
+        val cal = java.util.Calendar.getInstance()
+        cal.timeInMillis = timeInMillis
+        val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
+        return when {
+            hour < 12 -> BucketEnum.Morning
+            hour < 18 -> BucketEnum.Afternoon
+            else -> BucketEnum.Evening
+        }
+    }
+
+    private fun getTimeBasedGreetingResource(): Int {
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
         return when (hour) {
-            in 0..4 -> com.nami.peace.R.string.coach_night
-            in 5..11 -> com.nami.peace.R.string.coach_morning
-            in 12..17 -> com.nami.peace.R.string.coach_afternoon
-            else -> com.nami.peace.R.string.coach_evening
+            in 0..4 -> com.nami.peace.R.string.greeting_night
+            in 5..11 -> com.nami.peace.R.string.greeting_morning
+            in 12..17 -> com.nami.peace.R.string.greeting_afternoon
+            else -> com.nami.peace.R.string.greeting_evening
         }
     }
 
@@ -109,10 +144,22 @@ class HomeViewModel @Inject constructor(
             if (newStatus) {
                 alarmScheduler.schedule(updatedReminder)
                 com.nami.peace.util.DebugLogger.log("Reminder Toggled ON: ${reminder.title}")
+                _toastMessage.send("Reminder resumed")
             } else {
                 alarmScheduler.cancel(updatedReminder)
                 com.nami.peace.util.DebugLogger.log("Reminder Toggled OFF: ${reminder.title}")
+                _toastMessage.send("Reminder paused")
             }
+        }
+    }
+
+    fun markAsDone(reminder: Reminder) {
+        viewModelScope.launch {
+            val updatedReminder = reminder.copy(isCompleted = true)
+            repository.updateReminder(updatedReminder)
+            alarmScheduler.cancel(updatedReminder)
+            com.nami.peace.util.DebugLogger.log("Reminder Completed: ${reminder.title}")
+            _toastMessage.send("Focus task completed")
         }
     }
     
@@ -134,10 +181,14 @@ class HomeViewModel @Inject constructor(
 }
 
 data class HomeUiState(
-    val nextUp: Reminder? = null,
-    val sections: Map<String, List<Reminder>> = emptyMap(),
+    val userName: String? = null,
+    val greetingRes: Int = com.nami.peace.R.string.coach_welcome,
+    val focusTask: Reminder? = null,
+    val morningTasks: List<Reminder> = emptyList(),
+    val afternoonTasks: List<Reminder> = emptyList(),
+    val eveningTasks: List<Reminder> = emptyList(),
+    val completedCount: Int = 0,
+    val totalCount: Int = 0,
     val selectedFilter: com.nami.peace.domain.model.ReminderCategory? = null,
-    val streakDays: Int = 0,
-    val coachMessage: Int = com.nami.peace.R.string.coach_welcome,
-    val activeCount: Int = 0
+    val availableCategories: List<com.nami.peace.domain.model.ReminderCategory> = emptyList()
 )

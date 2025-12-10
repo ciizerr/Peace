@@ -39,6 +39,7 @@ import com.nami.peace.ui.components.PlaceholderScreen
 import com.nami.peace.ui.components.SettingsCategory
 import com.nami.peace.ui.home.HomeScreen
 import com.nami.peace.ui.settings.SettingsContent
+import com.nami.peace.ui.alarm.AlarmsListScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -153,10 +154,13 @@ fun MainScreen(
                         )
                     }
                     MainTab.Alarms -> {
-                        PlaceholderScreen(
-                            title = "Alarms",
-                            subtitle = "Set alarms to wake up or get reminded.",
-                            onBack = { scope.launch { pagerState.animateScrollToPage(MainTab.Dashboard.ordinal) } }
+                        AlarmsListScreen(
+                            hazeState = hazeState,
+                            blurEnabled = blurEnabled,
+                            blurStrength = blurStrength,
+                            blurTintAlpha = blurTintAlpha,
+                            onEditReminder = onEditReminder,
+                            onAddReminder = onAddReminder
                         )
                     }
                     MainTab.Tasks -> {
