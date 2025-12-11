@@ -143,6 +143,11 @@ fun HomeScreen(
             val fabIcon = if (isSelectionMode) Icons.Default.Delete else Icons.Default.Add
             val fabContentDescription = if (isSelectionMode) stringResource(R.string.cd_delete) else stringResource(R.string.cd_add_reminder)
 
+            val fabContentColor by animateColorAsState(
+                if (isSelectionMode) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onPrimary,
+                label = "fab_content_color"
+            )
+
             GlassyFloatingActionButton(
                 onClick = { 
                     if (isSelectionMode) {
@@ -153,10 +158,14 @@ fun HomeScreen(
                 },
                 modifier = Modifier.padding(bottom = 100.dp), // Lift above bottom bar
                 containerColor = fabContainerColor,
+                contentColor = fabContentColor,
                 icon = fabIcon,
                 contentDescription = fabContentDescription,
                 hazeState = hazeState,
-                isVisible = isFABVisible
+                isVisible = isFABVisible,
+                blurEnabled = blurEnabled,
+                blurStrength = blurStrength,
+                blurTintAlpha = blurTintAlpha
             )
         }
     ) { padding ->

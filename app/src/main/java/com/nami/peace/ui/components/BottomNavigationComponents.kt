@@ -142,7 +142,7 @@ fun FloatingBottomBar(
                             )
                         } else {
                             Modifier.background(
-                                (if (isDark) GlassyBlack else GlassyWhite).copy(alpha = 0.9f)
+                                MaterialTheme.colorScheme.surfaceContainer
                             )
                         }
                     )
@@ -283,7 +283,7 @@ fun CategoryCarouselBar(
                             )
                         } else {
                             Modifier.background(
-                                (if (isDark) GlassyBlack else GlassyWhite).copy(alpha = 0.9f)
+                                MaterialTheme.colorScheme.surfaceContainer
                             )
                         }
                     )

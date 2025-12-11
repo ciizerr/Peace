@@ -242,18 +242,27 @@ fun HistoryScreen(
              val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
              val borderModifier = if (showBorder) Modifier.border(1.dp, borderColor, shape) else Modifier
         
+            val containerColor = if (blurEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .shadow(elevation = elevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
                     .then(borderModifier)
-                    .hazeChild(
-                        state = state,
-                        shape = shape,
-                        style = HazeStyle(
-                            blurRadius = blurStrength.dp, 
-                            tint = if (isDark) com.nami.peace.ui.theme.GlassyBlack.copy(alpha = blurTintAlpha) else com.nami.peace.ui.theme.GlassyWhite.copy(alpha = blurTintAlpha)
-                        )
+                    .background(containerColor)
+                    .then(
+                        if (blurEnabled) {
+                            Modifier.hazeChild(
+                                state = state,
+                                shape = shape,
+                                style = HazeStyle(
+                                    blurRadius = blurStrength.dp, 
+                                    tint = if (isDark) com.nami.peace.ui.theme.GlassyBlack.copy(alpha = blurTintAlpha) else com.nami.peace.ui.theme.GlassyWhite.copy(alpha = blurTintAlpha)
+                                )
+                            )
+                        } else {
+                            Modifier
+                        }
                     )
             ) {
                 HistoryReceiptSheet(

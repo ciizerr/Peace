@@ -92,7 +92,11 @@ fun GlassyFloatingActionButton(
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
     containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    isVisible: Boolean = true
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+    isVisible: Boolean = true,
+    blurEnabled: Boolean = true,
+    blurStrength: Float = 12f,
+    blurTintAlpha: Float = 0.5f
 ) {
     val shape = androidx.compose.foundation.shape.CircleShape
     val isDark = androidx.compose.foundation.isSystemInDarkTheme()
@@ -116,57 +120,62 @@ fun GlassyFloatingActionButton(
                 .clip(shape)
                 .clickable(
                     interactionSource = interactionSource,
-                    indication = androidx.compose.material3.ripple(color = MaterialTheme.colorScheme.onPrimaryContainer),
+                    indication = androidx.compose.material3.ripple(color = contentColor),
                     onClick = onClick
                 ),
             contentAlignment = Alignment.Center
         ) {
-            // Layer 1: Pure Blur (Behind Tint)
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .then(
-                        if (hazeState != null) {
-                            Modifier.hazeChild(
-                                state = hazeState,
-                                shape = shape,
-                                style = HazeStyle(
-                                    blurRadius = 12.dp,
-                                    tint = Color.Transparent // Clear blur, tint handled by overlay
-                                )
+            
+            // Background Logic:
+            // If Blur Enabled: Use semi-transparent surface + Haze
+            // If Blur Disabled: Use SOLID containerColor (Opaque)
+            
+            val activeContainerColor = if (blurEnabled) {
+                containerColor.copy(alpha = 0.45f) // Glassy tint
+            } else {
+                containerColor // Solid opaque
+            }
+
+            // Layer 1: Haze (Only if enabled)
+            if (blurEnabled && hazeState != null) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .hazeChild(
+                            state = hazeState,
+                            shape = shape,
+                            style = HazeStyle(
+                                blurRadius = blurStrength.dp,
+                                tint = Color.Transparent
                             )
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .background(
-                        if (hazeState == null) MaterialTheme.colorScheme.surface.copy(alpha = 0.5f) else Color.Transparent
-                    )
-            )
+                        )
+                )
+            } else if (!blurEnabled) {
+                // If blur disabled, activeContainerColor handles the solid part.
+            }
     
-            // Layer 2: Tint Overlay (Consistent Color)
-            Box(
+            // Layer 2: Tint/Background Overlay and Border
+             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .background(containerColor.copy(alpha = 0.45f))
-            )
-    
-            // Layer 3: Border Ring (Hides Edge Artifacts)
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .border(
-                        width = 1.dp, 
-                        color = Color.White.copy(alpha = 0.3f), // Subtle highlight
-                        shape = shape
+                    .background(activeContainerColor)
+                    .then(
+                         // Only show borders in Glassy mode to define edges
+                        if (blurEnabled) {
+                            Modifier.border(
+                                width = 1.dp, 
+                                color = Color.White.copy(alpha = 0.3f),
+                                shape = shape
+                            )
+                        } else Modifier
                     )
             )
     
-            // Layer 4: Content Icon
+            // Layer 3: Content Icon
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                tint = if (blurEnabled) contentColor.copy(alpha = 0.9f) else contentColor
             )
         }
     }

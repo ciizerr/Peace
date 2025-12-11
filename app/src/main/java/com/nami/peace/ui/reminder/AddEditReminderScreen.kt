@@ -22,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.nami.peace.R
 import com.nami.peace.domain.model.RecurrenceType
 import com.nami.peace.ui.components.GlassyTopAppBar
+import com.nami.peace.ui.components.GlassySheetSurface
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -34,14 +35,29 @@ import androidx.compose.ui.graphics.Color
 fun AddEditReminderScreen(
     onNavigateUp: () -> Unit,
     viewModel: AddEditReminderViewModel = hiltViewModel(),
-    hazeState: HazeState? = null, // Accept hazeState
-    blurEnabled: Boolean = true,
-    blurStrength: Float = 12f,
-    blurTintAlpha: Float = 0.5f,
-    shadowsEnabled: Boolean = true,
-    shadowStyle: String = "Medium"
+    settingsViewModel: com.nami.peace.ui.settings.SettingsViewModel = hiltViewModel(),
+    hazeState: HazeState? = null
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    // Global Settings
+    val blurEnabled by settingsViewModel.blurEnabled.collectAsState()
+    val blurStrength by settingsViewModel.blurStrength.collectAsState()
+    val blurTintAlpha by settingsViewModel.blurTintAlpha.collectAsState()
+    val shadowsEnabled by settingsViewModel.shadowsEnabled.collectAsState()
+    val shadowStyleString by settingsViewModel.shadowStyle.collectAsState()
+    
+    // Map String -> Int for GlassySheetSurface
+    val shadowStyleInt = remember(shadowStyleString) {
+        when (shadowStyleString) {
+            "None" -> 0
+            "Subtle" -> 1
+            "Medium" -> 2
+            "Hard" -> 3
+            else -> 1
+        }
+    }
+
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -104,10 +120,10 @@ fun AddEditReminderScreen(
                     title = { Text(stringResource(if (uiState.id != 0) R.string.edit_reminder else R.string.new_reminder)) },
                     hazeState = localHazeState,
                     blurEnabled = blurEnabled,
-                    blurStrength = blurStrength,
+                    blurStrength = blurStrength, // Float for GlassyTopAppBar
                     blurTintAlpha = blurTintAlpha,
                     shadowsEnabled = shadowsEnabled,
-                    shadowStyle = shadowStyle
+                    shadowStyle = shadowStyleString // String for GlassyTopAppBar
                 )
             },
             // Bottom Bar removed to handle as floating overlay
@@ -124,7 +140,7 @@ fun AddEditReminderScreen(
                     .fillMaxSize()
                     .haze(
                         state = localHazeState,
-                        style = dev.chrisbanes.haze.HazeStyle(blurRadius = blurStrength.dp, tint = Color.Transparent)
+                        style = dev.chrisbanes.haze.HazeStyle(blurRadius = if (blurEnabled) blurStrength.dp else 0.dp, tint = Color.Transparent)
                     ) 
             ) {
                 item {
@@ -138,8 +154,6 @@ fun AddEditReminderScreen(
                 }
 
                 item {
-                    // FIXED: Always show the selected date or Today, regardless of recurrence type
-                    // This prevents "Weekly" from appearing in the Date slot behavior
                     DateTimeCard(
                         dateText = uiState.dateInMillis?.let { dateFormat.format(Date(it)) } ?: stringResource(R.string.today),
                         timeText = timeFormat.format(Date(uiState.startTimeInMillis)),
@@ -214,10 +228,10 @@ fun AddEditReminderScreen(
                 GlassySheetSurface(
                     hazeState = localHazeState,
                     blurEnabled = blurEnabled,
-                    blurStrength = blurStrength,
+                    blurStrength = blurStrength.toInt(), // Int for GlassySheetSurface
                     blurTintAlpha = blurTintAlpha,
                     shadowsEnabled = shadowsEnabled,
-                    shadowStyle = shadowStyle
+                    shadowStyle = shadowStyleInt // Int for GlassySheetSurface
                 ) {
                     AdvancedBottomSheetContent(
                         isNagModeEnabled = uiState.isNagModeEnabled,

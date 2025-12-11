@@ -443,67 +443,7 @@ fun GlassyActionBar(
     }
 }
 
-// --- GLASSY SHEET SURFACE ---
-@Composable
-fun GlassySheetSurface(
-    hazeState: HazeState?,
-    blurEnabled: Boolean = true,
-    blurStrength: Float = 12f,
-    blurTintAlpha: Float = 0.5f,
-    shadowsEnabled: Boolean = true,
-    shadowStyle: String = "Medium",
-    content: @Composable () -> Unit
-) {
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
-    val shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-    
-    // Shadow Logic (Matched with HistoryScreen)
-    val showShadow = blurEnabled && shadowsEnabled && shadowStyle != "None"
-    val baseAlpha = if (showShadow) {
-        when (shadowStyle) {
-            "Soft" -> 0.15f
-            "Medium" -> 0.25f
-            "Sharp" -> 0.4f
-            else -> 0f
-        }
-    } else 0f
-    
-    val shadowColor = com.nami.peace.ui.theme.SoftShadow.copy(alpha = baseAlpha)
-    val elevation = if (showShadow) {
-        when (shadowStyle) {
-            "Soft" -> 4.dp
-            "Medium" -> 8.dp
-            "Sharp" -> 12.dp
-            else -> 0.dp
-        }
-    } else 0.dp
-    
-    // Border Logic for Glass Mode
-    val showBorder = blurEnabled && shadowsEnabled && shadowStyle != "None"
-    val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
-    val borderModifier = if (showBorder) Modifier.border(1.dp, borderColor, shape) else Modifier
 
-    val tintColor = if (isDark) com.nami.peace.ui.theme.GlassyBlack else com.nami.peace.ui.theme.GlassyWhite
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(elevation = elevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
-            .then(borderModifier)
-            .hazeChild(
-                state = hazeState ?: remember { HazeState() },
-                shape = shape,
-                style = HazeStyle(
-                    blurRadius = blurStrength.dp, 
-                    tint = tintColor.copy(alpha = blurTintAlpha)
-                )
-            )
-            .background(tintColor.copy(alpha = if (blurEnabled) 0f else 0.9f), shape) // Fallback if blur disabled
-            .padding(bottom = 16.dp)
-    ) {
-        content()
-    }
-}
 
 @Composable
 fun AdvancedBottomSheetTrigger(

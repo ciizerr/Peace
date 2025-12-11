@@ -86,7 +86,7 @@ fun GlassyTopAppBar(
                         )
                     } else {
                         Modifier.background(
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.6f) // Reduced fallback alpha
+                            MaterialTheme.colorScheme.surfaceContainer
                         )
                     }
                 )
