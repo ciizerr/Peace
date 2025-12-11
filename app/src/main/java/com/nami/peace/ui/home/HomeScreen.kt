@@ -67,6 +67,7 @@ fun HomeScreen(
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
+    isFABVisible: Boolean = true
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -98,8 +99,10 @@ fun HomeScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val allReminders = listOfNotNull(uiState.focusTask) + uiState.morningTasks + uiState.afternoonTasks + uiState.eveningTasks
-                        val toDelete = allReminders.filter { selectedIds.contains(it.id) }
+                        val toDelete = (uiState.morningTasks + uiState.afternoonTasks + uiState.eveningTasks + listOfNotNull(uiState.focusTask))
+                            .filter { selectedIds.contains(it.id) }
+                        
+                        // We use a helper from VM to delete multiple (ensure VM has it)
                         viewModel.deleteReminders(toDelete)
                         selectedIds = emptySet()
                         showDeleteDialog = false
@@ -146,11 +149,12 @@ fun HomeScreen(
                         onAddReminder()
                     }
                 },
-                modifier = Modifier.padding(bottom = bottomPadding),
+                modifier = Modifier.padding(bottom = 100.dp), // Lift above bottom bar
                 containerColor = fabContainerColor,
                 icon = fabIcon,
                 contentDescription = fabContentDescription,
-                hazeState = hazeState
+                hazeState = hazeState,
+                isVisible = isFABVisible
             )
         }
     ) { padding ->

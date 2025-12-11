@@ -62,12 +62,22 @@ fun MainScreen(
     
     // Bottom Bar Visibility Logic
     var isBottomBarVisible by remember { mutableStateOf(true) }
+    var scrollAccumulator by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
+    val scrollThreshold = 100f
+
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (available.y < -5) {
+                // Reset accumulator if direction changes
+                if ((available.y < 0 && scrollAccumulator > 0) || (available.y > 0 && scrollAccumulator < 0)) {
+                   scrollAccumulator = 0f
+                }
+                
+                scrollAccumulator += available.y
+
+                if (scrollAccumulator < -scrollThreshold) {
                     isBottomBarVisible = false
-                } else if (available.y > 5) {
+                } else if (scrollAccumulator > scrollThreshold) {
                     isBottomBarVisible = true
                 }
                 return Offset.Zero
@@ -150,7 +160,8 @@ fun MainScreen(
                             hazeState = hazeState,
                             blurEnabled = blurEnabled,
                             blurStrength = blurStrength,
-                            blurTintAlpha = blurTintAlpha
+                            blurTintAlpha = blurTintAlpha,
+                            isFABVisible = isBottomBarVisible
                         )
                     }
                     MainTab.Alarms -> {
@@ -160,7 +171,8 @@ fun MainScreen(
                             blurStrength = blurStrength,
                             blurTintAlpha = blurTintAlpha,
                             onEditReminder = onEditReminder,
-                            onAddReminder = onAddReminder
+                            onAddReminder = onAddReminder,
+                            isFABVisible = isBottomBarVisible
                         )
                     }
                     MainTab.Tasks -> {

@@ -43,7 +43,8 @@ fun AlarmsListScreen(
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
     onEditReminder: (Int) -> Unit = {},
-    onAddReminder: () -> Unit = {}
+    onAddReminder: () -> Unit = {},
+    isFABVisible: Boolean = true
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -140,7 +141,8 @@ fun AlarmsListScreen(
                 containerColor = fabContainerColor,
                 icon = fabIcon,
                 contentDescription = fabContentDescription,
-                hazeState = hazeState
+                hazeState = hazeState,
+                isVisible = isFABVisible
             )
         }
     ) { padding ->

@@ -89,76 +89,83 @@ fun GlassyFloatingActionButton(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
-    containerColor: Color = MaterialTheme.colorScheme.primaryContainer
+    containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
+    isVisible: Boolean = true
 ) {
     val shape = androidx.compose.foundation.shape.CircleShape
     val isDark = androidx.compose.foundation.isSystemInDarkTheme()
     val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     
-    // Root Container
-    Box(
-        modifier = modifier
-            .size(56.dp)
-            .shadow(
-                elevation = 8.dp, 
-                shape = shape,
-                spotColor = if (isDark) Color.Black.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.2f),
-                ambientColor = if (isDark) Color.Black.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.2f)
-            )
-            .clip(shape)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = androidx.compose.material3.ripple(color = MaterialTheme.colorScheme.onPrimaryContainer),
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
+    androidx.compose.animation.AnimatedVisibility(
+        visible = isVisible,
+        enter = androidx.compose.animation.scaleIn() + androidx.compose.animation.fadeIn(),
+        exit = androidx.compose.animation.scaleOut() + androidx.compose.animation.fadeOut()
     ) {
-        // Layer 1: Pure Blur (Behind Tint)
+        // Root Container
         Box(
-            modifier = Modifier
-                .matchParentSize()
-                .then(
-                    if (hazeState != null) {
-                        Modifier.hazeChild(
-                            state = hazeState,
-                            shape = shape,
-                            style = HazeStyle(
-                                blurRadius = 12.dp,
-                                tint = Color.Transparent // Clear blur, tint handled by overlay
+            modifier = modifier
+                .size(56.dp)
+                .shadow(
+                    elevation = 8.dp, 
+                    shape = shape,
+                    spotColor = if (isDark) Color.Black.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.2f),
+                    ambientColor = if (isDark) Color.Black.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.2f)
+                )
+                .clip(shape)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = androidx.compose.material3.ripple(color = MaterialTheme.colorScheme.onPrimaryContainer),
+                    onClick = onClick
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            // Layer 1: Pure Blur (Behind Tint)
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .then(
+                        if (hazeState != null) {
+                            Modifier.hazeChild(
+                                state = hazeState,
+                                shape = shape,
+                                style = HazeStyle(
+                                    blurRadius = 12.dp,
+                                    tint = Color.Transparent // Clear blur, tint handled by overlay
+                                )
                             )
-                        )
-                    } else {
-                        Modifier
-                    }
-                )
-                .background(
-                    if (hazeState == null) MaterialTheme.colorScheme.surface.copy(alpha = 0.5f) else Color.Transparent
-                )
-        )
-
-        // Layer 2: Tint Overlay (Consistent Color)
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .background(containerColor.copy(alpha = 0.45f))
-        )
-
-        // Layer 3: Border Ring (Hides Edge Artifacts)
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .border(
-                    width = 1.dp, 
-                    color = Color.White.copy(alpha = 0.3f), // Subtle highlight
-                    shape = shape
-                )
-        )
-
-        // Layer 4: Content Icon
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .background(
+                        if (hazeState == null) MaterialTheme.colorScheme.surface.copy(alpha = 0.5f) else Color.Transparent
+                    )
+            )
+    
+            // Layer 2: Tint Overlay (Consistent Color)
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(containerColor.copy(alpha = 0.45f))
+            )
+    
+            // Layer 3: Border Ring (Hides Edge Artifacts)
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .border(
+                        width = 1.dp, 
+                        color = Color.White.copy(alpha = 0.3f), // Subtle highlight
+                        shape = shape
+                    )
+            )
+    
+            // Layer 4: Content Icon
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
     }
 }
