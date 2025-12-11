@@ -53,7 +53,7 @@ fun TitleSection(
     modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
         modifier = modifier.fillMaxWidth()
     ) {
@@ -66,6 +66,9 @@ fun TitleSection(
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 singleLine = true,
+                shape = RoundedCornerShape(24.dp), // Slightly less than card for inner nesting or match it? Let's match or use Circle. 
+                // Actually to look like "bottom nav bar" (floating pill), the card is the container. 
+                // The text field inside should probably be cleaner.
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                 )
@@ -336,7 +339,11 @@ fun AdvancedBottomSheetContent(
                     onValueChange = { if (it.all(Char::isDigit)) onNagIntervalValueChanged(it) },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    shape = RoundedCornerShape(32.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                    )
                 )
                 TimeUnit.values().forEach { unit ->
                     FilterChip(

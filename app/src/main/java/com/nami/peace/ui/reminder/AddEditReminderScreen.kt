@@ -93,7 +93,7 @@ fun AddEditReminderScreen(
 
     fun onSave() {
         if (uiState.title.isBlank()) {
-            scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.err_title_required)) }
+            android.widget.Toast.makeText(context, context.getString(R.string.err_title_required), android.widget.Toast.LENGTH_SHORT).show()
         } else {
             viewModel.onEvent(AddEditReminderEvent.SaveReminder)
             onNavigateUp()
