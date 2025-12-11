@@ -177,6 +177,11 @@ fun GlassyBottomSheet(
     onDismissRequest: () -> Unit,
     show: Boolean,
     hazeState: HazeState? = null,
+    blurEnabled: Boolean = true,
+    blurStrength: Int = 15,
+    blurTintAlpha: Float = 0.5f,
+    shadowsEnabled: Boolean = true,
+    shadowStyle: Int = 1,
     content: @Composable () -> Unit
 ) {
     // Back Handler
@@ -224,7 +229,15 @@ fun GlassyBottomSheet(
                         onClick = {} // Capture clicks to prevent dismissing
                     )
             ) {
-                GlassySheetSurface(hazeState = hazeState, content = content)
+                GlassySheetSurface(
+                    hazeState = hazeState,
+                    blurEnabled = blurEnabled,
+                    blurStrength = blurStrength,
+                    blurTintAlpha = blurTintAlpha,
+                    shadowsEnabled = shadowsEnabled,
+                    shadowStyle = shadowStyle,
+                    content = content
+                )
             }
         }
     }
@@ -233,20 +246,61 @@ fun GlassyBottomSheet(
 @Composable
 fun GlassySheetSurface(
     hazeState: HazeState?,
+    blurEnabled: Boolean = true,
+    blurStrength: Int = 15,
+    blurTintAlpha: Float = 0.5f,
+    shadowsEnabled: Boolean = true,
+    shadowStyle: Int = 1,
     content: @Composable () -> Unit
 ) {
     val shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     val isDark = androidx.compose.foundation.isSystemInDarkTheme()
     val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
     
+    // Background Color Logic
+    // If Blur is ENABLED: Transparent (Haze fills it)
+    // If Blur is DISABLED: Solid Surface Color (User Request: "Solid but semi-transparent? or Full Solid?")
+    // Decision: Full Solid Surface Container for better readability when blur is off.
+    val containerColor = if (blurEnabled) {
+        Color.Transparent 
+    } else {
+        // Fallback to a solid surface color. 
+        // SurfaceContainer is a good default for sheets in M3.
+        MaterialTheme.colorScheme.surfaceContainer
+    }
+
+    // Shadow Logic based on Settings
+    val shadowModifier = if (shadowsEnabled) {
+        when (shadowStyle) {
+            0 -> Modifier // None
+            1 -> Modifier.shadow(8.dp, shape, spotColor = Color.Black.copy(alpha = 0.1f)) // Soft
+            2 -> Modifier.shadow(16.dp, shape, spotColor = Color.Black.copy(alpha = 0.2f)) // Medium
+            3 -> Modifier.shadow(24.dp, shape, spotColor = Color.Black.copy(alpha = 0.3f)) // Hard
+            else -> Modifier
+        }
+    } else {
+        Modifier
+    }
+
+    val borderModifier = if (shadowsEnabled && shadowStyle > 0) {
+         Modifier.border(1.dp, borderColor, shape)
+    } else if (!shadowsEnabled) {
+        // If shadows disabled, user might still want a border, but strictly speaking "Glassy" implies border + blur.
+        // We keep the border for definition unless specifically removed, but let's stick to the main pattern.
+        Modifier.border(1.dp, borderColor, shape)
+    } else {
+        Modifier
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .then(shadowModifier)
             .clip(shape)
-            .border(1.dp, borderColor, shape)
-            .background(Color.Transparent) // Remove duplicate background layer
+            .then(borderModifier)
+            .background(containerColor)
     ) {
-        if (hazeState != null) {
+        if (blurEnabled && hazeState != null) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -255,10 +309,10 @@ fun GlassySheetSurface(
                         shape = shape,
                         style = HazeStyle(
                              tint = if (isDark) 
-                                 com.nami.peace.ui.theme.GlassyBlack.copy(alpha = 0.2f) // Reduced alpha
+                                 com.nami.peace.ui.theme.GlassyBlack.copy(alpha = if (blurEnabled) 0.2f else 0.8f) 
                              else 
-                                 com.nami.peace.ui.theme.GlassyWhite.copy(alpha = 0.2f), // Reduced alpha
-                             blurRadius = 20.dp
+                                 com.nami.peace.ui.theme.GlassyWhite.copy(alpha = if (blurEnabled) 0.2f else 0.8f),
+                             blurRadius = if (blurEnabled) blurStrength.dp else 0.dp
                         )
                     )
                      .background(
