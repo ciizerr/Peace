@@ -34,6 +34,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
 
 @Composable
 fun AlarmsListScreen(
@@ -175,7 +179,12 @@ fun AlarmsListScreen(
                             )
                         } else Modifier
                     ),
-                contentPadding = PaddingValues(top = 100.dp, bottom = 100.dp, start = 16.dp, end = 16.dp),
+                contentPadding = PaddingValues(
+                    top = 100.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 
+                    bottom = 100.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(), 
+                    start = 16.dp, 
+                    end = 16.dp
+                ),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 // 1. Next Alarm Hero

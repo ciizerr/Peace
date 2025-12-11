@@ -58,6 +58,9 @@ import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
 import com.nami.peace.R
 import dev.chrisbanes.haze.hazeChild
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 
 enum class MainTab(@StringRes val titleRes: Int, val icon: ImageVector, val route: String) {
     Dashboard(R.string.nav_dashboard, Icons.Filled.Dashboard, "dashboard"),
@@ -117,6 +120,7 @@ fun FloatingBottomBar(
         // Z-Index Fix: Root Box contains content
         Box(
             modifier = Modifier
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
                 .shadow(elevation = effectiveElevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
                 .then(borderModifier)
@@ -260,6 +264,7 @@ fun CategoryCarouselBar(
 
         Box(
             modifier = Modifier
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
                 .shadow(elevation = effectiveElevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
                 .then(borderModifier)

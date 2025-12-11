@@ -24,6 +24,9 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.zIndex
 import dev.chrisbanes.haze.hazeChild
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +67,7 @@ fun GlassyTopAppBar(
 
     Box(
         modifier = modifier
+            .windowInsetsPadding(WindowInsets.statusBars)
             .padding(top = 8.dp, start = 16.dp, end = 16.dp)
             .shadow(elevation = effectiveElevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
             .then(borderModifier)

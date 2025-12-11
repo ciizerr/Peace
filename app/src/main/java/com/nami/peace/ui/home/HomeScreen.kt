@@ -43,6 +43,13 @@ import dev.chrisbanes.haze.haze
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.draw.clip
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
@@ -192,8 +199,8 @@ fun HomeScreen(
                         } else Modifier
                     ),
                 contentPadding = PaddingValues(
-                    top = 100.dp, // Space for Top bar
-                    bottom = 100.dp + bottomPadding, // Space for Bottom bar(s) + FAB
+                    top = 100.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 
+                    bottom = 100.dp + bottomPadding + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(), 
                     start = 16.dp,
                     end = 16.dp
                 ),

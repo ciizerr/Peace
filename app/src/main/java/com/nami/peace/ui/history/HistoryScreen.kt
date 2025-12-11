@@ -41,6 +41,10 @@ import java.util.Locale
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -89,7 +93,10 @@ fun HistoryScreen(
                         state = state,
                         style = HazeStyle(blurRadius = 15.dp, tint = Color.Transparent)
                     ),
-                contentPadding = PaddingValues(top = 100.dp, bottom = 100.dp),
+                contentPadding = PaddingValues(
+                    top = 100.dp + WindowInsets.statusBars.asPaddingValues().calculateTopPadding(), 
+                    bottom = 100.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                ),
             ) {
                 // Item 1: Calendar
                 item {
