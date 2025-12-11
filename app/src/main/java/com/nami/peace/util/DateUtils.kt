@@ -27,6 +27,17 @@ object DateUtils {
                 calendar.get(Calendar.DAY_OF_YEAR) == tomorrowDay
     }
 
+    fun isYesterday(timeInMillis: Long): Boolean {
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, -1)
+        val yesterdayYear = calendar.get(Calendar.YEAR)
+        val yesterdayDay = calendar.get(Calendar.DAY_OF_YEAR)
+
+        calendar.timeInMillis = timeInMillis
+        return calendar.get(Calendar.YEAR) == yesterdayYear &&
+                calendar.get(Calendar.DAY_OF_YEAR) == yesterdayDay
+    }
+
     fun formatDateHeader(timeInMillis: Long): String {
         if (isToday(timeInMillis)) return "Today"
         if (isTomorrow(timeInMillis)) return "Tomorrow"

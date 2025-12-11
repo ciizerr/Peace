@@ -33,6 +33,8 @@ import com.nami.peace.ui.theme.AccentBlue
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeChild
+import androidx.compose.ui.zIndex
+import androidx.compose.foundation.layout.fillMaxWidth
 
 @Composable
 fun PlaceholderScreen(
@@ -167,5 +169,104 @@ fun GlassyFloatingActionButton(
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
+    }
+}
+
+@Composable
+fun GlassyBottomSheet(
+    onDismissRequest: () -> Unit,
+    show: Boolean,
+    hazeState: HazeState? = null,
+    content: @Composable () -> Unit
+) {
+    // Back Handler
+    if (show) {
+        androidx.activity.compose.BackHandler(onBack = onDismissRequest)
+    }
+
+    // Container Layer
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .zIndex(100f) // Ensure it sits on top
+    ) {
+        // Scrim
+        androidx.compose.animation.AnimatedVisibility(
+            visible = show,
+            enter = androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.fadeOut(),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.32f))
+                    .clickable(
+                        interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null,
+                        onClick = onDismissRequest
+                    )
+            )
+        }
+
+        // Sheet Content
+        androidx.compose.animation.AnimatedVisibility(
+            visible = show,
+            enter = androidx.compose.animation.slideInVertically { it } + androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.slideOutVertically { it } + androidx.compose.animation.fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clickable(
+                        interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null,
+                        onClick = {} // Capture clicks to prevent dismissing
+                    )
+            ) {
+                GlassySheetSurface(hazeState = hazeState, content = content)
+            }
+        }
+    }
+}
+
+@Composable
+fun GlassySheetSurface(
+    hazeState: HazeState?,
+    content: @Composable () -> Unit
+) {
+    val shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
+    
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .border(1.dp, borderColor, shape)
+            .background(Color.Transparent) // Remove duplicate background layer
+    ) {
+        if (hazeState != null) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .hazeChild(
+                        state = hazeState,
+                        shape = shape,
+                        style = HazeStyle(
+                             tint = if (isDark) 
+                                 com.nami.peace.ui.theme.GlassyBlack.copy(alpha = 0.2f) // Reduced alpha
+                             else 
+                                 com.nami.peace.ui.theme.GlassyWhite.copy(alpha = 0.2f), // Reduced alpha
+                             blurRadius = 20.dp
+                        )
+                    )
+                     .background(
+                        if (isDark) com.nami.peace.ui.theme.GlassyBlack.copy(alpha = 0.1f) 
+                        else com.nami.peace.ui.theme.GlassyWhite.copy(alpha = 0.1f)
+                    )
+            )
+        }
+        content()
     }
 }

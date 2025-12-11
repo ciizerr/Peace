@@ -29,7 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -62,7 +62,7 @@ import dev.chrisbanes.haze.hazeChild
 enum class MainTab(@StringRes val titleRes: Int, val icon: ImageVector, val route: String) {
     Dashboard(R.string.nav_dashboard, Icons.Filled.Dashboard, "dashboard"),
     Alarms(R.string.nav_alarms, Icons.Filled.Notifications, "alarms"),
-    Tasks(R.string.nav_tasks, Icons.Filled.DoneAll, "tasks"),
+    History(R.string.history_log, Icons.Filled.History, "history"),
     Settings(R.string.nav_settings, Icons.Filled.Settings, "settings")
 }
 

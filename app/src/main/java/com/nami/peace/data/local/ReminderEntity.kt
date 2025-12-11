@@ -26,7 +26,8 @@ data class ReminderEntity(
     val isStrictSchedulingEnabled: Boolean = false,
     val dateInMillis: Long? = null,
     val daysOfWeek: List<Int> = emptyList(),
-    val originalStartTimeInMillis: Long = startTimeInMillis
+    val originalStartTimeInMillis: Long = startTimeInMillis,
+    val completedTime: Long? = null
 ) {
     fun toDomain(): Reminder {
         return Reminder(
@@ -47,7 +48,8 @@ data class ReminderEntity(
             isStrictSchedulingEnabled = isStrictSchedulingEnabled,
             dateInMillis = dateInMillis,
             daysOfWeek = daysOfWeek,
-            originalStartTimeInMillis = originalStartTimeInMillis
+            originalStartTimeInMillis = originalStartTimeInMillis,
+            completedTime = completedTime
         )
     }
 
@@ -71,7 +73,8 @@ data class ReminderEntity(
                 isStrictSchedulingEnabled = reminder.isStrictSchedulingEnabled,
                 dateInMillis = reminder.dateInMillis,
                 daysOfWeek = reminder.daysOfWeek,
-                originalStartTimeInMillis = reminder.originalStartTimeInMillis
+                originalStartTimeInMillis = reminder.originalStartTimeInMillis,
+                completedTime = reminder.completedTime
             )
         }
     }

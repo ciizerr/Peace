@@ -54,12 +54,12 @@ fun GlassyTopAppBar(
                             shape = shape,
                             style = HazeStyle(
                                 blurRadius = blurStrength.dp,
-                                tint = if (isDark) GlassyBlack.copy(alpha = blurTintAlpha) else GlassyWhite.copy(alpha = blurTintAlpha)
+                                tint = if (isDark) GlassyBlack.copy(alpha = 0.2f) else GlassyWhite.copy(alpha = 0.2f)
                             )
                         )
                     } else {
                         Modifier.background(
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.6f) // Reduced fallback alpha
                         )
                     }
                 )

@@ -47,7 +47,6 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     onAddReminder: () -> Unit,
     onEditReminder: (Int) -> Unit,
-    onNavigateToHistory: () -> Unit,
     settingsViewModel: com.nami.peace.ui.settings.SettingsViewModel = androidx.hilt.navigation.compose.hiltViewModel()
 ) {
     val pagerState = rememberPagerState(pageCount = { MainTab.values().size })
@@ -61,9 +60,12 @@ fun MainScreen(
     val blurTintAlpha by settingsViewModel.blurTintAlpha.collectAsState()
     
     // Bottom Bar Visibility Logic
+    var isSheetOpen by remember { mutableStateOf(false) } // Track sheet state
     var isBottomBarVisible by remember { mutableStateOf(true) }
     var scrollAccumulator by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
     val scrollThreshold = 100f
+
+
 
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -92,9 +94,9 @@ fun MainScreen(
     // Sync Main Tab Selection
     val selectedTab by remember { derivedStateOf { MainTab.values()[pagerState.currentPage] } }
 
-    // Swipe Redirect: Settings -> Dashboard (Skip Tasks and Alarms)
+    // Swipe Redirect: Settings -> Dashboard (Skip History and Alarms)
     LaunchedEffect(pagerState.currentPage, pagerState.targetPage) {
-        if (pagerState.currentPage == MainTab.Settings.ordinal && pagerState.targetPage == MainTab.Tasks.ordinal) {
+        if (pagerState.currentPage == MainTab.Settings.ordinal && pagerState.targetPage == MainTab.History.ordinal) {
              pagerState.scrollToPage(MainTab.Dashboard.ordinal)
         }
     }
@@ -110,7 +112,7 @@ fun MainScreen(
                     onTabSelected = { tab ->
                         scope.launch { pagerState.animateScrollToPage(tab.ordinal, animationSpec = tween(300)) }
                     },
-                    isVisible = isBottomBarVisible && selectedTab != MainTab.Settings,
+                    isVisible = isBottomBarVisible && !isSheetOpen && selectedTab != MainTab.Settings,
                     hazeState = hazeState,
                     blurEnabled = blurEnabled,
                     blurStrength = blurStrength,
@@ -175,11 +177,13 @@ fun MainScreen(
                             isFABVisible = isBottomBarVisible
                         )
                     }
-                    MainTab.Tasks -> {
-                        PlaceholderScreen(
-                            title = "Tasks",
-                            subtitle = "Manage your daily tasks efficiently.",
-                            onBack = { scope.launch { pagerState.animateScrollToPage(MainTab.Dashboard.ordinal) } }
+                    MainTab.History -> {
+                        com.nami.peace.ui.history.HistoryScreen(
+                            hazeState = hazeState,
+                            blurEnabled = blurEnabled,
+                            blurStrength = blurStrength,
+                            blurTintAlpha = blurTintAlpha,
+                            onSheetStateChange = { open -> isSheetOpen = open }
                         )
                     }
                     MainTab.Settings -> {
@@ -190,7 +194,9 @@ fun MainScreen(
                         ) { categoryPage ->
                             SettingsContent(
                                 category = SettingsCategory.values()[categoryPage],
-                                onNavigateToHistory = onNavigateToHistory,
+                                onNavigateToHistory = {
+                                    scope.launch { pagerState.animateScrollToPage(MainTab.History.ordinal) }
+                                },
                                 onNavigateToDashboard = {
                                     scope.launch { pagerState.animateScrollToPage(MainTab.Dashboard.ordinal) }
                                 },

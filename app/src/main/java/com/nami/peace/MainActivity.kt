@@ -71,8 +71,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             com.nami.peace.ui.main.MainScreen(
                                 onAddReminder = { navController.navigate("add_edit") },
-                                onEditReminder = { id -> navController.navigate("detail/$id") },
-                                onNavigateToHistory = { navController.navigate("history") }
+                                onEditReminder = { id -> navController.navigate("detail/$id") }
                             )
                         }
                         composable(
@@ -101,31 +100,7 @@ class MainActivity : ComponentActivity() {
                                 onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") }
                             )
                         }
-                        // Settings is now handled within MainScreen, but we keep this route if we need direct access
-                        // or for deep linking, but MainScreen handles it via tabs.
-                        // We remove the separate "settings" route to avoid confusion, or keep it as a standalone screen?
-                        // The requirement implies Settings is a tab.
-                        // We remove "settings" route.
                         
-                        composable("history") {
-                            com.nami.peace.ui.history.HistoryScreen(
-                                onNavigateUp = { navController.popBackStack() },
-                                onNavigateToDetail = { id -> navController.navigate("history_detail/$id") }
-                            )
-                        }
-                        composable(
-                            route = "history_detail/{historyId}",
-                            arguments = listOf(
-                                androidx.navigation.navArgument("historyId") {
-                                    type = androidx.navigation.NavType.IntType
-                                }
-                            )
-                        ) {
-                            com.nami.peace.ui.history.HistoryDetailScreen(
-                                historyId = it.arguments?.getInt("historyId") ?: -1,
-                                onNavigateUp = { navController.popBackStack() }
-                            )
-                        }
                         composable("alarm") {
                             com.nami.peace.ui.alarm.AlarmScreen(
                                 onFinish = {

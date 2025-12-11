@@ -155,7 +155,7 @@ class HomeViewModel @Inject constructor(
 
     fun markAsDone(reminder: Reminder) {
         viewModelScope.launch {
-            val updatedReminder = reminder.copy(isCompleted = true)
+            val updatedReminder = reminder.copy(isCompleted = true, completedTime = System.currentTimeMillis())
             repository.updateReminder(updatedReminder)
             alarmScheduler.cancel(updatedReminder)
             com.nami.peace.util.DebugLogger.log("Reminder Completed: ${reminder.title}")
