@@ -13,6 +13,17 @@
     <string name="next_up">Next Up</string>
     <string name="add_reminder">Add Reminder</string>
     <string name="next_reminder">Next Reminder</string>
+    <string name="input_hint_title">What needs to be done?</string>
+    <string name="err_title_required">Title cannot be empty</string>
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+    <string name="label_category">Category</string>
+    <string name="label_priority">Priority</string>
+    <string name="select_days">Select Days</string>
+    <string name="cd_back_home">Back</string>
+    <string name="today">Today</string>
+    <string name="advanced_settings">Advanced</string>
+
     <string name="no_reminders_message">No reminders scheduled.\nEnjoy your peace.</string>
     <string name="dashboard_list_empty_filter">No tasks found in this category.</string>
     <string name="dashboard_coach_default">One step at a time brings peace of mind.</string>

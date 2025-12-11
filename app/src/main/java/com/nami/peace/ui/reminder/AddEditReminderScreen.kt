@@ -1,11 +1,13 @@
 package com.nami.peace.ui.reminder
 
+import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
+import android.provider.Settings
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -14,368 +16,223 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.nami.peace.domain.model.PriorityLevel
-import com.nami.peace.domain.model.RecurrenceType
-import com.nami.peace.domain.model.ReminderCategory
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.text.SimpleDateFormat
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.res.stringResource
 import com.nami.peace.R
+import com.nami.peace.domain.model.RecurrenceType
+import com.nami.peace.ui.components.GlassyTopAppBar
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditReminderScreen(
     onNavigateUp: () -> Unit,
-    viewModel: AddEditReminderViewModel = hiltViewModel()
+    viewModel: AddEditReminderViewModel = hiltViewModel(),
+    hazeState: HazeState? = null, // Accept hazeState
+    blurEnabled: Boolean = true,
+    blurStrength: Float = 12f,
+    blurTintAlpha: Float = 0.5f,
+    shadowsEnabled: Boolean = true,
+    shadowStyle: String = "Medium"
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val localHazeState = hazeState ?: remember { HazeState() }
+    
+    // Bottom Sheet State
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showBottomSheet by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.new_reminder)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back))
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        viewModel.onEvent(AddEditReminderEvent.SaveReminder)
-                        onNavigateUp()
-                    }) {
-                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.cd_save))
+    // Helpers
+    val dateFormat = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
+    val timeFormat = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+
+    fun showDatePicker() {
+        val initialMillis = uiState.dateInMillis ?: System.currentTimeMillis()
+        val c = Calendar.getInstance().apply { timeInMillis = initialMillis }
+        DatePickerDialog(context, { _, y, m, d ->
+            val sel = Calendar.getInstance()
+            sel.set(y, m, d)
+            viewModel.onEvent(AddEditReminderEvent.DateChanged(sel.timeInMillis))
+        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show()
+    }
+
+    fun showTimePicker() {
+        val c = Calendar.getInstance().apply { timeInMillis = uiState.startTimeInMillis }
+        TimePickerDialog(context, { _, h, m ->
+            val newCal = Calendar.getInstance()
+            newCal.set(Calendar.HOUR_OF_DAY, h)
+            newCal.set(Calendar.MINUTE, m)
+            viewModel.onEvent(AddEditReminderEvent.StartTimeChanged(newCal.timeInMillis))
+        }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false).show()
+    }
+
+    fun onSave() {
+        if (uiState.title.isBlank()) {
+            scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.err_title_required)) }
+        } else {
+            viewModel.onEvent(AddEditReminderEvent.SaveReminder)
+            onNavigateUp()
+        }
+    }
+
+    // Advanced Preview String (Improved Description)
+    val advancedPreview = remember(uiState) {
+        if (uiState.isNagModeEnabled) {
+             val strictPart = if (uiState.isStrictSchedulingEnabled) " • Strict" else ""
+             "Nag Mode: On • ${uiState.nagIntervalValue}${uiState.nagIntervalUnit.name.take(1).lowercase()} × ${uiState.nagTotalRepetitions}$strictPart"
+        } else {
+            null
+        }
+    }
+
+    // Layout: Root Box to handle floating overlays
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color.Transparent, // For Haze
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                GlassyTopAppBar(
+                    title = { Text(stringResource(if (uiState.id != 0) R.string.edit_reminder else R.string.new_reminder)) },
+                    hazeState = localHazeState,
+                    blurEnabled = blurEnabled,
+                    blurStrength = blurStrength,
+                    blurTintAlpha = blurTintAlpha,
+                    shadowsEnabled = shadowsEnabled,
+                    shadowStyle = shadowStyle
+                )
+            },
+            // Bottom Bar removed to handle as floating overlay
+        ) { padding ->
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding() + 16.dp,
+                    bottom = 120.dp, // Space for floating bottom bar
+                    start = 16.dp,
+                    end = 16.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .haze(
+                        state = localHazeState,
+                        style = dev.chrisbanes.haze.HazeStyle(blurRadius = blurStrength.dp, tint = Color.Transparent)
+                    ) 
+            ) {
+                item {
+                    TitleSection(
+                        title = uiState.title,
+                        onTitleChanged = { viewModel.onEvent(AddEditReminderEvent.TitleChanged(it)) },
+                        categoryName = uiState.category.name.lowercase().capitalize(Locale.getDefault()),
+                        recurrenceName = uiState.recurrenceType.name.lowercase().split("_").joinToString(" ") { it.capitalize(Locale.getDefault()) },
+                        timeText = timeFormat.format(Date(uiState.startTimeInMillis))
+                    )
+                }
+
+                item {
+                    // FIXED: Always show the selected date or Today, regardless of recurrence type
+                    // This prevents "Weekly" from appearing in the Date slot behavior
+                    DateTimeCard(
+                        dateText = uiState.dateInMillis?.let { dateFormat.format(Date(it)) } ?: stringResource(R.string.today),
+                        timeText = timeFormat.format(Date(uiState.startTimeInMillis)),
+                        onDateClick = { showDatePicker() },
+                        onTimeClick = { showTimePicker() }
+                    )
+                }
+
+                item {
+                    CategoryPriorityCard(
+                        category = uiState.category,
+                        priority = uiState.priority,
+                        onCategoryChanged = { viewModel.onEvent(AddEditReminderEvent.CategoryChanged(it)) },
+                        onPriorityChanged = { viewModel.onEvent(AddEditReminderEvent.PriorityChanged(it)) }
+                    )
+                }
+
+                item {
+                    RecurrenceCard(
+                        recurrenceType = uiState.recurrenceType,
+                        daysOfWeek = uiState.daysOfWeek,
+                        onRecurrenceChanged = { viewModel.onEvent(AddEditReminderEvent.RecurrenceChanged(it)) },
+                        onDayToggled = { viewModel.onEvent(AddEditReminderEvent.DayToggled(it)) }
+                    )
+                }
+                
+                if (uiState.showPermissionBanner) {
+                    item {
+                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(stringResource(R.string.exact_alarm_permission_required), style = MaterialTheme.typography.titleMedium)
+                                Button(onClick = { 
+                                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                    context.startActivity(intent)
+                                }) { Text("Grant") }
+                            }
+                        }
                     }
                 }
+
+                item {
+                    AdvancedBottomSheetTrigger(
+                        onClick = { showBottomSheet = true },
+                        previewText = advancedPreview
+                    )
+                }
+            }
+        }
+
+        // Floating Action Bar (Hides when BottomSheet is open)
+        androidx.compose.animation.AnimatedVisibility(
+            visible = !showBottomSheet,
+            enter = androidx.compose.animation.slideInVertically { it } + androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.slideOutVertically { it } + androidx.compose.animation.fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            GlassyActionBar(
+                onSave = { onSave() },
+                onCancel = onNavigateUp,
+                modifier = Modifier
             )
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Title
-            OutlinedTextField(
-                value = uiState.title,
-                onValueChange = { viewModel.onEvent(AddEditReminderEvent.TitleChanged(it)) },
-                label = { Text(stringResource(R.string.title)) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-            )
 
-            // Category
-            Text(stringResource(R.string.category), style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ReminderCategory.values().forEach { category ->
-                    val isSelected = uiState.category == category
-                    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                    val iconColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                    
-                    Surface(
-                        onClick = { viewModel.onEvent(AddEditReminderEvent.CategoryChanged(category)) },
-                        shape = MaterialTheme.shapes.medium,
-                        color = backgroundColor,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                painter = androidx.compose.ui.res.painterResource(id = category.iconResId),
-                                contentDescription = category.name,
-                                tint = iconColor
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Priority
-            Text(stringResource(R.string.priority), style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PriorityLevel.values().forEach { priority ->
-                    FilterChip(
-                        selected = uiState.priority == priority,
-                        onClick = { viewModel.onEvent(AddEditReminderEvent.PriorityChanged(priority)) },
-                        label = { Text(priority.name) }
-                    )
-                }
-            }
-
-            // Start Time
-            Text(stringResource(R.string.start_time), style = MaterialTheme.typography.titleMedium)
-            Button(onClick = {
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = uiState.startTimeInMillis
-                TimePickerDialog(
-                    context,
-                    { _, hour, minute ->
-                        calendar.set(Calendar.HOUR_OF_DAY, hour)
-                        calendar.set(Calendar.MINUTE, minute)
-                        viewModel.onEvent(AddEditReminderEvent.StartTimeChanged(calendar.timeInMillis))
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    false
-                ).show()
-            }) {
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = uiState.startTimeInMillis
-                Text(String.format("%02d:%02d", calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)))
-            }
-
-            // Recurrence
-            Text(stringResource(R.string.recurrence), style = MaterialTheme.typography.titleMedium)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState,
+                containerColor = Color.Transparent, // Glassy
+                scrimColor = Color.Transparent, // Transparent scrim (matched HistoryScreen)
+                dragHandle = null // We draw our own or none for glassy effect
             ) {
-                RecurrenceType.values().forEach { type ->
-                    FilterChip(
-                        selected = uiState.recurrenceType == type,
-                        onClick = { viewModel.onEvent(AddEditReminderEvent.RecurrenceChanged(type)) },
-                        label = { Text(type.name.replace("_", " ")) }
-                    )
-                }
-            }
-
-            // Date Picker (One Time)
-            if (uiState.recurrenceType == RecurrenceType.ONE_TIME) {
-                val dateText = if (uiState.dateInMillis != null) {
-                    SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(uiState.dateInMillis!!))
-                } else {
-                    stringResource(R.string.select_date)
-                }
-                
-                val calendar = Calendar.getInstance()
-                
-                val datePickerDialog = android.app.DatePickerDialog(
-                    context,
-                    { _, year, month, dayOfMonth ->
-                        val selectedCalendar = Calendar.getInstance()
-                        selectedCalendar.set(year, month, dayOfMonth)
-                        viewModel.onEvent(AddEditReminderEvent.DateChanged(selectedCalendar.timeInMillis))
-                    },
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
-                    calendar.get(Calendar.DAY_OF_MONTH)
-                )
-
-                OutlinedButton(
-                    onClick = { datePickerDialog.show() },
-                    modifier = Modifier.fillMaxWidth()
+                GlassySheetSurface(
+                    hazeState = localHazeState,
+                    blurEnabled = blurEnabled,
+                    blurStrength = blurStrength,
+                    blurTintAlpha = blurTintAlpha,
+                    shadowsEnabled = shadowsEnabled,
+                    shadowStyle = shadowStyle
                 ) {
-                    Text(dateText)
-                }
-            }
-
-            // Day Selector (Weekly)
-            if (uiState.recurrenceType == RecurrenceType.WEEKLY) {
-                Text(stringResource(R.string.repeat_on), style = MaterialTheme.typography.bodyMedium)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    val days = listOf("S", "M", "T", "W", "T", "F", "S")
-                    days.forEachIndexed { index, dayLabel ->
-                        val dayValue = index + 1 // Calendar.SUNDAY = 1
-                        val isSelected = uiState.daysOfWeek.contains(dayValue)
-                        
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { viewModel.onEvent(AddEditReminderEvent.DayToggled(dayValue)) },
-                            label = { Text(dayLabel) },
-                            shape = CircleShape,
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        )
-                    }
-                }
-            }
-
-            // Nag Mode
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.nag_mode), style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = uiState.isNagModeEnabled,
-                    onCheckedChange = { viewModel.onEvent(AddEditReminderEvent.NagModeToggled(it)) }
-                )
-            }
-
-            if (uiState.isNagModeEnabled) {
-                // Interval
-                OutlinedTextField(
-                    value = uiState.nagIntervalValue,
-                    onValueChange = { 
-                        if (it.all { char -> char.isDigit() }) {
-                            viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(it))
-                        }
-                    },
-                    label = { Text(stringResource(R.string.interval)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
-                    singleLine = true
-                )
-                
-                // Unit Selector
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 8.dp)
-                ) {
-                    TimeUnit.values().forEach { unit ->
-                        FilterChip(
-                            selected = uiState.nagIntervalUnit == unit,
-                            onClick = { viewModel.onEvent(AddEditReminderEvent.NagIntervalUnitChanged(unit)) },
-                            label = { Text(unit.name.lowercase().capitalize()) },
-                            modifier = Modifier.padding(end = 4.dp)
-                        )
-                    }
-                }
-
-                // Presets
-                Text(stringResource(R.string.presets), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val presets = listOf(
-                        15 to TimeUnit.MINUTES,
-                        30 to TimeUnit.MINUTES,
-                        1 to TimeUnit.HOURS,
-                        2 to TimeUnit.HOURS
+                    AdvancedBottomSheetContent(
+                        isNagModeEnabled = uiState.isNagModeEnabled,
+                        onNagToggled = { viewModel.onEvent(AddEditReminderEvent.NagModeToggled(it)) },
+                        nagIntervalValue = uiState.nagIntervalValue,
+                        onNagIntervalValueChanged = { viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(it)) },
+                        nagIntervalUnit = uiState.nagIntervalUnit,
+                        onNagIntervalUnitChanged = { viewModel.onEvent(AddEditReminderEvent.NagIntervalUnitChanged(it)) },
+                        nagTotalRepetitions = uiState.nagTotalRepetitions,
+                        maxAllowedRepetitions = uiState.maxAllowedRepetitions,
+                        onNagRepetitionsChanged = { viewModel.onEvent(AddEditReminderEvent.NagRepetitionsChanged(it)) },
+                        isStrictSchedulingEnabled = uiState.isStrictSchedulingEnabled,
+                        onStrictModeToggled = { viewModel.onEvent(AddEditReminderEvent.StrictModeToggled(it)) },
+                        onClose = { scope.launch { sheetState.hide(); showBottomSheet = false } }
                     )
-                    presets.forEach { (valNum, unit) ->
-                        FilterChip(
-                            selected = uiState.nagIntervalValue == valNum.toString() && uiState.nagIntervalUnit == unit,
-                            onClick = { 
-                                viewModel.onEvent(AddEditReminderEvent.NagIntervalUnitChanged(unit))
-                                viewModel.onEvent(AddEditReminderEvent.NagIntervalValueChanged(valNum.toString()))
-                            },
-                            label = { 
-                                val unitLabel = if (unit == TimeUnit.MINUTES) "m" else "h"
-                                Text("$valNum$unitLabel") 
-                            }
-                        )
-                    }
-                }
-
-                if (uiState.nagIntervalInMillis != null) {
-                    Text(
-                        stringResource(R.string.repetitions_format, uiState.nagTotalRepetitions),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    
-                    if (uiState.maxAllowedRepetitions > 0) {
-                        Slider(
-                            value = uiState.nagTotalRepetitions.toFloat(),
-                            onValueChange = { viewModel.onEvent(AddEditReminderEvent.NagRepetitionsChanged(it.toInt())) },
-                            valueRange = 0f..uiState.maxAllowedRepetitions.toFloat(),
-                            steps = if (uiState.maxAllowedRepetitions > 1) uiState.maxAllowedRepetitions - 1 else 0
-                        )
-                        Text(
-                            stringResource(R.string.max_allowed_format, uiState.maxAllowedRepetitions),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    } else {
-                        Text(
-                            stringResource(R.string.no_repetitions_possible),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-
-                // Strict Mode (Radio Buttons)
-                Text(stringResource(R.string.scheduling_mode), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(
-                        selected = !uiState.isStrictSchedulingEnabled,
-                        onClick = { viewModel.onEvent(AddEditReminderEvent.StrictModeToggled(false)) }
-                    )
-                    Text(stringResource(R.string.flexible_drift))
-                    Spacer(modifier = Modifier.width(16.dp))
-                    RadioButton(
-                        selected = uiState.isStrictSchedulingEnabled,
-                        onClick = { viewModel.onEvent(AddEditReminderEvent.StrictModeToggled(true)) }
-                    )
-                    Text(stringResource(R.string.strict_anchored))
-                }
-            }
-
-            // Soft Warning Dialog
-            if (uiState.showSoftWarningDialog) {
-                AlertDialog(
-                    onDismissRequest = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) },
-                    title = { Text(stringResource(R.string.limited_repetitions_warning)) },
-                    text = {
-                        Text(stringResource(R.string.limited_repetitions_message))
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.ConfirmWarningDialog) }) {
-                            Text(stringResource(R.string.i_understand))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { viewModel.onEvent(AddEditReminderEvent.DismissWarningDialog) }) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                    }
-                )
-            }
-
-            // Permission Banner
-            val alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                val hasPermission = alarmManager.canScheduleExactAlarms()
-                LaunchedEffect(hasPermission) {
-                    viewModel.onEvent(AddEditReminderEvent.PermissionStateChanged(hasPermission))
-                }
-            }
-
-            if (uiState.showPermissionBanner) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            stringResource(R.string.exact_alarm_permission_required),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Text(
-                            stringResource(R.string.exact_alarm_permission_message),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = {
-                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                                    val intent = android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                                    context.startActivity(intent)
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                        ) {
-                            Text(stringResource(R.string.grant_permission))
-                        }
-                    }
                 }
             }
         }

@@ -109,8 +109,18 @@ class AddEditReminderViewModel @Inject constructor(
                     if (isDaily && isNightTime) {
                         _uiState.value = _uiState.value.copy(showSoftWarningDialog = true)
                     } else {
+                        // Enable Nag Mode logic
                         _uiState.value = _uiState.value.copy(isNagModeEnabled = true)
+                        updateNagIntervalInMillis() // Ensure interval is calculated
                         recalculateMaxRepetitions()
+                        
+                        // Set sensible default if 0
+                        val currentState = _uiState.value
+                        if (currentState.nagTotalRepetitions == 0) {
+                            val defaultReps = 3
+                            val cappedReps = if (currentState.maxAllowedRepetitions > 0) defaultReps.coerceAtMost(currentState.maxAllowedRepetitions) else defaultReps
+                            _uiState.value = currentState.copy(nagTotalRepetitions = cappedReps)
+                        }
                     }
                 } else {
                     _uiState.value = _uiState.value.copy(isNagModeEnabled = false)
