@@ -163,6 +163,8 @@ fun MainScreen(
                             blurEnabled = blurEnabled,
                             blurStrength = blurStrength,
                             blurTintAlpha = blurTintAlpha,
+                            shadowsEnabled = shadowsEnabled,
+                            shadowStyle = shadowStyle,
                             isFABVisible = isBottomBarVisible
                         )
                     }
@@ -172,6 +174,8 @@ fun MainScreen(
                             blurEnabled = blurEnabled,
                             blurStrength = blurStrength,
                             blurTintAlpha = blurTintAlpha,
+                            shadowsEnabled = shadowsEnabled,
+                            shadowStyle = shadowStyle,
                             onEditReminder = onEditReminder,
                             onAddReminder = onAddReminder,
                             isFABVisible = isBottomBarVisible
@@ -183,6 +187,8 @@ fun MainScreen(
                             blurEnabled = blurEnabled,
                             blurStrength = blurStrength,
                             blurTintAlpha = blurTintAlpha,
+                            shadowsEnabled = shadowsEnabled,
+                            shadowStyle = shadowStyle,
                             onSheetStateChange = { open -> isSheetOpen = open }
                         )
                     }

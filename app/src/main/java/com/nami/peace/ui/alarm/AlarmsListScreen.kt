@@ -42,6 +42,8 @@ fun AlarmsListScreen(
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
+    shadowsEnabled: Boolean = true,
+    shadowStyle: String = "Medium",
     onEditReminder: (Int) -> Unit = {},
     onAddReminder: () -> Unit = {},
     isFABVisible: Boolean = true
@@ -252,7 +254,9 @@ fun AlarmsListScreen(
                 hazeState = hazeState,
                 blurEnabled = blurEnabled,
                 blurStrength = blurStrength,
-                blurTintAlpha = blurTintAlpha
+                blurTintAlpha = blurTintAlpha,
+                shadowsEnabled = shadowsEnabled,
+                shadowStyle = shadowStyle
             )
         }
     }

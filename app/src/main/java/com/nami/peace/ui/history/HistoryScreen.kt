@@ -50,6 +50,8 @@ fun HistoryScreen(
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
+    shadowsEnabled: Boolean = true,
+    shadowStyle: String = "Medium",
     onEditReminder: (Int) -> Unit = {}, // Default for preview/unused
     onSheetStateChange: (Boolean) -> Unit = {} // New callback
 ) {
@@ -196,8 +198,8 @@ fun HistoryScreen(
                 blurStrength = blurStrength,
                 blurTintAlpha = blurTintAlpha,
                 modifier = Modifier.align(Alignment.TopCenter),
-                shadowsEnabled = true,
-                shadowStyle = "Medium"
+                shadowsEnabled = shadowsEnabled,
+                shadowStyle = shadowStyle
             )
         }
     }
@@ -215,18 +217,35 @@ fun HistoryScreen(
              
              // Reuse consistency logic
              // Shadow Logic
-             val (baseElevation, baseAlpha) = 8.dp to 0.25f // Medium style hardcoded for now or fetched from settings
+             val showShadow = blurEnabled && shadowsEnabled && shadowStyle != "None"
+             val baseAlpha = if (showShadow) {
+                 when (shadowStyle) {
+                     "Soft" -> 0.15f
+                     "Medium" -> 0.25f
+                     "Sharp" -> 0.4f
+                     else -> 0f
+                 }
+             } else 0f
              
              val shadowColor = com.nami.peace.ui.theme.SoftShadow.copy(alpha = baseAlpha)
+             val elevation = if (showShadow) {
+                    when (shadowStyle) {
+                        "Soft" -> 4.dp
+                        "Medium" -> 8.dp
+                        "Sharp" -> 12.dp
+                        else -> 0.dp
+                    }
+             } else 0.dp
              
              // Border Logic for Glass Mode
+             val showBorder = blurEnabled && shadowsEnabled && shadowStyle != "None"
              val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
-             val borderModifier = Modifier.border(1.dp, borderColor, shape)
+             val borderModifier = if (showBorder) Modifier.border(1.dp, borderColor, shape) else Modifier
         
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(elevation = 0.dp, shape = shape, spotColor = shadowColor, ambientColor = shadowColor) // Elevation handled by sheet usually, but adding for completeness if needed
+                    .shadow(elevation = elevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
                     .then(borderModifier)
                     .hazeChild(
                         state = state,

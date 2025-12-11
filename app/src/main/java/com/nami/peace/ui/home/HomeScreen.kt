@@ -67,6 +67,8 @@ fun HomeScreen(
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
+    shadowsEnabled: Boolean = true,
+    shadowStyle: String = "Medium",
     isFABVisible: Boolean = true
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -290,7 +292,9 @@ fun HomeScreen(
                 hazeState = hazeState,
                 blurEnabled = blurEnabled,
                 blurStrength = blurStrength,
-                blurTintAlpha = blurTintAlpha
+                blurTintAlpha = blurTintAlpha,
+                shadowsEnabled = shadowsEnabled,
+                shadowStyle = shadowStyle
             )
         }
     }
