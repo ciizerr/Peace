@@ -206,6 +206,20 @@
     <string name="delete_history_message">This action cannot be undone.</string>
     <string name="delete_bulk_title">Delete Reminders?</string>
     <string name="delete_bulk_message">Delete %d selected reminders?</string>
+
+    <!-- History specific strings -->
+    <string name="history_title">Journal</string>
+    <string name="history_timeline_label">Timeline</string>
+    <string name="history_clear_filter">Show All History</string>
+    <string name="history_empty_all">Your journey begins with a single step. No history yet.</string>
+    <string name="history_empty_date">No tasks completed on this day.</string>
+    
+    <string name="receipt_completed_on">Completed on %1$s</string>
+    <string name="receipt_completed_at">at %1$s</string>
+    <string name="receipt_action_repeat">Repeat Task</string>
+    <string name="receipt_action_restore">Mark Incomplete</string>
+    <string name="receipt_action_delete">Delete Forever</string>
+
     <string name="completed_format">Completed: %s</string>
     <string name="history_label_completed">Completed On</string>
     <string name="history_label_priority">Priority</string>
