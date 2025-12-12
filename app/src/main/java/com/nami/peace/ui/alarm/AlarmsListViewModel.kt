@@ -115,10 +115,18 @@ class AlarmsListViewModel @Inject constructor(
     fun deleteReminders(reminders: List<Reminder>) {
         viewModelScope.launch {
             reminders.forEach { reminder ->
-                repository.deleteReminder(reminder)
+                // Soft Delete: Mark as Abandoned and Completed
+                val abandonedReminder = reminder.copy(
+                    isAbandoned = true,
+                    isCompleted = true,
+                    completedTime = System.currentTimeMillis()
+                )
+                repository.updateReminder(abandonedReminder)
+                
+                // Cancel Alarm
                 alarmScheduler.cancel(reminder)
             }
-            _toastMessage.send("${reminders.size} reminders deleted")
+            _toastMessage.send("${reminders.size} reminders abandoned")
         }
     }
 }

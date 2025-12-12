@@ -478,4 +478,35 @@ fun AdvancedBottomSheetTrigger(
             )
         }
     }
+    }
+
+
+// --- NEW NOTES SECTION ---
+@Composable
+fun NotesSection(
+    notes: String,
+    onNotesChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            OutlinedTextField(
+                value = notes,
+                onValueChange = onNotesChanged,
+                label = { Text("Notes") },
+                placeholder = { Text("Add details...") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                maxLines = 5,
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                     unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                )
+            )
+        }
+    }
 }

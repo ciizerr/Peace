@@ -34,6 +34,10 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import java.text.SimpleDateFormat
 import java.util.*
+import com.nami.peace.ui.components.DetailCard
+import com.nami.peace.ui.components.EmptyState
+import com.nami.peace.ui.components.getPriorityColor
+import com.nami.peace.ui.components.formatTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,6 +136,16 @@ fun ReminderDetailScreen(
                             label = stringResource(R.string.reminder_label_original_time),
                             value = formatTime(context, reminder.originalStartTimeInMillis)
                         )
+                    }
+
+                    // Notes - Display immediately after Header if present
+                    if (!reminder.notes.isNullOrBlank()) {
+                        item {
+                            DetailCard(
+                                label = "Notes",
+                                value = reminder.notes
+                            )
+                        }
                     }
 
                     // Recurrence
@@ -283,29 +297,6 @@ fun HeaderSummaryCard(
 }
 
 @Composable
-fun DetailCard(label: String, value: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@Composable
 fun NagSequenceSection(reminder: Reminder, context: android.content.Context) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -356,7 +347,7 @@ fun NagSequenceSection(reminder: Reminder, context: android.content.Context) {
                         Spacer(modifier = Modifier.width(12.dp))
                         
                         Text(
-                            text = formatTime(context, repTime),
+                            text = com.nami.peace.ui.components.formatTime(context, repTime),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal,
                             color = if (isDone) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface,
@@ -384,24 +375,3 @@ fun NagSequenceSection(reminder: Reminder, context: android.content.Context) {
 }
 
 
-@Composable
-fun EmptyState(message: String, modifier: Modifier = Modifier) {
-    Text(
-        text = message,
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier
-    )
-}
-
-fun getPriorityColor(priority: PriorityLevel): Color {
-    return when (priority) {
-        PriorityLevel.HIGH -> Color(0xFFFFCDD2) 
-        PriorityLevel.MEDIUM -> Color(0xFFFFF9C4) 
-        PriorityLevel.LOW -> Color(0xFFC8E6C9) 
-    }
-}
-
-fun formatTime(context: android.content.Context, timeInMillis: Long): String {
-    return android.text.format.DateFormat.getTimeFormat(context).format(Date(timeInMillis))
-}

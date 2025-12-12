@@ -165,17 +165,33 @@ class HomeViewModel @Inject constructor(
     
     fun deleteReminder(reminder: Reminder) {
         viewModelScope.launch {
-            repository.deleteReminder(reminder)
+            // Soft Delete: Mark as Abandoned and Completed (so it leaves Active list)
+            val abandonedReminder = reminder.copy(
+                isAbandoned = true,
+                isCompleted = true,
+                completedTime = System.currentTimeMillis() // Track when it was abandoned
+            )
+            repository.updateReminder(abandonedReminder)
+            
+            // CRITICAL: Cancel the alarm so it doesn't ring as a ghost alarm
             alarmScheduler.cancel(reminder)
+            com.nami.peace.util.DebugLogger.log("Reminder Abandoned: ${reminder.title}")
+            _toastMessage.send("Task abandoned")
         }
     }
 
     fun deleteReminders(reminders: List<Reminder>) {
         viewModelScope.launch {
             reminders.forEach { reminder ->
-                repository.deleteReminder(reminder)
+                val abandonedReminder = reminder.copy(
+                    isAbandoned = true,
+                    isCompleted = true,
+                    completedTime = System.currentTimeMillis()
+                )
+                repository.updateReminder(abandonedReminder)
                 alarmScheduler.cancel(reminder)
             }
+            _toastMessage.send("${reminders.size} tasks abandoned")
         }
     }
 }

@@ -5,9 +5,11 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -112,34 +115,46 @@ fun PeaceCalendar(
                 }
             }
 
-            // Days Grid
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                modifier = Modifier.height(240.dp), // Fixed height for simplicity
-                userScrollEnabled = false
-            ) {
-                // Day Labels
-                items(listOf("S", "M", "T", "W", "T", "F", "S")) { day ->
+            // Day Labels Row
+            Row(modifier = Modifier.fillMaxWidth()) {
+                listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
                     Text(
                         text = day,
                         style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 8.dp)
                     )
                 }
-                
-                // Calendar Days
-                items(days) { date ->
-                    if (date != null) {
-                        CalendarDay(
-                            date = date,
-                            isSelected = date == selectedDate,
-                            hasHistory = historyDates.contains(date),
-                            onSelect = { onDateSelected(date) }
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.size(32.dp))
+            }
+            
+            // Calendar Rows
+            val weeks = days.chunked(7)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                weeks.forEach { week ->
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        week.forEach { date ->
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (date != null) {
+                                    CalendarDay(
+                                        date = date,
+                                        isSelected = date == selectedDate,
+                                        hasHistory = historyDates.contains(date),
+                                        onSelect = { onDateSelected(date) }
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.aspectRatio(1f))
+                                }
+                            }
+                        }
+                        // Handle incomplete last week
+                        if (week.size < 7) {
+                             repeat(7 - week.size) {
+                                 Spacer(modifier = Modifier.weight(1f))
+                             }
+                        }
                     }
                 }
             }
@@ -199,15 +214,20 @@ fun HistoryItemRow(
     hazeState: HazeState? = null,
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
-    blurTintAlpha: Float = 0.5f
+    blurTintAlpha: Float = 0.5f,
+    isSelectionMode: Boolean = false,
+    isSelected: Boolean = false,
+    onLongClick: () -> Unit = {},
+    onToggleSelection: (Boolean) -> Unit = {}
 ) {
     if (isCompact) {
-        CompactHistoryRow(reminder, onClick, hazeState, blurEnabled, blurStrength, blurTintAlpha)
+        CompactHistoryRow(reminder, onClick, hazeState, blurEnabled, blurStrength, blurTintAlpha, isSelectionMode, isSelected, onLongClick, onToggleSelection)
     } else {
-        StandardHistoryRow(reminder, onClick, hazeState, blurEnabled, blurStrength, blurTintAlpha)
+        StandardHistoryRow(reminder, onClick, hazeState, blurEnabled, blurStrength, blurTintAlpha, isSelectionMode, isSelected, onLongClick, onToggleSelection)
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun StandardHistoryRow(
     reminder: Reminder,
@@ -215,10 +235,22 @@ fun StandardHistoryRow(
     hazeState: HazeState? = null,
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
-    blurTintAlpha: Float = 0.5f
+    blurTintAlpha: Float = 0.5f,
+    isSelectionMode: Boolean,
+    isSelected: Boolean,
+    onLongClick: () -> Unit,
+    onToggleSelection: (Boolean) -> Unit
 ) {
+    val containerModifier = Modifier
+        .padding(horizontal = 16.dp, vertical = 6.dp)
+        .combinedClickable(
+            onClick = { if (isSelectionMode) onToggleSelection(!isSelected) else onClick() },
+            onLongClick = onLongClick
+        )
+
     GlassyItemContainer(
-        onClick = onClick,
+        onClick = { if (isSelectionMode) onToggleSelection(!isSelected) else onClick() },
+        onLongClick = onLongClick,
         hazeState = hazeState,
         blurEnabled = blurEnabled,
         blurStrength = blurStrength,
@@ -231,12 +263,24 @@ fun StandardHistoryRow(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
-                modifier = Modifier.size(24.dp)
-            )
+            if (isSelectionMode) {
+                RadioButton(
+                    selected = isSelected,
+                    onClick = { onToggleSelection(!isSelected) },
+                    modifier = Modifier.size(24.dp)
+                )
+            } else {
+                val icon = if (reminder.isAbandoned) Icons.Default.Cancel else Icons.Default.CheckCircle
+                val iconTint = if (reminder.isAbandoned) MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
+                               else MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
             
             Spacer(modifier = Modifier.width(16.dp))
             
@@ -249,15 +293,35 @@ fun StandardHistoryRow(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
                 Text(
-                    text = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(reminder.completedTime ?: 0)),
+                    text = com.nami.peace.ui.components.formatTime(androidx.compose.ui.platform.LocalContext.current, reminder.completedTime ?: 0),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Category & Priority Indicators
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                     painter = androidx.compose.ui.res.painterResource(id = reminder.category.iconResId),
+                     contentDescription = null,
+                     tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                     modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(com.nami.peace.ui.components.getPriorityColor(reminder.priority), CircleShape)
+                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
                 )
             }
         }
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun CompactHistoryRow(
     reminder: Reminder,
@@ -265,10 +329,15 @@ fun CompactHistoryRow(
     hazeState: HazeState? = null,
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
-    blurTintAlpha: Float = 0.5f
+    blurTintAlpha: Float = 0.5f,
+    isSelectionMode: Boolean,
+    isSelected: Boolean,
+    onLongClick: () -> Unit,
+    onToggleSelection: (Boolean) -> Unit
 ) {
     GlassyItemContainer(
-        onClick = onClick,
+        onClick = { if (isSelectionMode) onToggleSelection(!isSelected) else onClick() },
+        onLongClick = onLongClick,
         hazeState = hazeState,
         blurEnabled = blurEnabled,
         blurStrength = blurStrength,
@@ -281,12 +350,24 @@ fun CompactHistoryRow(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
-                modifier = Modifier.size(16.dp)
-            )
+            if (isSelectionMode) {
+                RadioButton(
+                    selected = isSelected,
+                    onClick = { onToggleSelection(!isSelected) },
+                    modifier = Modifier.size(16.dp)
+                )
+            } else {
+                val icon = if (reminder.isAbandoned) Icons.Default.Cancel else Icons.Default.CheckCircle
+                val iconTint = if (reminder.isAbandoned) MaterialTheme.colorScheme.error.copy(alpha = 0.4f)
+                               else MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
             
             Spacer(modifier = Modifier.width(12.dp))
             
@@ -308,13 +389,34 @@ fun CompactHistoryRow(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Compact Category/Priority
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                     painter = androidx.compose.ui.res.painterResource(id = reminder.category.iconResId),
+                     contentDescription = null,
+                     tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                     modifier = Modifier.size(12.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .background(com.nami.peace.ui.components.getPriorityColor(reminder.priority), CircleShape)
+                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
+                )
+            }
         }
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GlassyItemContainer(
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     hazeState: HazeState?,
     blurEnabled: Boolean,
     blurStrength: Float,
@@ -335,7 +437,10 @@ fun GlassyItemContainer(
                 if (isDark) GlassyBlack.copy(alpha = 0.3f) 
                 else GlassyWhite.copy(alpha = 0.3f)
             )
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
          if (hazeState != null && blurEnabled) {
             Box(

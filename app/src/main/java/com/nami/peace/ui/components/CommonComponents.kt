@@ -333,3 +333,50 @@ fun GlassySheetSurface(
         content()
     }
 }
+
+
+
+@Composable
+fun EmptyState(message: String, modifier: Modifier = Modifier) {
+    Text(
+        text = message,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+    )
+}
+
+fun formatTime(context: android.content.Context, timeInMillis: Long): String {
+    return android.text.format.DateFormat.getTimeFormat(context).format(java.util.Date(timeInMillis))
+}
+
+@Composable
+fun DetailCard(label: String, value: String) {
+    androidx.compose.material3.Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+fun getPriorityColor(priority: com.nami.peace.domain.model.PriorityLevel): Color {
+    return when (priority) {
+        com.nami.peace.domain.model.PriorityLevel.HIGH -> Color(0xFFFFCDD2) 
+        com.nami.peace.domain.model.PriorityLevel.MEDIUM -> Color(0xFFFFF9C4) 
+        com.nami.peace.domain.model.PriorityLevel.LOW -> Color(0xFFC8E6C9) 
+    }
+}

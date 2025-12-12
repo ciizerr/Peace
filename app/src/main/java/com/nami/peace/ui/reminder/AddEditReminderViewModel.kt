@@ -59,7 +59,8 @@ class AddEditReminderViewModel @Inject constructor(
                         category = reminder.category,
                         isStrictSchedulingEnabled = reminder.isStrictSchedulingEnabled,
                         dateInMillis = reminder.dateInMillis,
-                        daysOfWeek = reminder.daysOfWeek
+                        daysOfWeek = reminder.daysOfWeek,
+                        notes = reminder.notes ?: ""
                     )
                     recalculateMaxRepetitions()
                 }
@@ -165,6 +166,9 @@ class AddEditReminderViewModel @Inject constructor(
             is AddEditReminderEvent.SaveReminder -> {
                 saveReminder()
             }
+            is AddEditReminderEvent.NotesChanged -> {
+                _uiState.value = _uiState.value.copy(notes = event.notes)
+            }
         }
     }
 
@@ -206,9 +210,9 @@ class AddEditReminderViewModel @Inject constructor(
                 nagIntervalInMillis = state.nagIntervalInMillis,
                 nagTotalRepetitions = state.nagTotalRepetitions,
                 category = state.category,
-                isStrictSchedulingEnabled = state.isStrictSchedulingEnabled,
                 dateInMillis = state.dateInMillis,
-                daysOfWeek = state.daysOfWeek
+                daysOfWeek = state.daysOfWeek,
+                notes = state.notes
             )
 
             // Calculate the actual next start time (e.g., next Monday)
@@ -247,7 +251,8 @@ data class AddEditReminderUiState(
     val showSoftWarningDialog: Boolean = false,
     val showPermissionBanner: Boolean = false,
     val dateInMillis: Long? = null,
-    val daysOfWeek: List<Int> = emptyList()
+    val daysOfWeek: List<Int> = emptyList(),
+    val notes: String = ""
 )
 
 sealed class AddEditReminderEvent {
@@ -266,6 +271,7 @@ sealed class AddEditReminderEvent {
     data class PermissionStateChanged(val hasPermission: Boolean) : AddEditReminderEvent()
     data class DateChanged(val dateInMillis: Long?) : AddEditReminderEvent()
     data class DayToggled(val day: Int) : AddEditReminderEvent()
+    data class NotesChanged(val notes: String) : AddEditReminderEvent()
     object SaveReminder : AddEditReminderEvent()
 }
 

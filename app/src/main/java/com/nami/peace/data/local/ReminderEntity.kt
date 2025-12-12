@@ -27,7 +27,9 @@ data class ReminderEntity(
     val dateInMillis: Long? = null,
     val daysOfWeek: List<Int> = emptyList(),
     val originalStartTimeInMillis: Long = startTimeInMillis,
-    val completedTime: Long? = null
+    val completedTime: Long? = null,
+    val isAbandoned: Boolean = false,
+    val notes: String? = null
 ) {
     fun toDomain(): Reminder {
         return Reminder(
@@ -49,7 +51,10 @@ data class ReminderEntity(
             dateInMillis = dateInMillis,
             daysOfWeek = daysOfWeek,
             originalStartTimeInMillis = originalStartTimeInMillis,
-            completedTime = completedTime
+
+            completedTime = completedTime,
+            isAbandoned = isAbandoned,
+            notes = notes
         )
     }
 
@@ -74,7 +79,10 @@ data class ReminderEntity(
                 dateInMillis = reminder.dateInMillis,
                 daysOfWeek = reminder.daysOfWeek,
                 originalStartTimeInMillis = reminder.originalStartTimeInMillis,
-                completedTime = reminder.completedTime
+
+                completedTime = reminder.completedTime,
+                isAbandoned = reminder.isAbandoned,
+                notes = reminder.notes
             )
         }
     }

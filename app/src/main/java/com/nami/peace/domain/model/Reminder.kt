@@ -19,5 +19,7 @@ data class Reminder(
     val dateInMillis: Long? = null,
     val daysOfWeek: List<Int> = emptyList(), // 1=Sun, 2=Mon, ..., 7=Sat
     val originalStartTimeInMillis: Long = startTimeInMillis, // Default to startTime for new/migration
-    val completedTime: Long? = null
+    val completedTime: Long? = null,
+    val isAbandoned: Boolean = false,
+    val notes: String? = null
 )

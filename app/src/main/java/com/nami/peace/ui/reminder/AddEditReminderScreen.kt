@@ -154,6 +154,13 @@ fun AddEditReminderScreen(
                 }
 
                 item {
+                    NotesSection(
+                        notes = uiState.notes,
+                        onNotesChanged = { viewModel.onEvent(AddEditReminderEvent.NotesChanged(it)) }
+                    )
+                }
+
+                item {
                     DateTimeCard(
                         dateText = uiState.dateInMillis?.let { dateFormat.format(Date(it)) } ?: stringResource(R.string.today),
                         timeText = timeFormat.format(Date(uiState.startTimeInMillis)),

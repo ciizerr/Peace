@@ -20,6 +20,7 @@ import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
+import com.nami.peace.scheduler.AlarmScheduler
 import javax.inject.Inject
 
 data class HistoryUiState(
@@ -29,12 +30,14 @@ data class HistoryUiState(
     val isCalendarExpanded: Boolean = false,
     val selectedReceipt: Reminder? = null,
     val currentMonth: YearMonth = YearMonth.now(),
-    val userMessage: String? = null // For Snackbar
+    val userMessage: String? = null, // For Snackbar
+    val selectedIds: Set<Int> = emptySet()
 )
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    private val repository: ReminderRepository
+    private val repository: ReminderRepository,
+    private val alarmScheduler: AlarmScheduler
 ) : ViewModel() {
 
     private val _selectedDate = MutableStateFlow<LocalDate?>(null)
@@ -42,13 +45,15 @@ class HistoryViewModel @Inject constructor(
     private val _selectedReceipt = MutableStateFlow<Reminder?>(null)
     private val _currentMonth = MutableStateFlow(YearMonth.now())
     private val _userMessage = MutableStateFlow<String?>(null)
+    private val _selectedIds = MutableStateFlow<Set<Int>>(emptySet())
 
     val uiState: StateFlow<HistoryUiState> = combine(
-        combine(_selectedDate, _isCalendarExpanded, _selectedReceipt, _currentMonth, _userMessage) { date, expanded, receipt, month, msg ->
-            FilterArgs(date, expanded, receipt, month, msg)
-        },
-        repository.getReminders()
-    ) { filters, reminders ->
+        _selectedDate, _isCalendarExpanded, _selectedReceipt, _currentMonth, _userMessage
+    ) { date, expanded, receipt, month, msg ->
+        FilterArgs(date, expanded, receipt, month, msg, emptySet())
+    }.combine(_selectedIds) { args, selIds ->
+        args.copy(selectedIds = selIds)
+    }.combine(repository.getReminders()) { filters, reminders ->
         val completed = reminders.filter { it.isCompleted }
             .sortedByDescending { it.completedTime ?: 0L }
 
@@ -89,7 +94,8 @@ class HistoryViewModel @Inject constructor(
             isCalendarExpanded = filters.isExpanded,
             selectedReceipt = filters.selectedReceipt,
             currentMonth = filters.currentMonth,
-            userMessage = filters.userMessage
+            userMessage = filters.userMessage,
+            selectedIds = filters.selectedIds
         )
     }.stateIn(
         scope = viewModelScope,
@@ -102,7 +108,8 @@ class HistoryViewModel @Inject constructor(
         val isExpanded: Boolean,
         val selectedReceipt: Reminder?,
         val currentMonth: YearMonth,
-        val userMessage: String?
+        val userMessage: String?,
+        val selectedIds: Set<Int>
     )
 
     fun toggleCalendar() {
@@ -140,8 +147,37 @@ class HistoryViewModel @Inject constructor(
 
     fun restoreTask(reminder: Reminder) {
         viewModelScope.launch {
-            repository.setTaskCompleted(reminder.id, false)
-            _userMessage.value = "Task restored"
+            // Restore to TODAY logic
+            // 1. Get today's date + original time
+            val originalCal = java.util.Calendar.getInstance().apply { timeInMillis = reminder.startTimeInMillis }
+            val todayCal = java.util.Calendar.getInstance().apply {
+                set(java.util.Calendar.HOUR_OF_DAY, originalCal.get(java.util.Calendar.HOUR_OF_DAY))
+                set(java.util.Calendar.MINUTE, originalCal.get(java.util.Calendar.MINUTE))
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            
+            // If the time has already passed today, should we push to tomorrow? 
+            // The prompt says "You likely intend to do the task now." 
+            // So moving to Today (even if technically past hour) puts it in "Today" list which is what we want.
+            // But if it's strict scheduling, it might trigger immediately? That's acceptable.
+            
+            val newTime = todayCal.timeInMillis
+            
+            val restoredReminder = reminder.copy(
+                isCompleted = false,
+                isAbandoned = false, // usage: clear abandonment
+                completedTime = null,
+                startTimeInMillis = newTime,
+                originalStartTimeInMillis = newTime // Update anchor? Yes, effectively a "new" task for today.
+            )
+            
+            repository.updateReminder(restoredReminder)
+            
+            // Re-schedule alarm
+            alarmScheduler.schedule(restoredReminder)
+            
+            _userMessage.value = "Task restored to Today"
             dismissReceipt()
         }
     }
@@ -166,6 +202,36 @@ class HistoryViewModel @Inject constructor(
             repository.insertReminder(newReminder)
             _userMessage.value = "Task repeated"
             dismissReceipt()
+        }
+    }
+
+    // Selection Mode Logic
+    // _selectedIds moved to top
+
+    fun toggleSelection(id: Int) {
+        _selectedIds.update { current ->
+            if (current.contains(id)) current - id else current + id
+        }
+    }
+
+    fun selectAll() {
+        val allIds = uiState.value.groupedItems.values.flatten().map { it.id }.toSet()
+        _selectedIds.value = allIds
+    }
+
+    fun clearSelection() {
+        _selectedIds.value = emptySet()
+    }
+
+    fun deleteSelected() {
+        viewModelScope.launch {
+            val idsToDelete = _selectedIds.value
+            if (idsToDelete.isNotEmpty()) {
+                val remindersToDelete = uiState.value.groupedItems.values.flatten().filter { it.id in idsToDelete }
+                remindersToDelete.forEach { repository.deleteReminder(it) }
+                _selectedIds.value = emptySet()
+                _userMessage.value = "${idsToDelete.size} tasks deleted"
+            }
         }
     }
 }
