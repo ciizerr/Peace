@@ -69,11 +69,12 @@ enum class MainTab(@StringRes val titleRes: Int, val icon: ImageVector, val rout
     Settings(R.string.nav_settings, Icons.Filled.Settings, "settings")
 }
 
-enum class SettingsCategory(@StringRes val titleRes: Int, val route: String) {
-    Appearance(R.string.pref_appearance, "settings_appearance"),
-    NavStyle(R.string.pref_nav_style, "settings_nav_style"),
-    ShadowBlur(R.string.pref_shadow_blur, "settings_shadow_blur"),
-    About(R.string.pref_about, "settings_about")
+enum class SettingsCategory(val iconRes: Int, val titleRes: Int) {
+    Appearance(R.drawable.ic_launcher_foreground, R.string.nav_appearance),
+    Identity(R.drawable.ic_launcher_foreground, R.string.nav_identity),
+    Rhythms(R.drawable.ic_launcher_foreground, R.string.nav_rhythms),
+    Sanctuary(R.drawable.ic_launcher_foreground, R.string.nav_sanctuary),
+    Wisdom(R.drawable.ic_launcher_foreground, R.string.nav_wisdom)
 }
 
 @Composable
@@ -240,6 +241,15 @@ fun CategoryCarouselBar(
         modifier = modifier
     ) {
         val shape = RoundedCornerShape(24.dp)
+        val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+        
+        // Auto-scroll to selected category
+        androidx.compose.runtime.LaunchedEffect(selectedCategory) {
+            val index = SettingsCategory.values().indexOf(selectedCategory)
+            if (index >= 0) {
+                listState.animateScrollToItem(index)
+            }
+        }
         
         // Shadow Logic
         val (baseElevation, baseAlpha) = when (shadowStyle) {
@@ -296,6 +306,7 @@ fun CategoryCarouselBar(
 
             // Foreground Content
             LazyRow(
+                state = listState,
                 modifier = Modifier.fillMaxSize().zIndex(1f),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically

@@ -38,6 +38,8 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun PeaceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    fontFamily: androidx.compose.ui.text.font.FontFamily? = null,
+    isBoldText: Boolean = false,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
@@ -59,9 +61,16 @@ fun PeaceTheme(
         }
     }
 
+    val typography = if (fontFamily != null) {
+        getTypography(fontFamily, isBoldText)
+    } else {
+        // Apply bold even if default font
+        getTypography(androidx.compose.ui.text.font.FontFamily.Default, isBoldText)  
+    }
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = typography,
         shapes = Shapes,
         content = content
     )

@@ -12,30 +12,40 @@ import androidx.compose.ui.res.stringResource
 import com.nami.peace.ui.components.PlaceholderScreen
 import com.nami.peace.ui.components.SettingsCategory
 
+import dev.chrisbanes.haze.HazeState
+
 @Composable
 fun SettingsContent(
     category: SettingsCategory,
     onNavigateToHistory: () -> Unit,
     onNavigateToDashboard: () -> Unit,
-    onNavigateToCategory: (SettingsCategory) -> Unit
+    onNavigateToCategory: (SettingsCategory) -> Unit,
+    hazeState: HazeState? = null
 ) {
     when (category) {
-        SettingsCategory.Appearance -> PlaceholderScreen(
-            title = stringResource(com.nami.peace.R.string.settings_appearance_title),
-            subtitle = stringResource(com.nami.peace.R.string.settings_appearance_subtitle),
+        SettingsCategory.Appearance -> com.nami.peace.ui.settings.appearance.AppearanceScreen(
+            onNavigateBack = onNavigateToDashboard,
+            hazeState = hazeState
+        )
+        SettingsCategory.Identity -> PlaceholderScreen(
+            title = stringResource(com.nami.peace.R.string.title_identity),
+            subtitle = "Profile, Sleep Schedule, AI Context",
             onBack = onNavigateToDashboard
         )
-        SettingsCategory.NavStyle -> PlaceholderScreen(
-            title = stringResource(com.nami.peace.R.string.settings_nav_style_title),
-            subtitle = stringResource(com.nami.peace.R.string.settings_nav_style_subtitle),
+        SettingsCategory.Rhythms -> PlaceholderScreen(
+            title = stringResource(com.nami.peace.R.string.title_rhythms),
+            subtitle = "Soundscapes, Nag Mode, Quiet Hours",
             onBack = onNavigateToDashboard
         )
-        SettingsCategory.ShadowBlur -> ShadowBlurSettingsScreen(
+        SettingsCategory.Sanctuary -> PlaceholderScreen(
+            title = stringResource(com.nami.peace.R.string.title_sanctuary),
+            subtitle = "History, Backup, Privacy",
             onBack = onNavigateToDashboard
         )
-        SettingsCategory.About -> AboutSettingsScreen(
+        SettingsCategory.Wisdom -> AboutSettingsScreen(
             onNavigateToHistory = onNavigateToHistory,
-            onNavigateToDashboard = onNavigateToDashboard
+            onNavigateToDashboard = onNavigateToDashboard,
+            hazeState = hazeState
         )
     }
 }

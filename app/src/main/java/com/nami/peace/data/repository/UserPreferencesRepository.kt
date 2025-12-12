@@ -114,4 +114,56 @@ class UserPreferencesRepository @Inject constructor(
             preferences[USER_BED_TIME] = profile.bedTime
         }
     }
+
+
+    // Appearance Keys
+    private val THEME_MODE = stringPreferencesKey("theme_mode")
+    private val MOOD_COLOR = stringPreferencesKey("mood_color")
+    private val IS_BOLD_TEXT = androidx.datastore.preferences.core.booleanPreferencesKey("is_bold_text")
+    private val REDUCE_MOTION = androidx.datastore.preferences.core.booleanPreferencesKey("reduce_motion")
+    private val SHADOW_STRENGTH = androidx.datastore.preferences.core.floatPreferencesKey("shadow_strength")
+
+    val themeMode: Flow<String> = dataStore.data
+        .map { preferences -> preferences[THEME_MODE] ?: "Auto" }
+    
+    val moodColor: Flow<String> = dataStore.data
+        .map { preferences -> preferences[MOOD_COLOR] ?: "Ocean" }
+
+    val isBoldText: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[IS_BOLD_TEXT] ?: false }
+
+    val reduceMotion: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[REDUCE_MOTION] ?: false }
+
+    val shadowStrength: Flow<Float> = dataStore.data
+        .map { preferences -> preferences[SHADOW_STRENGTH] ?: 0.5f }
+
+    suspend fun setThemeMode(mode: String) {
+        dataStore.edit { it[THEME_MODE] = mode }
+    }
+
+    suspend fun setMoodColor(color: String) {
+        dataStore.edit { it[MOOD_COLOR] = color }
+    }
+
+    suspend fun setBoldText(enabled: Boolean) {
+        dataStore.edit { it[IS_BOLD_TEXT] = enabled }
+    }
+
+    suspend fun setReduceMotion(enabled: Boolean) {
+        dataStore.edit { it[REDUCE_MOTION] = enabled }
+    }
+
+    private val FONT_FAMILY = stringPreferencesKey("font_family")
+
+    val fontFamily: Flow<String> = dataStore.data
+        .map { preferences -> preferences[FONT_FAMILY] ?: "System" }
+
+    suspend fun setFontFamily(font: String) {
+        dataStore.edit { it[FONT_FAMILY] = font }
+    }
+
+    suspend fun setShadowStrength(strength: Float) {
+        dataStore.edit { it[SHADOW_STRENGTH] = strength }
+    }
 }

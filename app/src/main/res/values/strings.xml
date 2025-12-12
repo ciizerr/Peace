@@ -274,7 +274,37 @@
     <string name="settings_nav_style_title">Navigation Style</string>
     <string name="settings_nav_style_subtitle">Choose your preferred navigation bar style.</string>
 
+    <!-- Settings Navigation (Carousel) -->
+    <string name="nav_appearance">Appearance</string>
+    <string name="nav_identity">Profile &amp; AI</string>
+    <string name="nav_rhythms">Notifications &amp; Sounds</string>
+    <string name="nav_sanctuary">Data &amp; Storage</string>
+    <string name="nav_wisdom">About &amp; Updates</string>
+
+    <!-- Settings Screen Titles -->
+    <string name="title_atmosphere">Atmosphere</string>
+    <string name="title_identity">Identity</string>
+    <string name="title_rhythms">Rhythms</string>
+    <string name="title_sanctuary">Sanctuary</string>
+    <string name="title_wisdom">Wisdom</string>
+
+    <!-- Consolidated Appearance Screen -->
+    <string name="section_theme">Theme</string>
+    <string name="section_mood">Energy</string>
+    <string name="section_readability">Readability</string>
+    <string name="section_immersion">Immersion</string>
+    
+    <string name="lbl_bold_text">Bold Text</string>
+    <string name="lbl_glass_blur">Glass Blur</string>
+    <string name="lbl_shadows">Shadow Depth</string>
+    <string name="lbl_reduce_motion">Reduce Motion</string>
+    
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
     <!-- About Screen & Updater -->
+    <string name="settings_about_title">About Peace</string>
     <string name="update_available_title">Update Available: v%s</string>
     <string name="update_available_message">A new version of Peace is available.</string>
     <string name="update_now">Update Now</string>

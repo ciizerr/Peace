@@ -14,12 +14,18 @@ import androidx.navigation.compose.NavHost
 
 import androidx.activity.enableEdgeToEdge
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.text.font.FontFamily
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @javax.inject.Inject
+    lateinit var userPreferencesRepository: com.nami.peace.data.repository.UserPreferencesRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         
         // Request Notifications Permission (Android 13+)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -46,23 +52,37 @@ class MainActivity : ComponentActivity() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             val alarmManager = getSystemService(android.app.AlarmManager::class.java)
             if (!alarmManager.canScheduleExactAlarms()) {
-                // We should show a dialog or banner. 
-                // Since we have a banner in AddEditReminderScreen, we might rely on that.
-                // But the requirement says "Implement a permission request logic immediately when the app starts."
-                // So let's show a simple Alert Dialog via Compose if possible, or just log it for now 
-                // as the UI is Compose-based and we are in onCreate.
-                // We can pass a flag to the HomeScreen to show the dialog.
-                // Or better, let's just rely on the banner in AddEditReminderScreen as it's less intrusive 
-                // than a dialog on startup, unless strictly required.
-                // The requirement says: "If False: Show a dialog... and redirect them to Settings."
-                // Let's implement this in the HomeScreen or a top-level Composable.
-                // For now, let's just log it here and ensure the UI handles it.
                 com.nami.peace.util.DebugLogger.log(getString(R.string.exact_alarm_permission_missing))
             }
         }
 
         setContent {
-            PeaceTheme {
+            val fontFamilyName = userPreferencesRepository.fontFamily
+                .collectAsState(initial = "System").value
+            
+            val fontFamily = when (fontFamilyName) {
+                "Poppins" -> androidx.compose.ui.text.font.FontFamily(
+                    androidx.compose.ui.text.font.Font(R.font.poppins_regular)
+                )
+                "Lato" -> androidx.compose.ui.text.font.FontFamily(
+                    androidx.compose.ui.text.font.Font(R.font.lato_regular)
+                )
+                "Bodoni" -> androidx.compose.ui.text.font.FontFamily(
+                    androidx.compose.ui.text.font.Font(R.font.bodoni_moda)
+                )
+                "Loves" -> androidx.compose.ui.text.font.FontFamily(
+                    androidx.compose.ui.text.font.Font(R.font.loves)
+                )
+                "Serif" -> FontFamily.Serif
+                "Monospace" -> FontFamily.Monospace
+                "Cursive" -> FontFamily.Cursive
+                else -> FontFamily.Default
+            }
+
+            val isBoldText = userPreferencesRepository.isBoldText
+                .collectAsState(initial = false).value
+
+            PeaceTheme(fontFamily = fontFamily, isBoldText = isBoldText) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     val startDestination = if (intent?.getBooleanExtra("NAVIGATE_TO_ALARM", false) == true) {
@@ -75,11 +95,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             com.nami.peace.ui.main.MainScreen(
                                 onAddReminder = { navController.navigate("add_edit") },
-                                // onEditReminder = { id -> navController.navigate("detail/$id") } // Removed, Detail is now a sheet
-                                onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") } // Direct to Edit from Home if needed? 
-                                // Actually MainScreen passes onEdit to HomeScreen, which uses it for the Sheet's "Edit" button.
-                                // The Sheet's Edit button needs to go to AddEdit.
-                                // So we keep onEditReminder but it goes to add_edit, NOT detail.
+                                onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") }
                             )
                         }
                         composable(
@@ -95,8 +111,6 @@ class MainActivity : ComponentActivity() {
                                 onNavigateUp = { navController.popBackStack() }
                             )
                         }
-                        // Detail Route Removed - Replaced by Bottom Sheet in HomeScreen
-                        // composable("detail/{reminderId}") { ... }
                         
                         composable("alarm") {
                             com.nami.peace.ui.alarm.AlarmScreen(

@@ -66,6 +66,42 @@ class SettingsViewModel @Inject constructor(
         _updateStatus.value = com.nami.peace.data.updater.UpdateState.Idle
     }
 
+    // Consolidated Appearance State
+    val themeMode: StateFlow<String> = userPreferencesRepository.themeMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Auto")
+
+    val moodColor: StateFlow<String> = userPreferencesRepository.moodColor
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Ocean")
+
+    val isBoldText: StateFlow<Boolean> = userPreferencesRepository.isBoldText
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val reduceMotion: StateFlow<Boolean> = userPreferencesRepository.reduceMotion
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val shadowStrength: StateFlow<Float> = userPreferencesRepository.shadowStrength
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.5f)
+
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch { userPreferencesRepository.setThemeMode(mode) }
+    }
+
+    fun setMoodColor(color: String) {
+        viewModelScope.launch { userPreferencesRepository.setMoodColor(color) }
+    }
+
+    fun setBoldText(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setBoldText(enabled) }
+    }
+
+    fun setReduceMotion(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setReduceMotion(enabled) }
+    }
+
+    fun setShadowStrength(strength: Float) {
+        viewModelScope.launch { userPreferencesRepository.setShadowStrength(strength) }
+    }
+
     fun setBlurEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setBlurEnabled(enabled)
@@ -94,5 +130,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferencesRepository.setShadowStyle(style)
         }
+    }
+    val fontFamily: StateFlow<String> = userPreferencesRepository.fontFamily
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "System")
+
+    fun setFontFamily(font: String) {
+        viewModelScope.launch { userPreferencesRepository.setFontFamily(font) }
     }
 }
