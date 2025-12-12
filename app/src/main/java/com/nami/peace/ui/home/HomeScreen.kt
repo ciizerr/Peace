@@ -353,8 +353,11 @@ fun HomeScreen(
     // --- Detail Bottom Sheet ---
     if (viewingReminder != null) {
         val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
         ModalBottomSheet(
             onDismissRequest = { viewingReminder = null },
+            sheetState = sheetState,
             containerColor = Color.Transparent,
             scrimColor = Color.Transparent,
             dragHandle = null
@@ -421,8 +424,11 @@ fun HomeScreen(
     // --- Profile Sheet ---
     if (showProfileSheet) {
         val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        
         ModalBottomSheet(
             onDismissRequest = { showProfileSheet = false },
+            sheetState = sheetState,
             containerColor = Color.Transparent,
             dragHandle = null
         ) {
