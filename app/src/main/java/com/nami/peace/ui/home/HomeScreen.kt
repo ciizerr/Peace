@@ -40,6 +40,7 @@ import com.nami.peace.ui.components.GlassyTopAppBar
 import com.nami.peace.ui.components.GlassyFloatingActionButton
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 
@@ -61,6 +62,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
+// Imports for Sheet
+import com.nami.peace.ui.reminder.ReminderDetailSheet
+import com.nami.peace.ui.theme.SoftShadow
+import com.nami.peace.ui.theme.GlassyBlack
+import com.nami.peace.ui.theme.GlassyWhite
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.border
+
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 
 @Composable
@@ -71,6 +80,7 @@ fun HomeScreen(
     bottomPadding: androidx.compose.ui.unit.Dp = 0.dp,
     viewModel: HomeViewModel = hiltViewModel(),
     hazeState: HazeState? = null,
+    sheetHazeState: HazeState? = null,
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
@@ -80,6 +90,8 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // State for viewing details in Bottom Sheet
+    var viewingReminder by remember { mutableStateOf<Reminder?>(null) }
     
     // Selection Mode State
     var selectedIds by remember { mutableStateOf(emptySet<Int>()) }
@@ -247,6 +259,13 @@ fun HomeScreen(
                              if (uiState.focusTask != null) {
                                  viewModel.markAsDone(uiState.focusTask!!)
                              }
+                         },
+                         onClick = {
+                             if (uiState.focusTask != null) {
+                                 // Open Sheet instead of Navigation if we wanted, or keep Navigation for Hero?
+                                 // Let's use Sheet for consistency as requested "change the reminder detail screen into bottom sheet"
+                                 viewingReminder = uiState.focusTask
+                             }
                          }
                     )
                 }
@@ -255,17 +274,17 @@ fun HomeScreen(
                 
                 // Morning
                 if (uiState.morningTasks.isNotEmpty()) {
-                    item { TimeBucketSection(stringResource(R.string.bucket_morning), uiState.morningTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder) }
+                    item { TimeBucketSection(stringResource(R.string.bucket_morning), uiState.morningTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder, onView = { viewingReminder = it }) }
                 }
 
                 // Afternoon
                 if (uiState.afternoonTasks.isNotEmpty()) {
-                    item { TimeBucketSection(stringResource(R.string.bucket_afternoon), uiState.afternoonTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder) }
+                    item { TimeBucketSection(stringResource(R.string.bucket_afternoon), uiState.afternoonTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder, onView = { viewingReminder = it }) }
                 }
 
                 // Evening
                 if (uiState.eveningTasks.isNotEmpty()) {
-                    item { TimeBucketSection(stringResource(R.string.bucket_evening), uiState.eveningTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder) }
+                    item { TimeBucketSection(stringResource(R.string.bucket_evening), uiState.eveningTasks, selectedIds, isSelectionMode, viewModel::toggleReminder, toggleSelection, onEditReminder, onView = { viewingReminder = it }) }
                 }
                 
                 // Empty State handled by FocusHero's empty state + empty buckets essentially.
@@ -312,6 +331,76 @@ fun HomeScreen(
                 shadowsEnabled = shadowsEnabled,
                 shadowStyle = shadowStyle
             )
+        }
+    }
+
+    // --- Detail Bottom Sheet ---
+    if (viewingReminder != null) {
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        ModalBottomSheet(
+            onDismissRequest = { viewingReminder = null },
+            containerColor = Color.Transparent,
+            scrimColor = Color.Transparent,
+            dragHandle = null
+        ) {
+             val shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+             
+             // Glassy Style Logic (Matched HistoryScreen)
+             val showShadow = blurEnabled && shadowsEnabled && shadowStyle != "None"
+             val baseAlpha = if (showShadow) {
+                 when (shadowStyle) {
+                     "Soft" -> 0.15f
+                     "Medium" -> 0.25f
+                     "Sharp" -> 0.4f
+                     else -> 0f
+                 }
+             } else 0f
+             
+             val shadowColor = SoftShadow.copy(alpha = baseAlpha)
+             val elevation = if (showShadow) {
+                    when (shadowStyle) {
+                        "Soft" -> 4.dp
+                        "Medium" -> 8.dp
+                        "Sharp" -> 12.dp
+                        else -> 0.dp
+                    }
+             } else 0.dp
+             
+             val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
+             val borderModifier = if (blurEnabled && shadowsEnabled && shadowStyle != "None") Modifier.border(1.dp, borderColor, shape) else Modifier
+             val containerColor = if (blurEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+
+             Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = elevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
+                    .then(borderModifier)
+                    .background(containerColor)
+                    .then(
+                        if (blurEnabled && (sheetHazeState != null || hazeState != null)) {
+                            Modifier.hazeChild(
+                                state = sheetHazeState ?: hazeState!!,
+                                shape = shape,
+                                style = dev.chrisbanes.haze.HazeStyle(
+                                    blurRadius = blurStrength.dp, 
+                                    tint = if (isDark) GlassyBlack.copy(alpha = blurTintAlpha) else GlassyWhite.copy(alpha = blurTintAlpha)
+                                )
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
+            ) {
+                ReminderDetailSheet(
+                    reminder = viewingReminder!!,
+                    onEdit = { 
+                        val id = viewingReminder!!.id
+                        viewingReminder = null // Close sheet
+                        onEditReminder(id) 
+                    },
+                    onClose = { viewingReminder = null }
+                )
+            }
         }
     }
 }
@@ -374,7 +463,7 @@ fun PeaceProgressCard(completed: Int, total: Int) {
 }
 
 @Composable
-fun FocusHeroCard(reminder: Reminder?, onDone: () -> Unit) {
+fun FocusHeroCard(reminder: Reminder?, onDone: () -> Unit, onClick: () -> Unit) {
     if (reminder != null) {
         val stripColor = when (reminder.priority) {
             PriorityLevel.HIGH -> Color(0xFFEF5350)
@@ -459,7 +548,8 @@ fun TimeBucketSection(
     isSelectionMode: Boolean,
     onToggle: (Reminder) -> Unit,
     onToggleSelection: (Int) -> Unit,
-    onEdit: (Int) -> Unit
+    onEdit: (Int) -> Unit,
+    onView: (Reminder) -> Unit // Add callback for viewing
 ) {
     Column(modifier = Modifier.padding(top = 16.dp)) {
         Text(
@@ -478,7 +568,7 @@ fun TimeBucketSection(
                 onToggle = { onToggle(reminder) },
                 onLongClick = { onToggleSelection(reminder.id) },
                 onClick = {
-                    if (isSelectionMode) onToggleSelection(reminder.id) else onEdit(reminder.id)
+                    if (isSelectionMode) onToggleSelection(reminder.id) else onView(reminder) // Use View (Sheet) instead of Edit (Nav) directly
                 }
             )
             Spacer(modifier = Modifier.height(8.dp))

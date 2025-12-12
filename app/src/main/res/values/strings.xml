@@ -253,6 +253,9 @@
     <string name="reminder_status_next">Next</string>
     <string name="reminder_status_upcoming">Upcoming</string>
     <string name="reminder_not_found">Reminder not found</string>
+    <string name="reminder_label_scheduling_mode">Scheduling</string>
+    <string name="reminder_scheduling_strict">Strict</string>
+    <string name="reminder_scheduling_flexible">Flexible</string>
 
     <!-- Alarm Screen -->
     <string name="alarm_hero_title">It\'s time to</string>

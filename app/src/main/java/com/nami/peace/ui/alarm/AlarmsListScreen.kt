@@ -29,6 +29,7 @@ import com.nami.peace.domain.model.Reminder
 import com.nami.peace.ui.components.GlassyTopAppBar
 import com.nami.peace.ui.home.UpcomingReminderCard
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeChild
 import dev.chrisbanes.haze.haze
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -38,11 +39,20 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.shadow
+import com.nami.peace.ui.reminder.ReminderDetailSheet
+import com.nami.peace.ui.theme.GlassyBlack
+import com.nami.peace.ui.theme.GlassyWhite
+import com.nami.peace.ui.theme.SoftShadow
+import androidx.compose.animation.ExperimentalAnimationApi
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun AlarmsListScreen(
     viewModel: AlarmsListViewModel = hiltViewModel(),
     hazeState: HazeState? = null,
+    sheetHazeState: HazeState? = null,
     blurEnabled: Boolean = true,
     blurStrength: Float = 12f,
     blurTintAlpha: Float = 0.5f,
@@ -54,6 +64,9 @@ fun AlarmsListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    
+    // State for viewing details in Bottom Sheet
+    var viewingReminder by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<Reminder?>(null) }
     
     // Dialog State
     var showNapDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
@@ -240,7 +253,7 @@ fun AlarmsListScreen(
                         onToggle = { viewModel.toggleReminder(reminder) },
                         onLongClick = { toggleSelection(reminder.id) },
                         onClick = { 
-                            if (isSelectionMode) toggleSelection(reminder.id) else onEditReminder(reminder.id)
+                            if (isSelectionMode) toggleSelection(reminder.id) else viewingReminder = reminder // Open Sheet
                         }
                     )
                 }
@@ -276,6 +289,77 @@ fun AlarmsListScreen(
                 shadowsEnabled = shadowsEnabled,
                 shadowStyle = shadowStyle
             )
+        }
+    }
+
+
+    // --- Detail Bottom Sheet ---
+    if (viewingReminder != null) {
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        ModalBottomSheet(
+            onDismissRequest = { viewingReminder = null },
+            containerColor = Color.Transparent,
+            scrimColor = Color.Transparent,
+            dragHandle = null
+        ) {
+             val shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+             
+             // Glassy Style Logic (Matched HomeScreen)
+             val showShadow = blurEnabled && shadowsEnabled && shadowStyle != "None"
+             val baseAlpha = if (showShadow) {
+                 when (shadowStyle) {
+                     "Soft" -> 0.15f
+                     "Medium" -> 0.25f
+                     "Sharp" -> 0.4f
+                     else -> 0f
+                 }
+             } else 0f
+             
+             val shadowColor = SoftShadow.copy(alpha = baseAlpha)
+             val elevation = if (showShadow) {
+                    when (shadowStyle) {
+                        "Soft" -> 4.dp
+                        "Medium" -> 8.dp
+                        "Sharp" -> 12.dp
+                        else -> 0.dp
+                    }
+             } else 0.dp
+             
+             val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
+             val borderModifier = if (blurEnabled && shadowsEnabled && shadowStyle != "None") Modifier.border(1.dp, borderColor, shape) else Modifier
+             val containerColor = if (blurEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+
+             Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = elevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
+                    .then(borderModifier)
+                    .background(containerColor)
+                    .then(
+                        if (blurEnabled && (sheetHazeState != null || hazeState != null)) {
+                            Modifier.hazeChild(
+                                state = sheetHazeState ?: hazeState!!,
+                                shape = shape,
+                                style = dev.chrisbanes.haze.HazeStyle(
+                                    blurRadius = blurStrength.dp, 
+                                    tint = if (isDark) GlassyBlack.copy(alpha = blurTintAlpha) else GlassyWhite.copy(alpha = blurTintAlpha)
+                                )
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
+            ) {
+                ReminderDetailSheet(
+                    reminder = viewingReminder!!,
+                    onEdit = { 
+                        val id = viewingReminder!!.id
+                        viewingReminder = null // Close sheet
+                        onEditReminder(id) 
+                    },
+                    onClose = { viewingReminder = null }
+                )
+            }
         }
     }
 }

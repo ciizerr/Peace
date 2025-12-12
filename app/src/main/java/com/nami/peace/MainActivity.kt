@@ -75,7 +75,11 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             com.nami.peace.ui.main.MainScreen(
                                 onAddReminder = { navController.navigate("add_edit") },
-                                onEditReminder = { id -> navController.navigate("detail/$id") }
+                                // onEditReminder = { id -> navController.navigate("detail/$id") } // Removed, Detail is now a sheet
+                                onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") } // Direct to Edit from Home if needed? 
+                                // Actually MainScreen passes onEdit to HomeScreen, which uses it for the Sheet's "Edit" button.
+                                // The Sheet's Edit button needs to go to AddEdit.
+                                // So we keep onEditReminder but it goes to add_edit, NOT detail.
                             )
                         }
                         composable(
@@ -91,19 +95,8 @@ class MainActivity : ComponentActivity() {
                                 onNavigateUp = { navController.popBackStack() }
                             )
                         }
-                        composable(
-                            route = "detail/{reminderId}",
-                            arguments = listOf(
-                                androidx.navigation.navArgument("reminderId") {
-                                    type = androidx.navigation.NavType.IntType
-                                }
-                            )
-                        ) {
-                            com.nami.peace.ui.reminder.ReminderDetailScreen(
-                                onNavigateUp = { navController.popBackStack() },
-                                onEditReminder = { id -> navController.navigate("add_edit?reminderId=$id") }
-                            )
-                        }
+                        // Detail Route Removed - Replaced by Bottom Sheet in HomeScreen
+                        // composable("detail/{reminderId}") { ... }
                         
                         composable("alarm") {
                             com.nami.peace.ui.alarm.AlarmScreen(

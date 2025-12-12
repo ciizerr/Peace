@@ -51,7 +51,8 @@ fun MainScreen(
 ) {
     val pagerState = rememberPagerState(pageCount = { MainTab.values().size })
     val scope = rememberCoroutineScope()
-    val hazeState = remember { HazeState() }
+    val contentHazeState = remember { HazeState() }
+    val sheetHazeState = remember { HazeState() }
     
     val blurEnabled by settingsViewModel.blurEnabled.collectAsState()
     val shadowsEnabled by settingsViewModel.shadowsEnabled.collectAsState()
@@ -103,7 +104,8 @@ fun MainScreen(
 
     Scaffold(
         modifier = Modifier
-            .nestedScroll(nestedScrollConnection),
+            .nestedScroll(nestedScrollConnection)
+            .haze(sheetHazeState), // Capture EVERYTHING for the Sheet to blur
         bottomBar = {
             Box(contentAlignment = Alignment.BottomCenter) {
                 // Main Bottom Bar
@@ -113,7 +115,7 @@ fun MainScreen(
                         scope.launch { pagerState.animateScrollToPage(tab.ordinal, animationSpec = tween(300)) }
                     },
                     isVisible = isBottomBarVisible && !isSheetOpen && selectedTab != MainTab.Settings,
-                    hazeState = hazeState,
+                    hazeState = contentHazeState,
                     blurEnabled = blurEnabled,
                     blurStrength = blurStrength,
                     blurTintAlpha = blurTintAlpha,
@@ -128,7 +130,7 @@ fun MainScreen(
                         scope.launch { settingsPagerState.animateScrollToPage(category.ordinal) }
                     },
                     isVisible = isBottomBarVisible && selectedTab == MainTab.Settings,
-                    hazeState = hazeState,
+                    hazeState = contentHazeState,
                     blurEnabled = blurEnabled,
                     blurStrength = blurStrength,
                     blurTintAlpha = blurTintAlpha,
@@ -159,7 +161,8 @@ fun MainScreen(
                                 // TODO: Implement Profile Feature later
                             },
                             bottomPadding = 90.dp,
-                            hazeState = hazeState,
+                            hazeState = contentHazeState,
+                            sheetHazeState = sheetHazeState,
                             blurEnabled = blurEnabled,
                             blurStrength = blurStrength,
                             blurTintAlpha = blurTintAlpha,
@@ -170,7 +173,8 @@ fun MainScreen(
                     }
                     MainTab.Alarms -> {
                         AlarmsListScreen(
-                            hazeState = hazeState,
+                            hazeState = contentHazeState,
+                            sheetHazeState = sheetHazeState,
                             blurEnabled = blurEnabled,
                             blurStrength = blurStrength,
                             blurTintAlpha = blurTintAlpha,
@@ -183,7 +187,7 @@ fun MainScreen(
                     }
                     MainTab.History -> {
                         com.nami.peace.ui.history.HistoryScreen(
-                            hazeState = hazeState,
+                            hazeState = contentHazeState, // History might need sheetHazeState too later?
                             blurEnabled = blurEnabled,
                             blurStrength = blurStrength,
                             blurTintAlpha = blurTintAlpha,

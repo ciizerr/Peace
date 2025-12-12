@@ -375,8 +375,8 @@ fun DetailCard(label: String, value: String) {
 
 fun getPriorityColor(priority: com.nami.peace.domain.model.PriorityLevel): Color {
     return when (priority) {
-        com.nami.peace.domain.model.PriorityLevel.HIGH -> Color(0xFFFFCDD2) 
-        com.nami.peace.domain.model.PriorityLevel.MEDIUM -> Color(0xFFFFF9C4) 
-        com.nami.peace.domain.model.PriorityLevel.LOW -> Color(0xFFC8E6C9) 
+        com.nami.peace.domain.model.PriorityLevel.HIGH -> androidx.compose.ui.graphics.Color(0xFFE57373) // Soft Red
+        com.nami.peace.domain.model.PriorityLevel.MEDIUM -> androidx.compose.ui.graphics.Color(0xFF64B5F6) // Soft Blue
+        com.nami.peace.domain.model.PriorityLevel.LOW -> androidx.compose.ui.graphics.Color(0xFF81C784) // Soft Green
     }
 }
