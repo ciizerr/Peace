@@ -8,11 +8,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val appUpdater: com.nami.peace.data.updater.AppUpdater
 ) : ViewModel() {
 
     val blurEnabled: StateFlow<Boolean> = userPreferencesRepository.blurEnabled
@@ -29,6 +31,40 @@ class SettingsViewModel @Inject constructor(
 
     val shadowStyle: StateFlow<String> = userPreferencesRepository.shadowStyle
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Subtle")
+
+    // Update State
+    private val _updateStatus = kotlinx.coroutines.flow.MutableStateFlow<com.nami.peace.data.updater.UpdateState>(com.nami.peace.data.updater.UpdateState.Idle)
+    val updateStatus: StateFlow<com.nami.peace.data.updater.UpdateState> = _updateStatus.asStateFlow()
+
+    fun checkForUpdates() {
+        viewModelScope.launch {
+            _updateStatus.value = com.nami.peace.data.updater.UpdateState.Checking
+            appUpdater.checkForUpdate().collect { state ->
+                _updateStatus.value = state
+            }
+        }
+    }
+
+    fun startUpdate(url: String) {
+        viewModelScope.launch {
+            appUpdater.downloadApk(url).collect { status ->
+               when(status) {
+                   is com.nami.peace.data.updater.DownloadStatus.Downloading -> _updateStatus.value = com.nami.peace.data.updater.UpdateState.Downloading(0)
+                   is com.nami.peace.data.updater.DownloadStatus.Progress -> _updateStatus.value = com.nami.peace.data.updater.UpdateState.Downloading(status.percent)
+                   is com.nami.peace.data.updater.DownloadStatus.ReadyToInstall -> {
+                       _updateStatus.value = com.nami.peace.data.updater.UpdateState.ReadyToInstall(status.file)
+                       appUpdater.installApk(status.file) // Trigger install immediately
+                   }
+                   is com.nami.peace.data.updater.DownloadStatus.Error -> _updateStatus.value = com.nami.peace.data.updater.UpdateState.Error(status.message)
+                   else -> {}
+               }
+            }
+        }
+    }
+
+    fun resetUpdateState() {
+        _updateStatus.value = com.nami.peace.data.updater.UpdateState.Idle
+    }
 
     fun setBlurEnabled(enabled: Boolean) {
         viewModelScope.launch {

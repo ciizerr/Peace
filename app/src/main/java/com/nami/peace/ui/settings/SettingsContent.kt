@@ -33,26 +33,9 @@ fun SettingsContent(
         SettingsCategory.ShadowBlur -> ShadowBlurSettingsScreen(
             onBack = onNavigateToDashboard
         )
-        SettingsCategory.About -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                androidx.compose.foundation.layout.Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
-                ) {
-                    Text(stringResource(com.nami.peace.R.string.pref_about), style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
-                    androidx.compose.material3.Button(onClick = onNavigateToHistory) {
-                        Text(stringResource(com.nami.peace.R.string.view_history_log))
-                    }
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
-                    androidx.compose.material3.OutlinedButton(onClick = onNavigateToDashboard) {
-                        Text(stringResource(com.nami.peace.R.string.settings_back_to_main))
-                    }
-                }
-            }
-        }
+        SettingsCategory.About -> AboutSettingsScreen(
+            onNavigateToHistory = onNavigateToHistory,
+            onNavigateToDashboard = onNavigateToDashboard
+        )
     }
 }

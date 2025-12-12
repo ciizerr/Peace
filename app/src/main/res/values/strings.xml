@@ -53,7 +53,7 @@
     <!-- Focus Dashboard -->
     <string name="header_focus">Today\'s Focus</string>
     <string name="header_progress">Daily Progress</string>
-    <string name="progress_label">%d of %d Completed</string>
+    <string name="progress_label">%1$d of %2$d Completed</string>
     <string name="focus_empty">No immediate focus.\nEnjoy your peace.</string>
     <string name="bucket_morning">Morning (5 AM - 12 PM)</string>
     <string name="bucket_afternoon">Afternoon (12 PM - 6 PM)</string>
@@ -273,4 +273,20 @@
     <string name="settings_appearance_subtitle">Customize the look and feel of Peace.</string>
     <string name="settings_nav_style_title">Navigation Style</string>
     <string name="settings_nav_style_subtitle">Choose your preferred navigation bar style.</string>
+
+    <!-- About Screen & Updater -->
+    <string name="update_available_title">Update Available: v%s</string>
+    <string name="update_available_message">A new version of Peace is available.</string>
+    <string name="update_now">Update Now</string>
+    <string name="later">Later</string>
+    <string name="update_failed_title">Update Check Failed</string>
+    <string name="ok">OK</string>
+    <string name="up_to_date_title">Up to Date</string>
+    <string name="up_to_date_message">You are using the latest version of Peace.</string>
+    <string name="version_format">v%s</string>
+    <string name="downloading_format">Downloading... %d%%</string>
+    <string name="check_for_updates">Check for Updates</string>
+    <string name="error_network">Connection failed. Please check your internet.</string>
+    <string name="error_github_api">GitHub API Error: %d</string>
+    <string name="error_no_releases">No releases found on GitHub.</string>
 </resources>
