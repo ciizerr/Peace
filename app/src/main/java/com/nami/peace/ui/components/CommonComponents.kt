@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -99,7 +100,8 @@ fun GlassyFloatingActionButton(
     blurTintAlpha: Float = 0.5f
 ) {
     val shape = androidx.compose.foundation.shape.CircleShape
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    // Use luminance to detect if the *App Theme* is dark, not the System Theme
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     
     androidx.compose.animation.AnimatedVisibility(
@@ -127,9 +129,6 @@ fun GlassyFloatingActionButton(
         ) {
             
             // Background Logic:
-            // If Blur Enabled: Use semi-transparent surface + Haze
-            // If Blur Disabled: Use SOLID containerColor (Opaque)
-            
             val activeContainerColor = if (blurEnabled) {
                 containerColor.copy(alpha = 0.45f) // Glassy tint
             } else {
@@ -155,6 +154,7 @@ fun GlassyFloatingActionButton(
             }
     
             // Layer 2: Tint/Background Overlay and Border
+             val borderColor = if (isDark) Color.White.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.1f)
              Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -164,7 +164,7 @@ fun GlassyFloatingActionButton(
                         if (blurEnabled) {
                             Modifier.border(
                                 width = 1.dp, 
-                                color = Color.White.copy(alpha = 0.3f),
+                                color = borderColor,
                                 shape = shape
                             )
                         } else Modifier
@@ -263,7 +263,7 @@ fun GlassySheetSurface(
     content: @Composable () -> Unit
 ) {
     val shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
     
     // Background Color Logic

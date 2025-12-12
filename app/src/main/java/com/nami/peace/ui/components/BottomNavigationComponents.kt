@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -110,7 +111,7 @@ fun FloatingBottomBar(
         // Instead, we use a Border to define the edges (Glassmorphism).
         val effectiveElevation = if (shadowsEnabled && shadowStyle != "None" && !blurEnabled) baseElevation else 0.dp
         
-        val isDark = isSystemInDarkTheme()
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
         val shadowColor = SoftShadow.copy(alpha = baseAlpha)
         
         // Border Logic for Glass Mode
@@ -264,7 +265,7 @@ fun CategoryCarouselBar(
         // Instead, we use a Border to define the edges (Glassmorphism).
         val effectiveElevation = if (shadowsEnabled && shadowStyle != "None" && !blurEnabled) baseElevation else 0.dp
         
-        val isDark = isSystemInDarkTheme()
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
         val shadowColor = SoftShadow.copy(alpha = baseAlpha)
         
         // Border Logic for Glass Mode

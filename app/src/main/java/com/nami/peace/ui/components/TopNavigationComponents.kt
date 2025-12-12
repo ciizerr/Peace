@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.nami.peace.ui.theme.GlassyBlack
 import com.nami.peace.ui.theme.GlassyWhite
@@ -42,7 +43,7 @@ fun GlassyTopAppBar(
     shadowsEnabled: Boolean = true,
     shadowStyle: String = "Medium"
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val shape = RoundedCornerShape(24.dp)
     
         // Shadow Logic

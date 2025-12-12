@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -352,7 +353,7 @@ fun HomeScreen(
 
     // --- Detail Bottom Sheet ---
     if (viewingReminder != null) {
-        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         ModalBottomSheet(
@@ -423,13 +424,14 @@ fun HomeScreen(
 
     // --- Profile Sheet ---
     if (showProfileSheet) {
-        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         
         ModalBottomSheet(
             onDismissRequest = { showProfileSheet = false },
             sheetState = sheetState,
             containerColor = Color.Transparent,
+            scrimColor = Color.Transparent,
             dragHandle = null
         ) {
               val shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)

@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 
 import androidx.activity.enableEdgeToEdge
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.font.FontFamily
 
@@ -82,7 +83,20 @@ class MainActivity : ComponentActivity() {
             val isBoldText = userPreferencesRepository.isBoldText
                 .collectAsState(initial = false).value
 
-            PeaceTheme(fontFamily = fontFamily, isBoldText = isBoldText) {
+            val themeMode = userPreferencesRepository.themeMode
+                .collectAsState(initial = "Auto").value
+
+            val darkTheme = when (themeMode) {
+                "Light" -> false
+                "Dark" -> true
+                else -> androidx.compose.foundation.isSystemInDarkTheme()
+            }
+
+            PeaceTheme(
+                darkTheme = darkTheme,
+                fontFamily = fontFamily, 
+                isBoldText = isBoldText
+            ) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     val startDestination = if (intent?.getBooleanExtra("NAVIGATE_TO_ALARM", false) == true) {
