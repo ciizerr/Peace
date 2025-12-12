@@ -43,6 +43,8 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -64,6 +66,7 @@ import androidx.compose.runtime.setValue
 
 // Imports for Sheet
 import com.nami.peace.ui.reminder.ReminderDetailSheet
+import com.nami.peace.ui.profile.ProfileSheet
 import com.nami.peace.ui.theme.SoftShadow
 import com.nami.peace.ui.theme.GlassyBlack
 import com.nami.peace.ui.theme.GlassyWhite
@@ -92,6 +95,7 @@ fun HomeScreen(
 
     // State for viewing details in Bottom Sheet
     var viewingReminder by remember { mutableStateOf<Reminder?>(null) }
+    var showProfileSheet by remember { mutableStateOf(false) }
     
     // Selection Mode State
     var selectedIds by remember { mutableStateOf(emptySet<Int>()) }
@@ -222,7 +226,7 @@ fun HomeScreen(
                 item {
                     DashboardHeader(
                         greetingRes = uiState.greetingRes,
-                        userName = uiState.userName
+                        userName = uiState.userProfile.name
                     )
                 }
 
@@ -314,13 +318,25 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onProfileClick) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = stringResource(R.string.cd_profile),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp)
-                        )
+                    IconButton(onClick = { showProfileSheet = true }) {
+                        if (uiState.userProfile.photoUri != null) {
+                            AsyncImage(
+                                model = uiState.userProfile.photoUri,
+                                contentDescription = stringResource(R.string.cd_profile),
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .border(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.2f), CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.AccountCircle,
+                                contentDescription = stringResource(R.string.cd_profile),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.align(Alignment.TopCenter),
@@ -370,7 +386,7 @@ fun HomeScreen(
              val borderModifier = if (blurEnabled && shadowsEnabled && shadowStyle != "None") Modifier.border(1.dp, borderColor, shape) else Modifier
              val containerColor = if (blurEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
 
-             Box(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .shadow(elevation = elevation, shape = shape, spotColor = shadowColor, ambientColor = shadowColor)
@@ -386,19 +402,60 @@ fun HomeScreen(
                                     tint = if (isDark) GlassyBlack.copy(alpha = blurTintAlpha) else GlassyWhite.copy(alpha = blurTintAlpha)
                                 )
                             )
-                        } else {
-                            Modifier
-                        }
+                        } else Modifier
                     )
             ) {
-                ReminderDetailSheet(
-                    reminder = viewingReminder!!,
-                    onEdit = { 
-                        val id = viewingReminder!!.id
-                        viewingReminder = null // Close sheet
-                        onEditReminder(id) 
+                 ReminderDetailSheet(
+                     reminder = viewingReminder!!,
+                     onEdit = {
+                         val id = viewingReminder!!.id
+                         viewingReminder = null
+                         onEditReminder(id)
+                     },
+                     onClose = { viewingReminder = null }
+                 )
+            }
+        }
+    }
+
+    // --- Profile Sheet ---
+    if (showProfileSheet) {
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        ModalBottomSheet(
+            onDismissRequest = { showProfileSheet = false },
+            containerColor = Color.Transparent,
+            dragHandle = null
+        ) {
+              val shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+              val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
+              val borderModifier = if (blurEnabled && shadowsEnabled && shadowStyle != "None") Modifier.border(1.dp, borderColor, shape) else Modifier
+              val containerColor = if (blurEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer
+              
+              Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(borderModifier)
+                    .background(containerColor)
+                     .then(
+                        if (blurEnabled && (sheetHazeState != null || hazeState != null)) {
+                            Modifier.hazeChild(
+                                state = sheetHazeState ?: hazeState!!,
+                                shape = shape,
+                                style = dev.chrisbanes.haze.HazeStyle(
+                                    blurRadius = blurStrength.dp, 
+                                    tint = if (isDark) GlassyBlack.copy(alpha = blurTintAlpha) else GlassyWhite.copy(alpha = blurTintAlpha)
+                                )
+                            )
+                        } else Modifier
+                    )
+            ) {
+                ProfileSheet(
+                    userProfile = uiState.userProfile,
+                    onSave = { newProfile -> 
+                        viewModel.updateUserProfile(newProfile)
+                        showProfileSheet = false
                     },
-                    onClose = { viewingReminder = null }
+                    onClose = { showProfileSheet = false }
                 )
             }
         }

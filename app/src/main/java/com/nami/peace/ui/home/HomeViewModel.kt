@@ -31,14 +31,14 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Combine reminders, category, and username
+            // Combine reminders, category, and userProfile
             kotlinx.coroutines.flow.combine(
                 repository.getReminders(),
                 _selectedCategory,
-                userPreferencesRepository.userName
-            ) { reminders, category, userName ->
-                Triple(reminders, category, userName)
-            }.collectLatest { (reminders, category, userName) ->
+                userPreferencesRepository.userProfile
+            ) { reminders, category, userProfile ->
+                Triple(reminders, category, userProfile)
+            }.collectLatest { (reminders, category, userProfile) ->
                 
                 // 1. Separate Active vs Completed
                 val completed = reminders.filter { it.isCompleted }
@@ -93,7 +93,7 @@ class HomeViewModel @Inject constructor(
                 val usedCategories = reminders.map { it.category }.distinct().sortedBy { it.ordinal }
 
                 _uiState.value = HomeUiState(
-                    userName = userName ?: "",
+                    userProfile = userProfile,
                     greetingRes = getTimeBasedGreetingResource(),
                     focusTask = focusTask,
                     morningTasks = morningTasks,
@@ -194,10 +194,17 @@ class HomeViewModel @Inject constructor(
             _toastMessage.send("${reminders.size} tasks abandoned")
         }
     }
+
+    fun updateUserProfile(profile: com.nami.peace.data.repository.UserProfile) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateUserProfile(profile)
+            _toastMessage.send("Profile saved")
+        }
+    }
 }
 
 data class HomeUiState(
-    val userName: String = "",
+    val userProfile: com.nami.peace.data.repository.UserProfile = com.nami.peace.data.repository.UserProfile(),
     val greetingRes: Int = com.nami.peace.R.string.coach_welcome,
     val focusTask: Reminder? = null,
     val morningTasks: List<Reminder> = emptyList(),

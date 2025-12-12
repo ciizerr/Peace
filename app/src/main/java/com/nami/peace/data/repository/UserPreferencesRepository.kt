@@ -13,6 +13,8 @@ import javax.inject.Inject
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
+
+
 class UserPreferencesRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) {
@@ -22,8 +24,25 @@ class UserPreferencesRepository @Inject constructor(
     private val BLUR_TINT_ALPHA = androidx.datastore.preferences.core.floatPreferencesKey("blur_tint_alpha")
     private val SHADOW_STYLE = androidx.datastore.preferences.core.stringPreferencesKey("shadow_style")
 
-    // Placeholder for future Profile implementation
-    val userName: Flow<String?> = kotlinx.coroutines.flow.flowOf(null)
+    // Profile Keys
+    private val USER_NAME = stringPreferencesKey("user_name")
+    private val USER_PHOTO_URI = stringPreferencesKey("user_photo_uri")
+    private val USER_BIO = stringPreferencesKey("user_bio")
+    private val USER_OCCUPATION = stringPreferencesKey("user_occupation")
+    private val USER_WAKE_TIME = stringPreferencesKey("user_wake_time")
+    private val USER_BED_TIME = stringPreferencesKey("user_bed_time")
+
+    val userProfile: Flow<UserProfile> = dataStore.data
+        .map { preferences ->
+            UserProfile(
+                name = preferences[USER_NAME] ?: "",
+                photoUri = preferences[USER_PHOTO_URI],
+                bio = preferences[USER_BIO] ?: "",
+                occupation = preferences[USER_OCCUPATION] ?: "",
+                wakeTime = preferences[USER_WAKE_TIME] ?: "",
+                bedTime = preferences[USER_BED_TIME] ?: ""
+            )
+        }
 
 
     val blurEnabled: Flow<Boolean> = dataStore.data
@@ -78,6 +97,21 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setShadowStyle(style: String) {
         dataStore.edit { preferences ->
             preferences[SHADOW_STYLE] = style
+        }
+    }
+
+    suspend fun updateUserProfile(profile: UserProfile) {
+        dataStore.edit { preferences ->
+            preferences[USER_NAME] = profile.name
+            if (profile.photoUri != null) {
+                preferences[USER_PHOTO_URI] = profile.photoUri
+            } else {
+                preferences.remove(USER_PHOTO_URI)
+            }
+            preferences[USER_BIO] = profile.bio
+            preferences[USER_OCCUPATION] = profile.occupation
+            preferences[USER_WAKE_TIME] = profile.wakeTime
+            preferences[USER_BED_TIME] = profile.bedTime
         }
     }
 }

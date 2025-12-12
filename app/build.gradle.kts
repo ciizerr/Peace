@@ -50,6 +50,9 @@ android {
 dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
 
@@ -79,6 +82,12 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-android-compiler:2.51.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // Coil (Image Loading)
+    implementation(libs.coil.compose)
+
+    // Image Cropper
+    implementation(libs.android.image.cropper)
 
     // Extended Icons
     implementation("androidx.compose.material:material-icons-extended:1.7.0")
