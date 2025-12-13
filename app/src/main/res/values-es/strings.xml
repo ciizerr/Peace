@@ -116,4 +116,72 @@
     <string name="preset_30m">30m</string>
     <string name="preset_1h">1h</string>
     <string name="preset_2h">2h</string>
+    <!-- Language Settings -->
+    <string name="lbl_app_language">Idioma de la App</string>
+    <string name="title_choose_language">Elegir Idioma</string>
+    <string name="lang_system_default">Predeterminado del Sistema</string>
+    <string name="lang_english">Inglés</string>
+    <string name="lang_spanish">Español</string>
+    <string name="msg_region_not_supported">¿Región no soportada?</string>
+    <string name="title_help_translate">Ayuda a Traducir Peace</string>
+    <string name="subtitle_help_translate">Envía un Pull Request en GitHub</string>
+    <string name="btn_request_language">Solicitar un Idioma</string>
+
+    <!-- Consolidated Appearance Screen -->
+    <string name="section_theme">Tema</string>
+    <string name="section_mood">Energía</string>
+    <string name="section_readability">Legibilidad</string>
+    <string name="section_immersion">Inmersión</string>
+    
+    <string name="lbl_bold_text">Texto en Negrita</string>
+    <string name="lbl_glass_blur">Desenfoque de Vidrio</string>
+    <string name="lbl_shadows">Profundidad de Sombra</string>
+    <string name="lbl_reduce_motion">Reducir Movimiento</string>
+    
+    <string name="theme_auto">Auto</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+
+    <!-- Detailed Appearance Settings -->
+    <string name="lbl_glass_effects">Efectos de Vidrio</string>
+    <string name="lbl_android_12_plus">(Android 12+)</string>
+    <string name="lbl_tint_opacity">Opacidad del Tinte</string>
+    <string name="lbl_custom">Personalizado</string>
+    <string name="lbl_new">Nuevo</string>
+    
+    <!-- Mood Presets -->
+    <string name="mood_default">Predeterminado</string>
+    <string name="mood_forest">Bosque</string>
+    <string name="mood_sunset">Atardecer</string>
+    <string name="mood_lavender">Lavanda</string>
+    
+    <!-- Headers -->
+    <string name="title_atmosphere">Atmósfera y Sensación</string>
+    <string name="lbl_notes">Notas</string>
+    <string name="hint_notes">Agregar detalles...</string>
+    <string name="fmt_nag_mode_preview">Modo Insistente: Act. • %1$s%2$s × %3$d%4$s</string>
+    <string name="lbl_now">Ahora</string>
+    
+    <!-- Settings Subtitles -->
+    <string name="subtitle_identity">Perfil, Horario de Sueño, Contexto IA</string>
+    <string name="subtitle_rhythms">Paisajes Sonoros, Modo Insistente, Horas de Silencio</string>
+    <string name="subtitle_sanctuary">Historial, Copia de Seguridad, Privacidad</string>
+    <string name="title_advanced_settings">Configuración Avanzada</string>
+    <!-- Profile Sheet -->
+    <string name="title_your_profile">Tu Perfil</string>
+    <string name="cd_profile_photo">Foto de Perfil</string>
+    <string name="lbl_name">Nombre</string>
+    <string name="lbl_profile_help">Ayuda a Peace a entenderte mejor</string>
+    <string name="lbl_bio_optional">Bio (Opcional)</string>
+    <string name="hint_bio">¿Qué te define?</string>
+    <string name="lbl_occupation_optional">Ocupación (Opcional)</string>
+    <string name="lbl_wake_time">Hora de Despertar</string>
+    <string name="lbl_bed_time">Hora de Dormir</string>
+    <string name="btn_save_profile">Guardar Perfil</string>
+    <!-- Notifications -->
+    <string name="notif_channel_name">Recordatorios (Modo Insistente)</string>
+    <string name="notif_time_to">Hora de %s</string>
+    <string name="notif_time_to_snoozed">Hora de %s (Pospuesto)</string>
+    <string name="notif_tap_to_view">Toca para ver</string>
+    <string name="notif_dismiss">Descartar</string>
 </resources>

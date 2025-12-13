@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.res.stringResource
 import java.io.File
 import java.io.FileOutputStream
 import android.net.Uri
@@ -118,7 +119,7 @@ fun ProfileSheet(
         )
 
         Text(
-            text = "Your Profile",
+            text = stringResource(com.nami.peace.R.string.title_your_profile),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -140,7 +141,7 @@ fun ProfileSheet(
             if (photoUri != null) {
                 AsyncImage(
                     model = photoUri,
-                    contentDescription = "Profile Photo",
+                    contentDescription = stringResource(com.nami.peace.R.string.cd_profile_photo),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -184,7 +185,7 @@ fun ProfileSheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name") },
+                label = { Text(stringResource(com.nami.peace.R.string.lbl_name)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -193,7 +194,7 @@ fun ProfileSheet(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             
             Text(
-                text = "Help Peace understand you better",
+                text = stringResource(com.nami.peace.R.string.lbl_profile_help),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -201,8 +202,8 @@ fun ProfileSheet(
             OutlinedTextField(
                 value = bio,
                 onValueChange = { bio = it },
-                label = { Text("Bio (Optional)") },
-                placeholder = { Text("What defines you?") },
+                label = { Text(stringResource(com.nami.peace.R.string.lbl_bio_optional)) },
+                placeholder = { Text(stringResource(com.nami.peace.R.string.hint_bio)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 maxLines = 3
@@ -211,7 +212,7 @@ fun ProfileSheet(
             OutlinedTextField(
                 value = occupation,
                 onValueChange = { occupation = it },
-                label = { Text("Occupation (Optional)") },
+                label = { Text(stringResource(com.nami.peace.R.string.lbl_occupation_optional)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -221,7 +222,7 @@ fun ProfileSheet(
                 OutlinedTextField(
                     value = wakeTime,
                     onValueChange = { wakeTime = it },
-                    label = { Text("Wake Time") },
+                    label = { Text(stringResource(com.nami.peace.R.string.lbl_wake_time)) },
                     placeholder = { Text("07:00") },
                     singleLine = true,
                     modifier = Modifier.weight(1f),
@@ -231,7 +232,7 @@ fun ProfileSheet(
                 OutlinedTextField(
                     value = bedTime,
                     onValueChange = { bedTime = it },
-                    label = { Text("Bed Time") },
+                    label = { Text(stringResource(com.nami.peace.R.string.lbl_bed_time)) },
                     placeholder = { Text("23:00") },
                     singleLine = true,
                     modifier = Modifier.weight(1f),
@@ -251,7 +252,7 @@ fun ProfileSheet(
                 onClick = onClose,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Cancel")
+                Text(stringResource(com.nami.peace.R.string.cancel))
             }
 
             Button(
@@ -271,7 +272,7 @@ fun ProfileSheet(
             ) {
                 Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Save Profile")
+                Text(stringResource(com.nami.peace.R.string.btn_save_profile))
             }
         }
         

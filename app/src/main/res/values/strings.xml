@@ -319,4 +319,54 @@
     <string name="error_network">Connection failed. Please check your internet.</string>
     <string name="error_github_api">GitHub API Error: %d</string>
     <string name="error_no_releases">No releases found on GitHub.</string>
+    <!-- Language Settings -->
+    <string name="lbl_app_language">App Language</string>
+    <string name="title_choose_language">Choose Language</string>
+    <string name="lang_system_default">System Default</string>
+    <string name="lang_english">English</string>
+    <string name="lang_spanish">Español</string>
+    <string name="msg_region_not_supported">Region not supported?</string>
+    <string name="title_help_translate">Help Translate Peace</string>
+    <string name="subtitle_help_translate">Submit a Pull Request on GitHub</string>
+    <string name="btn_request_language">Request a Language</string>
+
+    <!-- Detailed Appearance Settings -->
+    <string name="lbl_glass_effects">Glass Effects</string>
+    <string name="lbl_android_12_plus">(Android 12+)</string>
+    <string name="lbl_tint_opacity">Tint Opacity</string>
+    <string name="lbl_custom">Custom</string>
+    <string name="lbl_new">New</string>
+    
+    <!-- Mood Presets -->
+    <string name="mood_default">Default</string>
+    <string name="mood_forest">Forest</string>
+    <string name="mood_sunset">Sunset</string>
+    <string name="mood_lavender">Lavender</string>
+    <string name="lbl_notes">Notes</string>
+    <string name="hint_notes">Add details...</string>
+    <string name="fmt_nag_mode_preview">Nag Mode: On • %1$s%2$s × %3$d%4$s</string>
+    <string name="lbl_now">Now</string>
+    
+    <!-- Settings Subtitles -->
+    <string name="subtitle_identity">Profile, Sleep Schedule, AI Context</string>
+    <string name="subtitle_rhythms">Soundscapes, Nag Mode, Quiet Hours</string>
+    <string name="subtitle_sanctuary">History, Backup, Privacy</string>
+    <string name="title_advanced_settings">Advanced Settings</string>
+    <!-- Profile Sheet -->
+    <string name="title_your_profile">Your Profile</string>
+    <string name="cd_profile_photo">Profile Photo</string>
+    <string name="lbl_name">Name</string>
+    <string name="lbl_profile_help">Help Peace understand you better</string>
+    <string name="lbl_bio_optional">Bio (Optional)</string>
+    <string name="hint_bio">What defines you?</string>
+    <string name="lbl_occupation_optional">Occupation (Optional)</string>
+    <string name="lbl_wake_time">Wake Time</string>
+    <string name="lbl_bed_time">Bed Time</string>
+    <string name="btn_save_profile">Save Profile</string>
+    <!-- Notifications -->
+    <string name="notif_channel_name">Nag Mode Reminders</string>
+    <string name="notif_time_to">Time to %s</string>
+    <string name="notif_time_to_snoozed">Time to %s (Snoozed)</string>
+    <string name="notif_tap_to_view">Tap to view</string>
+    <string name="notif_dismiss">Dismiss</string>
 </resources>

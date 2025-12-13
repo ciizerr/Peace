@@ -137,4 +137,23 @@ class SettingsViewModel @Inject constructor(
     fun setFontFamily(font: String) {
         viewModelScope.launch { userPreferencesRepository.setFontFamily(font) }
     }
+
+    // Language State
+    fun getCurrentLanguageCode(): String {
+        val locales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+        return if (!locales.isEmpty) locales.toLanguageTags() else "Auto"
+    }
+
+    private val _currentLanguageCode = kotlinx.coroutines.flow.MutableStateFlow(getCurrentLanguageCode())
+    val currentLanguageCode: StateFlow<String> = _currentLanguageCode.asStateFlow()
+
+    fun setLanguage(code: String) {
+        val localeList = if (code == "Auto" || code.isEmpty()) {
+            androidx.core.os.LocaleListCompat.getEmptyLocaleList()
+        } else {
+            androidx.core.os.LocaleListCompat.forLanguageTags(code)
+        }
+        androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(localeList)
+        _currentLanguageCode.value = code
+    }
 }

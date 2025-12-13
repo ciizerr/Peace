@@ -1,7 +1,7 @@
 package com.nami.peace
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -19,7 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.font.FontFamily
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     @javax.inject.Inject
     lateinit var userPreferencesRepository: com.nami.peace.data.repository.UserPreferencesRepository

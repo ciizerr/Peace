@@ -6,6 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.animation.scaleIn
@@ -129,56 +134,97 @@ fun GlassyDialog(
     shadowStyle: Int = 1,
     content: @Composable () -> Unit
 ) {
-    if (show) {
-        androidx.activity.compose.BackHandler(onBack = onDismissRequest)
+    // Manage internal state to keep Dialog attached during exit animation
+    val isAnimating = remember { androidx.compose.runtime.mutableStateOf(false) }
+    val isVisible = remember { androidx.compose.runtime.mutableStateOf(false) }
+
+    androidx.compose.runtime.LaunchedEffect(show) {
+        if (show) {
+            isVisible.value = true
+            isAnimating.value = true
+        } else {
+            // Delay hide to allow exit animation
+             kotlinx.coroutines.delay(300) // Match longest animation duration
+             if (!show) { // Double check in case of rapid toggle
+                 isVisible.value = false
+                 isAnimating.value = false
+             }
+        }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .zIndex(100f),
-        contentAlignment = Alignment.Center
-    ) {
-        // Scrim
-        androidx.compose.animation.AnimatedVisibility(
-            visible = show,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize()
+    if (isVisible.value || show) {
+        Dialog(
+            onDismissRequest = onDismissRequest,
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false
+            )
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.25f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onDismissRequest
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                // Scrim
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = show,
+                    enter = fadeIn(animationSpec = androidx.compose.animation.core.tween(300)),
+                    exit = fadeOut(animationSpec = androidx.compose.animation.core.tween(300)),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.01f)) // Reduced dim intensity
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = onDismissRequest
+                            )
                     )
-            )
-        }
+                }
 
-        // Dialog Surface
-        androidx.compose.animation.AnimatedVisibility(
-            visible = show,
-            enter = fadeIn() + scaleIn(initialScale = 0.95f),
-            exit = fadeOut() + scaleOut(targetScale = 0.95f)
-        ) {
-            GlassyDialogSurface(
-                modifier = modifier
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {}
-                    ),
-                hazeState = hazeState,
-                blurEnabled = blurEnabled,
-                blurStrength = blurStrength,
-                blurTintAlpha = blurTintAlpha,
-                shadowsEnabled = shadowsEnabled,
-                shadowStyle = shadowStyle,
-                content = content
-            )
+                // Scrollable Content Container
+                // This wrapper ensures that if the dialog is too tall (e.g. landscape), we can scroll.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.systemBars) // Respect system bars
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onDismissRequest // Dismiss on clicking outside content
+                        )
+                        .verticalScroll(androidx.compose.foundation.rememberScrollState())
+                        .padding(vertical = 16.dp), // Add vertical padding
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Dialog Surface
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = show,
+                        enter = fadeIn(animationSpec = androidx.compose.animation.core.tween(300)) + 
+                                scaleIn(initialScale = 0.95f, animationSpec = androidx.compose.animation.core.tween(300, easing = androidx.compose.animation.core.FastOutSlowInEasing)),
+                        exit = fadeOut(animationSpec = androidx.compose.animation.core.tween(200)) + 
+                               scaleOut(targetScale = 0.95f, animationSpec = androidx.compose.animation.core.tween(200)),
+                        modifier = Modifier.zIndex(1f) // Ensure above scrim
+                    ) {
+                        GlassyDialogSurface(
+                            modifier = modifier
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = {} // Swallow clicks inside dialog
+                                ),
+                            hazeState = hazeState,
+                            blurEnabled = blurEnabled,
+                            blurStrength = blurStrength,
+                            blurTintAlpha = blurTintAlpha,
+                            shadowsEnabled = shadowsEnabled,
+                            shadowStyle = shadowStyle,
+                            content = content
+                        )
+                    }
+                }
+            }
         }
     }
 }

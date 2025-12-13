@@ -365,7 +365,7 @@ fun AdvancedBottomSheetContent(
             )
         }
 
-        Text("Advanced Settings", style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.title_advanced_settings), style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
         // Nag Switch
@@ -423,7 +423,7 @@ fun AdvancedBottomSheetContent(
             Spacer(modifier = Modifier.height(16.dp))
             
             // Repetitions
-            Text("Repetitions: $nagTotalRepetitions", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(R.string.repetitions_format, nagTotalRepetitions), style = MaterialTheme.typography.labelMedium)
             Slider(
                 value = nagTotalRepetitions.toFloat(),
                 onValueChange = { onNagRepetitionsChanged(it.toInt()) },
@@ -441,7 +441,7 @@ fun AdvancedBottomSheetContent(
                         selected = !isStrictSchedulingEnabled,
                         onClick = { onStrictModeToggled(false) }
                     )
-                    Text("Flexible", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.flexible_drift), style = MaterialTheme.typography.bodyMedium)
                     
                     Spacer(modifier = Modifier.width(16.dp))
 
@@ -449,7 +449,7 @@ fun AdvancedBottomSheetContent(
                         selected = isStrictSchedulingEnabled,
                         onClick = { onStrictModeToggled(true) }
                     )
-                    Text("Strict", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.strict_anchored), style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
@@ -460,7 +460,7 @@ fun AdvancedBottomSheetContent(
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
         ) {
-            Text("Done")
+            Text(stringResource(R.string.done))
         }
     }
 }
@@ -546,8 +546,8 @@ fun NotesSection(
             OutlinedTextField(
                 value = notes,
                 onValueChange = onNotesChanged,
-                label = { Text("Notes") },
-                placeholder = { Text("Add details...") },
+                label = { Text(stringResource(R.string.lbl_notes)) },
+                placeholder = { Text(stringResource(R.string.hint_notes)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5,

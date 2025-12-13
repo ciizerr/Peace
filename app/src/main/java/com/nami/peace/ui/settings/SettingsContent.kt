@@ -29,17 +29,17 @@ fun SettingsContent(
         )
         SettingsCategory.Identity -> PlaceholderScreen(
             title = stringResource(com.nami.peace.R.string.title_identity),
-            subtitle = "Profile, Sleep Schedule, AI Context",
+            subtitle = stringResource(com.nami.peace.R.string.subtitle_identity),
             onBack = onNavigateToDashboard
         )
         SettingsCategory.Rhythms -> PlaceholderScreen(
             title = stringResource(com.nami.peace.R.string.title_rhythms),
-            subtitle = "Soundscapes, Nag Mode, Quiet Hours",
+            subtitle = stringResource(com.nami.peace.R.string.subtitle_rhythms),
             onBack = onNavigateToDashboard
         )
         SettingsCategory.Sanctuary -> PlaceholderScreen(
             title = stringResource(com.nami.peace.R.string.title_sanctuary),
-            subtitle = "History, Backup, Privacy",
+            subtitle = stringResource(com.nami.peace.R.string.subtitle_sanctuary),
             onBack = onNavigateToDashboard
         )
         SettingsCategory.Wisdom -> AboutSettingsScreen(

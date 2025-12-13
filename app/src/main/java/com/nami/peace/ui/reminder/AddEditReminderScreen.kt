@@ -101,10 +101,17 @@ fun AddEditReminderScreen(
     }
 
     // Advanced Preview String (Improved Description)
-    val advancedPreview = remember(uiState) {
+    // Advanced Preview String (Improved Description)
+    val strictLabel = stringResource(R.string.reminder_scheduling_strict)
+    val nagModeOnLabel = stringResource(R.string.nag_mode) + ": " + stringResource(R.string.reminder_status_enabled)
+    val labelMinutes = stringResource(R.string.minutes)
+    val labelHours = stringResource(R.string.hours)
+    
+    val advancedPreview = remember(uiState, strictLabel, nagModeOnLabel, labelMinutes, labelHours) {
         if (uiState.isNagModeEnabled) {
-             val strictPart = if (uiState.isStrictSchedulingEnabled) " • Strict" else ""
-             "Nag Mode: On • ${uiState.nagIntervalValue}${uiState.nagIntervalUnit.name.take(1).lowercase()} × ${uiState.nagTotalRepetitions}$strictPart"
+             val strictPart = if (uiState.isStrictSchedulingEnabled) " • $strictLabel" else ""
+             val unitSuffix = if (uiState.nagIntervalUnit == TimeUnit.MINUTES) labelMinutes.take(1).lowercase() else labelHours.take(1).lowercase()
+             "$nagModeOnLabel • ${uiState.nagIntervalValue}$unitSuffix × ${uiState.nagTotalRepetitions}$strictPart"
         } else {
             null
         }
@@ -195,7 +202,7 @@ fun AddEditReminderScreen(
                                 Button(onClick = { 
                                     val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                                     context.startActivity(intent)
-                                }) { Text("Grant") }
+                                }) { Text(stringResource(R.string.grant_permission)) }
                             }
                         }
                     }

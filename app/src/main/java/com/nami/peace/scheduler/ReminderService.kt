@@ -87,7 +87,7 @@ class ReminderService : Service() {
                 "Reminders",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Nag Mode Reminders"
+                description = getString(R.string.notif_channel_name)
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 500, 200, 500)
                 setSound(android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI, audioAttributes)
@@ -110,9 +110,9 @@ class ReminderService : Service() {
         )
 
         val titleText = if (reminder.isInNestedSnoozeLoop) {
-            "Time to ${reminder.title} (Snoozed)"
+            getString(R.string.notif_time_to_snoozed, reminder.title)
         } else {
-            "Time to ${reminder.title}"
+            getString(R.string.notif_time_to, reminder.title)
         }
             
         // Action to stop service via AlarmReceiver
@@ -129,13 +129,13 @@ class ReminderService : Service() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(reminder.category.iconResId)
             .setContentTitle(titleText)
-            .setContentText("Tap to view")
+            .setContentText(getString(R.string.notif_tap_to_view))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setAutoCancel(true)
             .setOngoing(true) // Make it ongoing so it can't be swiped away easily
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Dismiss", stopSoundPendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.notif_dismiss), stopSoundPendingIntent)
             .setDeleteIntent(stopSoundPendingIntent)
             .build()
 

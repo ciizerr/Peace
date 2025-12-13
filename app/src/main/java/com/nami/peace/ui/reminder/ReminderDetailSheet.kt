@@ -110,7 +110,7 @@ fun ReminderDetailSheet(
              }
              
             Text(
-                text = "Next: $nextTimeText",
+                text = stringResource(R.string.reminder_status_next) + ": " + nextTimeText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold
@@ -212,7 +212,7 @@ fun ReminderDetailSheet(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Notes",
+                            text = stringResource(R.string.lbl_notes),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -301,7 +301,7 @@ fun NagSequence(
         ) {
             val modeText = if (isStrict) stringResource(R.string.reminder_scheduling_strict) else stringResource(R.string.reminder_scheduling_flexible)
             Text(
-                text = "Nag Sequence • $modeText",
+                text = stringResource(R.string.reminder_label_sequence) + " • " + modeText,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -370,7 +370,7 @@ fun NagSequence(
                     // Optional "Active" label for horizontal view
                     if (isCurrent) {
                         Text(
-                            text = "Now",
+                            text = stringResource(R.string.lbl_now),
                             style = MaterialTheme.typography.labelSmall, // Assuming labelSmall or custom
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.primary,

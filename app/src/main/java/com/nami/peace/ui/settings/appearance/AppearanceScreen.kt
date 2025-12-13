@@ -21,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -76,6 +77,9 @@ fun AppearanceScreen(
 
     // Color Picker State
     var showColorPicker by remember { mutableStateOf(false) }
+    
+    // Language Picker State
+    var showLanguagePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -126,14 +130,51 @@ fun AppearanceScreen(
                         checked = isBoldText,
                         onCheckedChange = viewModel::setBoldText
                     )
+                    
+                    val currentLanguageCode by viewModel.currentLanguageCode.collectAsState()
+                    val currentLanguageLabel = when {
+                        currentLanguageCode.startsWith("es") -> stringResource(R.string.lang_spanish)
+                        currentLanguageCode.startsWith("en") -> stringResource(R.string.lang_english)
+                        else -> stringResource(R.string.lang_system_default)
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showLanguagePicker = true }
+                            .padding(horizontal = 24.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = stringResource(R.string.lbl_app_language),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = currentLanguageLabel,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack, 
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp).rotate(180f)
+                            )
+                        }
+                    }
                 }
                 
                 // 4. Immersion Section (Shadow & Blur)
                 GlassySection(title = stringResource(R.string.section_immersion)) {
                      // Blur Control
                      SwitchSettingRow(
-                         label = "Glass Effects",
-                         subtitle = "(Android 12+)",
+                         label = stringResource(R.string.lbl_glass_effects),
+                         subtitle = stringResource(R.string.lbl_android_12_plus),
                          checked = blurEnabled,
                          onCheckedChange = viewModel::setBlurEnabled
                      )
@@ -152,7 +193,7 @@ fun AppearanceScreen(
                              )
                              
                              SliderSettingRow(
-                                 label = "Tint Opacity",
+                                 label = stringResource(R.string.lbl_tint_opacity),
                                  value = blurTintAlpha,
                                  valueRange = 0f..0.5f,
                                  onValueChange = viewModel::setBlurTintAlpha
@@ -179,14 +220,8 @@ fun AppearanceScreen(
                              onValueChange = viewModel::setShadowStrength
                          )
                      }
-    
-                     // Reduce Motion
-                     SwitchSettingRow(
-                        label = stringResource(R.string.lbl_reduce_motion),
-                        checked = reduceMotion,
-                        onCheckedChange = viewModel::setReduceMotion
-                    )
                 }
+
     
                 Spacer(modifier = Modifier.height(100.dp))
             }
@@ -235,6 +270,19 @@ fun AppearanceScreen(
                     blurEnabled = blurEnabled,
                     blurStrength = blurStrength,
                     blurTintAlpha = blurTintAlpha
+                )
+                
+                // Language Picker
+                val currentLangCode by viewModel.currentLanguageCode.collectAsState()
+                LanguagePickerDialog(
+                    show = showLanguagePicker,
+                    currentLanguageCode = currentLangCode,
+                    onLanguageSelected = { 
+                        viewModel.setLanguage(it)
+                        showLanguagePicker = false
+                    },
+                    onDismissRequest = { showLanguagePicker = false },
+                    hazeState = effectiveHazeState
                 )
         }
     }
@@ -458,7 +506,7 @@ fun MoodSelector(
              }
              Spacer(modifier = Modifier.height(4.dp))
              Text(
-                 text = if (isCustom) "Custom" else "New",
+                 text = if (isCustom) stringResource(R.string.lbl_custom) else stringResource(R.string.lbl_new),
                  style = MaterialTheme.typography.labelSmall,
                  color = if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
              )
