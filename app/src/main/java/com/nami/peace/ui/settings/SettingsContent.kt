@@ -27,10 +27,9 @@ fun SettingsContent(
             onNavigateBack = onNavigateToDashboard,
             hazeState = hazeState
         )
-        SettingsCategory.Identity -> PlaceholderScreen(
-            title = stringResource(com.nami.peace.R.string.title_identity),
-            subtitle = stringResource(com.nami.peace.R.string.subtitle_identity),
-            onBack = onNavigateToDashboard
+        SettingsCategory.Identity -> com.nami.peace.ui.settings.identity.IdentityScreen(
+            onNavigateBack = onNavigateToDashboard,
+            hazeState = hazeState ?: dev.chrisbanes.haze.HazeState()
         )
         SettingsCategory.Rhythms -> PlaceholderScreen(
             title = stringResource(com.nami.peace.R.string.title_rhythms),

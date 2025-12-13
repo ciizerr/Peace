@@ -17,6 +17,12 @@ class SettingsViewModel @Inject constructor(
     private val appUpdater: com.nami.peace.data.updater.AppUpdater
 ) : ViewModel() {
 
+    fun updateUserProfile(profile: com.nami.peace.data.repository.UserProfile) {
+        viewModelScope.launch {
+            userPreferencesRepository.updateUserProfile(profile)
+        }
+    }
+
     val blurEnabled: StateFlow<Boolean> = userPreferencesRepository.blurEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
@@ -35,6 +41,8 @@ class SettingsViewModel @Inject constructor(
     // Update State
     private val _updateStatus = kotlinx.coroutines.flow.MutableStateFlow<com.nami.peace.data.updater.UpdateState>(com.nami.peace.data.updater.UpdateState.Idle)
     val updateStatus: StateFlow<com.nami.peace.data.updater.UpdateState> = _updateStatus.asStateFlow()
+    
+    val userProfile: kotlinx.coroutines.flow.Flow<com.nami.peace.data.repository.UserProfile> = userPreferencesRepository.userProfile
 
     fun checkForUpdates() {
         viewModelScope.launch {

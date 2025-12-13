@@ -184,4 +184,35 @@
     <string name="notif_time_to_snoozed">Hora de %s (Pospuesto)</string>
     <string name="notif_tap_to_view">Toca para ver</string>
     <string name="notif_dismiss">Descartar</string>
+    <!-- Identity Screen -->
+    <string name="title_neural_config">Configuración Neuronal</string>
+    <string name="lbl_neural_key">Llave Neuronal</string>
+    <string name="hint_neural_key">Ingresar API Key</string>
+    <string name="title_data_permissions">Permisos de Datos</string>
+    <string name="lbl_access_tasks">Acceso a Tareas</string>
+    <string name="lbl_access_notes">Acceso a Notas</string>
+    <string name="lbl_access_history">Acceso a Historial</string>
+    <string name="lbl_access_bio">Acceso a Bio</string>
+    <string name="lbl_system_prompt">Directiva</string>
+    <string name="hint_system_prompt">Eres el asistente de Nami. Sé conciso y estoico...</string>
+    
+    <string name="title_model_selection">Modelo IA</string>
+    <string name="lbl_model_flash">Flash</string>
+    <string name="lbl_model_pro">Pro</string>
+    
+    <string name="title_personality">Personalidad</string>
+    <string name="preset_stoic">Estoico</string>
+    <string name="preset_friendly">Amigable</string>
+    <string name="preset_concise">Conciso</string>
+    <string name="preset_technical">Técnico</string>
+    
+    <string name="btn_save_config">Guardar Configuración</string>
+    <string name="msg_config_saved">Configuración Neuronal Guardada</string>
+    
+    <string name="lbl_enable_gemini">Habilitar Gemini AI</string>
+    <string name="lbl_access_profile_data">Acceso a Datos de Perfil</string>
+    <string name="lbl_access_name">Nombre</string>
+    <string name="lbl_access_occupation">Ocupación</string>
+    <string name="lbl_access_wake_time">Hora de Despertar</string>
+    <string name="lbl_access_bed_time">Hora de Dormir</string>
 </resources>

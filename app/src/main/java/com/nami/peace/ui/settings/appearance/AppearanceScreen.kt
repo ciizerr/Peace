@@ -520,6 +520,7 @@ fun SwitchSettingRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     iconRes: Int = 0,
+    imageVector: androidx.compose.ui.graphics.vector.ImageVector? = null,
     subtitle: String? = null
 ) {
     Row(
@@ -543,6 +544,14 @@ fun SwitchSettingRow(
                     color = MaterialTheme.colorScheme.primary
                 )
             }
+        }
+        if (imageVector != null) {
+             Icon(
+                 imageVector = imageVector,
+                 contentDescription = null,
+                 tint = MaterialTheme.colorScheme.primary,
+                 modifier = Modifier.padding(end = 16.dp)
+             )
         }
         Switch(
             checked = checked,
