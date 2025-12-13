@@ -5,6 +5,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.ui.zIndex
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +38,7 @@ import dev.chrisbanes.haze.hazeChild
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,6 +74,9 @@ fun AppearanceScreen(
         else -> "Heavy"
     }
 
+    // Color Picker State
+    var showColorPicker by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
@@ -99,7 +107,8 @@ fun AppearanceScreen(
                 GlassySection(title = stringResource(R.string.section_mood)) {
                     MoodSelector(
                         currentMood = moodColor,
-                        onMoodSelected = viewModel::setMoodColor
+                        onMoodSelected = viewModel::setMoodColor,
+                        onShowColorPicker = { showColorPicker = true }
                     )
                 }
 
@@ -206,6 +215,27 @@ fun AppearanceScreen(
                 shadowsEnabled = shadowsEnabled,
                 shadowStyle = shadowStyle
             )
+            
+                val initialColor = try {
+                    if (moodColor.startsWith("#")) Color(android.graphics.Color.parseColor(moodColor)) else Color(0xFF42A5F5)
+                } catch (e: Exception) {
+                    Color(0xFF42A5F5)
+                }
+                
+                ColorPickerDialog(
+                    show = showColorPicker,
+                    initialColor = initialColor,
+                    onColorSelected = { color ->
+                        val hexBox = "#" + Integer.toHexString(color.toArgb()).uppercase()
+                        viewModel.setMoodColor(hexBox)
+                        showColorPicker = false
+                    },
+                    onDismissRequest = { showColorPicker = false },
+                    hazeState = effectiveHazeState,
+                    blurEnabled = blurEnabled,
+                    blurStrength = blurStrength,
+                    blurTintAlpha = blurTintAlpha
+                )
         }
     }
 }
@@ -345,22 +375,39 @@ fun VisualThemeCard(
 }
 
 @Composable
-fun MoodSelector(currentMood: String, onMoodSelected: (String) -> Unit) {
-     val moods = listOf(
-         "Ocean" to Color(0xFF42A5F5), 
+fun MoodSelector(
+    currentMood: String, 
+    onMoodSelected: (String) -> Unit,
+    onShowColorPicker: () -> Unit
+) {
+    // State logic moved to parent
+
+    val presets = listOf(
+         "Default" to Color(0xFF42A5F5), 
          "Forest" to Color(0xFF66BB6A), 
          "Sunset" to Color(0xFFEF5350),
          "Lavender" to Color(0xFFAB47BC)
-     )
+    )
      
-     Row(
-         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-         horizontalArrangement = Arrangement.Center
-     ) {
-         moods.forEach { (name, color) -> 
+    // Check if current mood is custom
+    val isCustom = currentMood.startsWith("#")
+    val customColor = if (isCustom) {
+        try {
+            Color(android.graphics.Color.parseColor(currentMood))
+        } catch (e: Exception) {
+            null
+        }
+    } else null
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), // Reduced padding to fit more items
+        horizontalArrangement = Arrangement.Center
+    ) {
+         // Presets
+         presets.forEach { (name, color) -> 
              Column(
                  horizontalAlignment = Alignment.CenterHorizontally,
-                 modifier = Modifier.padding(horizontal = 12.dp)
+                 modifier = Modifier.padding(horizontal = 8.dp)
              ) {
                  Box(
                      modifier = Modifier
@@ -383,7 +430,40 @@ fun MoodSelector(currentMood: String, onMoodSelected: (String) -> Unit) {
                  )
              }
          }
-     }
+         
+         // Custom Button
+         Column(
+             horizontalAlignment = Alignment.CenterHorizontally,
+             modifier = Modifier.padding(horizontal = 8.dp)
+         ) {
+             Box(
+                 modifier = Modifier
+                     .size(48.dp)
+                     .clip(CircleShape)
+                     .background(customColor ?: MaterialTheme.colorScheme.surfaceContainerHigh) // Show custom color if active
+                     .clickable { onShowColorPicker() }
+                     .then(if (isCustom) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape) else Modifier),
+                 contentAlignment = Alignment.Center
+             ) {
+                 if (isCustom) {
+                      Icon(Icons.Default.Check, null, tint = Color.White)
+                 } else {
+                      // Plus Icon
+                      Icon(
+                          imageVector = androidx.compose.material.icons.Icons.Default.Add,
+                          contentDescription = "Custom Color",
+                          tint = MaterialTheme.colorScheme.onSurfaceVariant
+                      )
+                 }
+             }
+             Spacer(modifier = Modifier.height(4.dp))
+             Text(
+                 text = if (isCustom) "Custom" else "New",
+                 style = MaterialTheme.typography.labelSmall,
+                 color = if (isCustom) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+             )
+         }
+    }
 }
 
 @Composable

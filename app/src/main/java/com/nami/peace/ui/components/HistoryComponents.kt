@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -425,7 +426,8 @@ fun GlassyItemContainer(
     content: @Composable () -> Unit
 ) {
     val shape = RoundedCornerShape(16.dp)
-    val isDark = isSystemInDarkTheme()
+    // Use luminance to detect app-specific theme, not system theme
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.1f)
     
     Box(
@@ -434,8 +436,9 @@ fun GlassyItemContainer(
             .clip(shape)
             .border(1.dp, borderColor, shape)
             .background(
-                if (isDark) GlassyBlack.copy(alpha = 0.3f) 
-                else GlassyWhite.copy(alpha = 0.3f)
+                // Base background helper
+                if (isDark) com.nami.peace.ui.theme.GlassyBlack.copy(alpha = 0.3f) 
+                else Color.White.copy(alpha = 0.5f)
             )
             .combinedClickable(
                 onClick = onClick,
@@ -451,9 +454,9 @@ fun GlassyItemContainer(
                         shape = shape,
                         style = dev.chrisbanes.haze.HazeStyle(
                              tint = if (isDark) 
-                                 GlassyBlack.copy(alpha = blurTintAlpha) 
+                                 com.nami.peace.ui.theme.GlassyBlack.copy(alpha = blurTintAlpha) 
                              else 
-                                 GlassyWhite.copy(alpha = blurTintAlpha),
+                                 Color.White.copy(alpha = blurTintAlpha),
                              blurRadius = blurStrength.dp
                         )
                     )

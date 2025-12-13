@@ -86,6 +86,25 @@ class MainActivity : ComponentActivity() {
             val themeMode = userPreferencesRepository.themeMode
                 .collectAsState(initial = "Auto").value
 
+            val moodColorName = userPreferencesRepository.moodColor
+                .collectAsState(initial = "Default").value
+
+            val seedColor = try {
+                if (moodColorName.startsWith("#")) {
+                    androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(moodColorName))
+                } else {
+                    when (moodColorName) {
+                        "Default" -> androidx.compose.ui.graphics.Color(0xFF42A5F5) // Ocean Blue
+                        "Forest" -> androidx.compose.ui.graphics.Color(0xFF66BB6A)
+                        "Sunset" -> androidx.compose.ui.graphics.Color(0xFFEF5350)
+                        "Lavender" -> androidx.compose.ui.graphics.Color(0xFFAB47BC)
+                        else -> androidx.compose.ui.graphics.Color(0xFF42A5F5)
+                    }
+                }
+            } catch (e: Exception) {
+                androidx.compose.ui.graphics.Color(0xFF42A5F5)
+            }
+
             val darkTheme = when (themeMode) {
                 "Light" -> false
                 "Dark" -> true
@@ -95,7 +114,8 @@ class MainActivity : ComponentActivity() {
             PeaceTheme(
                 darkTheme = darkTheme,
                 fontFamily = fontFamily, 
-                isBoldText = isBoldText
+                isBoldText = isBoldText,
+                seedColor = seedColor
             ) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()

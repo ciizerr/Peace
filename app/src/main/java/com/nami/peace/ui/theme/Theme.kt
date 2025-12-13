@@ -40,11 +40,25 @@ fun PeaceTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     fontFamily: androidx.compose.ui.text.font.FontFamily? = null,
     isBoldText: Boolean = false,
+    seedColor: androidx.compose.ui.graphics.Color? = null,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
+        seedColor != null -> {
+            // Generate scheme from seed (Simple override for primary)
+            val baseScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+            baseScheme.copy(
+                primary = seedColor,
+                onPrimary = androidx.compose.ui.graphics.Color.White, // Prototyping: Assume dark/vibrant colors need white text
+                primaryContainer = seedColor.copy(alpha = 0.2f), // Softer container
+                onPrimaryContainer = seedColor, // Or strong version
+                // Optional: Adjust secondary to match or complement
+                secondary = seedColor.copy(alpha = 0.8f),
+                tertiary = seedColor.copy(alpha = 0.6f)
+            )
+        }
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)

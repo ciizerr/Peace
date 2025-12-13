@@ -181,7 +181,7 @@ fun FloatingBottomBar(
                             Row(
                                 modifier = Modifier
                                     .clip(CircleShape)
-                                    .background(if (isSelected) AccentBlue.copy(alpha = 0.1f) else Color.Transparent)
+                                    .background(if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent)
                                     .clickable(
                                         interactionSource = interactionSource,
                                         indication = null,
@@ -194,7 +194,7 @@ fun FloatingBottomBar(
                             Icon(
                                 imageVector = tab.icon,
                                 contentDescription = stringResource(tab.titleRes),
-                                tint = if (isSelected) AccentBlue else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 modifier = Modifier.size(24.dp)
                             )
                             
@@ -207,7 +207,7 @@ fun FloatingBottomBar(
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
                                         text = stringResource(tab.titleRes),
-                                        color = AccentBlue,
+                                        color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.labelLarge,
                                         maxLines = 1
@@ -325,7 +325,7 @@ fun CategoryCarouselBar(
                     ) {
                         Text(
                             text = stringResource(category.titleRes),
-                            color = if (isSelected) AccentBlue else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             style = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp),
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )
