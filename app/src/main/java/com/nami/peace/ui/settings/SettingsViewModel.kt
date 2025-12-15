@@ -164,4 +164,106 @@ class SettingsViewModel @Inject constructor(
         androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(localeList)
         _currentLanguageCode.value = code
     }
+
+    // Rhythms Settings
+    val notificationsEnabled: StateFlow<Boolean> = userPreferencesRepository.notificationsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val soundEnabled: StateFlow<Boolean> = userPreferencesRepository.soundEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val vibrationEnabled: StateFlow<Boolean> = userPreferencesRepository.vibrationEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val soundVolume: StateFlow<Float> = userPreferencesRepository.soundVolume
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.8f)
+
+    val selectedSoundscape: StateFlow<String> = userPreferencesRepository.selectedSoundscape
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Default")
+
+    val quietHoursEnabled: StateFlow<Boolean> = userPreferencesRepository.quietHoursEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val quietHoursStart: StateFlow<String> = userPreferencesRepository.quietHoursStart
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "22:00")
+
+    val quietHoursEnd: StateFlow<String> = userPreferencesRepository.quietHoursEnd
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "07:00")
+
+    val nagModeEnabled: StateFlow<Boolean> = userPreferencesRepository.nagModeEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val nagModeInterval: StateFlow<Int> = userPreferencesRepository.nagModeInterval
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 5)
+
+    val nagModeMaxRepetitions: StateFlow<Int> = userPreferencesRepository.nagModeMaxRepetitions
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 10)
+
+    // Sanctuary Settings
+    val autoBackupEnabled: StateFlow<Boolean> = userPreferencesRepository.autoBackupEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val analyticsEnabled: StateFlow<Boolean> = userPreferencesRepository.analyticsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val crashReportingEnabled: StateFlow<Boolean> = userPreferencesRepository.crashReportingEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    // Rhythms Settings Functions
+    fun setNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setNotificationsEnabled(enabled) }
+    }
+
+    fun setSoundEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setSoundEnabled(enabled) }
+    }
+
+    fun setVibrationEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setVibrationEnabled(enabled) }
+    }
+
+    fun setSoundVolume(volume: Float) {
+        viewModelScope.launch { userPreferencesRepository.setSoundVolume(volume) }
+    }
+
+    fun setSelectedSoundscape(soundscape: String) {
+        viewModelScope.launch { userPreferencesRepository.setSelectedSoundscape(soundscape) }
+    }
+
+    fun setQuietHoursEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setQuietHoursEnabled(enabled) }
+    }
+
+    fun setQuietHoursStart(time: String) {
+        viewModelScope.launch { userPreferencesRepository.setQuietHoursStart(time) }
+    }
+
+    fun setQuietHoursEnd(time: String) {
+        viewModelScope.launch { userPreferencesRepository.setQuietHoursEnd(time) }
+    }
+
+    fun setNagModeEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setNagModeEnabled(enabled) }
+    }
+
+    fun setNagModeInterval(interval: Int) {
+        viewModelScope.launch { userPreferencesRepository.setNagModeInterval(interval) }
+    }
+
+    fun setNagModeMaxRepetitions(repetitions: Int) {
+        viewModelScope.launch { userPreferencesRepository.setNagModeMaxRepetitions(repetitions) }
+    }
+
+    // Sanctuary Settings Functions
+    fun setAutoBackupEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setAutoBackupEnabled(enabled) }
+    }
+
+    fun setAnalyticsEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setAnalyticsEnabled(enabled) }
+    }
+
+    fun setCrashReportingEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setCrashReportingEnabled(enabled) }
+    }
 }
