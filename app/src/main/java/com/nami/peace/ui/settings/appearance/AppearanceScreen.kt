@@ -266,10 +266,7 @@ fun AppearanceScreen(
                         showColorPicker = false
                     },
                     onDismissRequest = { showColorPicker = false },
-                    hazeState = effectiveHazeState,
-                    blurEnabled = blurEnabled,
-                    blurStrength = blurStrength,
-                    blurTintAlpha = blurTintAlpha
+                    hazeState = effectiveHazeState
                 )
                 
                 // Language Picker

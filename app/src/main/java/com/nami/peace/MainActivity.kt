@@ -111,12 +111,42 @@ class MainActivity : AppCompatActivity() {
                 else -> androidx.compose.foundation.isSystemInDarkTheme()
             }
 
+            val blurEnabled = userPreferencesRepository.blurEnabled
+                .collectAsState(initial = true).value
+
+            val shadowsEnabled = userPreferencesRepository.shadowsEnabled
+                .collectAsState(initial = true).value
+
+            val blurStrength = userPreferencesRepository.blurStrength
+                .collectAsState(initial = 12f).value
+
+            val blurTintAlpha = userPreferencesRepository.blurTintAlpha
+                .collectAsState(initial = 0.5f).value
+            
+            val shadowStrength = userPreferencesRepository.shadowStrength
+                .collectAsState(initial = 0.5f).value
+
+            val shadowStyle = userPreferencesRepository.shadowStyle
+                .collectAsState(initial = "Subtle").value
+
+            val glassSettings = com.nami.peace.ui.theme.GlassSettings(
+                blurEnabled = blurEnabled,
+                blurStrength = blurStrength,
+                blurTintAlpha = blurTintAlpha,
+                shadowsEnabled = shadowsEnabled,
+                shadowStrength = shadowStrength,
+                shadowStyle = shadowStyle
+            )
+
             PeaceTheme(
                 darkTheme = darkTheme,
                 fontFamily = fontFamily, 
                 isBoldText = isBoldText,
                 seedColor = seedColor
             ) {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    com.nami.peace.ui.theme.LocalGlassSettings provides glassSettings
+                ) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     val startDestination = if (intent?.getBooleanExtra("NAVIGATE_TO_ALARM", false) == true) {
@@ -158,6 +188,7 @@ class MainActivity : AppCompatActivity() {
                             )
                         }
                     }
+                }
                 }
             }
         }

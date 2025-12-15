@@ -37,6 +37,7 @@ import dev.chrisbanes.haze.HazeStyle
 import com.nami.peace.ui.theme.GlassyBlack
 import com.nami.peace.ui.theme.GlassyWhite
 import dev.chrisbanes.haze.hazeChild
+import com.nami.peace.ui.theme.LocalGlassSettings
 
 
 
@@ -46,11 +47,17 @@ import dev.chrisbanes.haze.hazeChild
 fun GlassyDialogSurface(
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
-    blurEnabled: Boolean = true,
-    blurStrength: Int = 15,
-    blurTintAlpha: Float = 0.2f,
-    shadowsEnabled: Boolean = true,
-    shadowStyle: Int = 1,
+    blurEnabled: Boolean = LocalGlassSettings.current.blurEnabled,
+    blurStrength: Int = LocalGlassSettings.current.blurStrength.toInt(),
+    blurTintAlpha: Float = LocalGlassSettings.current.blurTintAlpha,
+    shadowsEnabled: Boolean = LocalGlassSettings.current.shadowsEnabled,
+    shadowStyle: Int = when(LocalGlassSettings.current.shadowStyle) {
+        "None" -> 0
+        "Subtle" -> 1
+        "Medium" -> 2
+        "Heavy" -> 3
+        else -> 1
+    },
     content: @Composable () -> Unit
 ) {
     val shape = RoundedCornerShape(24.dp)
@@ -127,11 +134,17 @@ fun GlassyDialog(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     hazeState: HazeState? = null,
-    blurEnabled: Boolean = true,
-    blurStrength: Int = 25,
-    blurTintAlpha: Float = 0.4f,
-    shadowsEnabled: Boolean = true,
-    shadowStyle: Int = 1,
+    blurEnabled: Boolean = LocalGlassSettings.current.blurEnabled,
+    blurStrength: Int = LocalGlassSettings.current.blurStrength.toInt(),
+    blurTintAlpha: Float = LocalGlassSettings.current.blurTintAlpha,
+    shadowsEnabled: Boolean = LocalGlassSettings.current.shadowsEnabled,
+    shadowStyle: Int = when(LocalGlassSettings.current.shadowStyle) {
+        "None" -> 0
+        "Subtle" -> 1
+        "Medium" -> 2
+        "Heavy" -> 3
+        else -> 1
+    },
     content: @Composable () -> Unit
 ) {
     // Manage internal state to keep Dialog attached during exit animation

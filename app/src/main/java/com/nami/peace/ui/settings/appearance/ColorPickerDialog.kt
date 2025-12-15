@@ -27,10 +27,7 @@ fun ColorPickerDialog(
     initialColor: Color,
     onColorSelected: (Color) -> Unit,
     onDismissRequest: () -> Unit,
-    hazeState: HazeState? = null,
-    blurEnabled: Boolean = true,
-    blurStrength: Float = 15f,
-    blurTintAlpha: Float = 0.2f
+    hazeState: HazeState? = null
 ) {
     // Initial HSV values
     var hue by remember { mutableStateOf(0f) }
@@ -54,9 +51,6 @@ fun ColorPickerDialog(
         show = show,
         onDismissRequest = onDismissRequest,
         hazeState = hazeState,
-        blurEnabled = blurEnabled,
-        blurStrength = blurStrength.toInt(),
-        blurTintAlpha = blurTintAlpha,
         modifier = Modifier.padding(24.dp)
     ) {
         Column(
