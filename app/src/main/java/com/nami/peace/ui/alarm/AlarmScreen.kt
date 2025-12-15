@@ -13,6 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nami.peace.ui.theme.AccentRed
 import com.nami.peace.ui.theme.White
+import android.app.Activity
+import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun AlarmScreen(
@@ -20,6 +23,13 @@ fun AlarmScreen(
     viewModel: AlarmViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val context = LocalContext.current
+    
+    // Prevent back navigation from destroying the activity, instead minimize it
+    BackHandler {
+        (context as? Activity)?.moveTaskToBack(true)
+    }
 
     LaunchedEffect(true) {
         viewModel.loadActiveReminders()

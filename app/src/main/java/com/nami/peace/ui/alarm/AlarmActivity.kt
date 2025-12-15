@@ -163,6 +163,12 @@ fun AlarmScreenWithViewModel(
     viewModel: BundledAlarmViewModel = hiltViewModel()
 ) {
     val reminders by viewModel.reminders.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Prevent back navigation from destroying the activity, instead minimize it
+    androidx.activity.compose.BackHandler {
+        (context as? android.app.Activity)?.moveTaskToBack(true)
+    }
     
     LaunchedEffect(bundledReminderIds) {
         viewModel.loadReminders(bundledReminderIds)

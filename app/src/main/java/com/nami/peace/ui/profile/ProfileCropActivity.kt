@@ -82,15 +82,30 @@ class ProfileCropActivity : AppCompatActivity() {
         loadingSpinner.visibility = View.VISIBLE
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val inputStream = contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
+                // 1. Decode bounds only
+                var inputStream = contentResolver.openInputStream(uri)
+                val options = BitmapFactory.Options().apply {
+                    inJustDecodeBounds = true
+                }
+                BitmapFactory.decodeStream(inputStream, null, options)
+                inputStream?.close()
+
+                // 2. Calculate inSampleSize
+                val reqWidth = 1024
+                val reqHeight = 1024
+                options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+
+                // 3. Decode with inSampleSize
+                options.inJustDecodeBounds = false
+                inputStream = contentResolver.openInputStream(uri)
+                val bitmap = BitmapFactory.decodeStream(inputStream, null, options)
                 inputStream?.close()
 
                 withContext(Dispatchers.Main) {
                     if (bitmap != null) {
                         cropImageView.setImageBitmap(bitmap)
                     } else {
-                        // Handle error (maybe show toast)
+                        // Handle error
                     }
                     loadingSpinner.visibility = View.GONE
                 }
@@ -101,6 +116,22 @@ class ProfileCropActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
     }
 
     private fun saveCroppedImage() {

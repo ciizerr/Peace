@@ -94,6 +94,10 @@ fun IdentityScreen(
     // Profile Name Editing
     var isNameEditing by remember { mutableStateOf(false) }
     var editingName by remember(userProfile.name) { mutableStateOf(userProfile.name) }
+    
+    // Dialog States
+    var showResetDialog by remember { mutableStateOf(false) }
+    var showDeletePhotoDialog by remember { mutableStateOf(false) }
 
     // Used for permissions layout
     @OptIn(ExperimentalLayoutApi::class)
@@ -179,7 +183,13 @@ fun IdentityScreen(
                             .size(100.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .clickable { showProfileSheet = true },
+                            .clickable { 
+                                if (userProfile.photoUri != null) {
+                                    showDeletePhotoDialog = true
+                                } else {
+                                    showProfileSheet = true 
+                                }
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                          if (userProfile.photoUri != null) {
@@ -381,6 +391,19 @@ fun IdentityScreen(
                                 shape = RoundedCornerShape(12.dp),
                                 maxLines = 10
                             )
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            OutlinedButton(
+                                onClick = { showResetDialog = true },
+                                modifier = Modifier.fillMaxWidth(),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Reset AI Configuration")
+                            }
                         }
                     }
                 }
@@ -443,6 +466,115 @@ fun IdentityScreen(
                        onClose = { showProfileSheet = false }
                    )
                }
+            }
+        }
+    }
+    
+    // -- Dialog Implementations --
+    
+    // AI Reset Confirmation
+    com.nami.peace.ui.components.GlassyDialog(
+        show = showResetDialog,
+        onDismissRequest = { showResetDialog = false },
+        hazeState = state
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Icon(
+                Icons.Default.History,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Reset AI Configuration?",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "This will return all neural settings to their default values.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = { 
+                        // Mock Reset Logic
+                        isGeminiEnabled = false
+                        apiKey = ""
+                        systemPrompt = ""
+                        selectedModel = "Flash"
+                        showResetDialog = false
+                    }
+                ) {
+                    Text("Reset")
+                }
+            }
+        }
+    }
+
+    // Delete Photo Confirmation
+    com.nami.peace.ui.components.GlassyDialog(
+        show = showDeletePhotoDialog,
+        onDismissRequest = { showDeletePhotoDialog = false },
+        hazeState = state
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Icon(
+                Icons.Default.Person,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Remove Profile Photo?",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Are you sure you want to remove your profile photo?",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = { showDeletePhotoDialog = false }) {
+                    Text("Cancel")
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = { 
+                        viewModel.updateUserProfile(userProfile.copy(photoUri = null))
+                        showDeletePhotoDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Remove")
+                }
             }
         }
     }

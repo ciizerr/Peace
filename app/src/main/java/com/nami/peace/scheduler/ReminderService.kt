@@ -33,21 +33,24 @@ class ReminderService : Service() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
         wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "Peace:ServiceWakeLock")
         wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
-        
+
         val reminderId = intent?.getIntExtra("REMINDER_ID", -1) ?: -1
         val bundledIds = intent?.getIntegerArrayListExtra("BUNDLED_REMINDER_IDS") ?: arrayListOf(reminderId)
+
+        // 2. Start Foreground IMMEDIATELY (Fix for Android 12+)
+        startLoadingNotification(reminderId)
         
         if (reminderId != -1) {
             CoroutineScope(Dispatchers.IO).launch {
                 val reminder = repository.getReminderById(reminderId)
                 if (reminder != null) {
-                    // 2. Play Sound
+                    // 3. Play Sound
                     com.nami.peace.util.SoundManager.playAlarmSound(this@ReminderService)
                     
-                    // 3. Show Notification (Start Foreground) with bundled IDs
+                    // 4. Update Notification (Update existing ID)
                     showNotification(reminder, bundledIds)
 
-                    // 4. Timeout Logic (1 Minute)
+                    // 5. Timeout Logic (1 Minute)
                     kotlinx.coroutines.delay(60 * 1000L)
                     com.nami.peace.util.SoundManager.stopAlarmSound()
                     com.nami.peace.util.DebugLogger.log("Ringtone Timeout: Sound stopped after 1 minute.")
@@ -59,6 +62,40 @@ class ReminderService : Service() {
             stopSelf()
         }
         return START_STICKY
+    }
+    
+    private fun startLoadingNotification(reminderId: Int) {
+        val channelId = "reminder_channel"
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Re-use same channel config to avoid conflict? 
+            // In showNotification we set sound. Here we might just want silent initialization.
+            // If channel exists, this property change might be ignored unless channel is deleted.
+            // Let's assume channel creation in showNotification is the authoritative one.
+            // We just need ANY channel to start foreground.
+             val channel = NotificationChannel(
+                channelId,
+                "Reminders",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            // Use a valid drawable. using generic app icon or transparent.
+            // Assuming R.drawable.ic_launcher_foreground exists or similar.
+            // Safer to use R.drawable.ic_notification if available, or system default.
+            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm) 
+            .setContentTitle("Processing Alarm...")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .build()
+
+        // Use the reminderId if valid, else a generic ID.
+        // If we use reminderId here, and then showNotification updates it with same ID, it transitions seamlessly.
+        val id = if (reminderId != -1) reminderId else 999
+        startForeground(id, notification)
     }
 
     override fun onDestroy() {
@@ -139,6 +176,7 @@ class ReminderService : Service() {
             .setDeleteIntent(stopSoundPendingIntent)
             .build()
 
-        startForeground(reminder.id, notification)
+        // Update the existing foreground notification
+        notificationManager.notify(reminder.id, notification)
     }
 }

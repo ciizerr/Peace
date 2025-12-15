@@ -42,11 +42,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
+import com.nami.peace.ui.theme.LocalGlassSettings
+import com.nami.peace.ui.theme.GlassyBlack
+import com.nami.peace.ui.theme.GlassyWhite
+import androidx.compose.ui.graphics.luminance
 import kotlin.math.absoluteValue
 import java.util.Locale
 
-// --- VERTICAL SWIPE SELECTOR ---
-// --- VERTICAL SWIPE SELECTOR (COMPACT) ---
+// --- CONSTANTS (Performance Optimization) ---
+private val CATEGORY_OPTIONS = ReminderCategory.values().toList()
+private val PRIORITY_OPTIONS = PriorityLevel.values().toList()
+private val RECURRENCE_OPTIONS = RecurrenceType.values().toList()
+private val TIME_UNIT_OPTIONS = TimeUnit.values().toList()
+
 // --- DROPDOWN SELECTOR ---
 @Composable
 fun <T> DropdownSelector(
@@ -66,7 +74,10 @@ fun <T> DropdownSelector(
                 .height(40.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                .clickable { expanded = true }
+                .clickable(
+                    onClickLabel = stringResource(R.string.cd_expand_dropdown),
+                    role = androidx.compose.ui.semantics.Role.DropdownList
+                ) { expanded = true }
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -112,6 +123,53 @@ fun <T> DropdownSelector(
     }
 }
 
+// --- REUSABLE GLASSY CARD WRAPPER ---
+@Composable
+fun GlassyCard(
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null,
+    content: @Composable () -> Unit
+) {
+    val settings = LocalGlassSettings.current
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val shape = RoundedCornerShape(16.dp) // Standard shape for these cards
+
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .then(
+                if (settings.shadowsEnabled) {
+                     Modifier.shadow(
+                        elevation = (settings.shadowStrength * 8).dp,
+                        shape = shape,
+                        ambientColor = if (isDark) Color.Black else Color.Gray,
+                        spotColor = if (isDark) Color.Black else Color.Gray
+                     )
+                } else Modifier
+            )
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.05f)) // Base transparency
+    ) {
+        if (hazeState != null && settings.blurEnabled) {
+             Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .hazeChild(
+                        state = hazeState,
+                        shape = shape,
+                        style = HazeStyle(
+                             blurRadius = settings.blurStrength.dp,
+                             tint = if (isDark) GlassyBlack.copy(alpha = settings.blurTintAlpha) 
+                                    else GlassyWhite.copy(alpha = settings.blurTintAlpha)
+                        )
+                    )
+            )
+        }
+        
+        // Content with padding
+        content()
+    }
+}
+
 // --- NEW TITLE SECTION ---
 @Composable
 fun TitleSection(
@@ -120,12 +178,12 @@ fun TitleSection(
     categoryName: String,
     recurrenceName: String,
     timeText: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null
 ) {
-    Card(
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
-        modifier = modifier.fillMaxWidth()
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             OutlinedTextField(
@@ -163,12 +221,12 @@ fun DateTimeCard(
     timeText: String,
     onDateClick: () -> Unit,
     onTimeClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
-        modifier = modifier.fillMaxWidth()
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState
     ) {
         Row(
             modifier = Modifier.padding(12.dp).fillMaxWidth(),
@@ -208,12 +266,12 @@ fun CategoryPriorityCard(
     priority: PriorityLevel,
     onCategoryChanged: (ReminderCategory) -> Unit,
     onPriorityChanged: (PriorityLevel) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
-        modifier = modifier.fillMaxWidth()
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(stringResource(R.string.label_category), style = MaterialTheme.typography.labelMedium)
@@ -231,7 +289,7 @@ fun CategoryPriorityCard(
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ReminderCategory.values().forEach { cat ->
+                    CATEGORY_OPTIONS.forEach { cat ->
                         val isSelected = category == cat
                         Surface(
                             onClick = { onCategoryChanged(cat) },
@@ -261,7 +319,7 @@ fun CategoryPriorityCard(
                     Spacer(modifier = Modifier.height(4.dp))
                     DropdownSelector(
                         value = priority,
-                        options = PriorityLevel.values().toList(),
+                        options = PRIORITY_OPTIONS,
                         onValueChanged = onPriorityChanged,
                         labelMapper = { it.name },
                         colorMapper = { com.nami.peace.ui.components.getPriorityColor(it) },
@@ -281,12 +339,12 @@ fun RecurrenceCard(
     daysOfWeek: List<Int>,
     onRecurrenceChanged: (RecurrenceType) -> Unit,
     onDayToggled: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null
 ) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
-        modifier = modifier.fillMaxWidth()
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -294,7 +352,7 @@ fun RecurrenceCard(
             
                 DropdownSelector(
                     value = recurrenceType,
-                    options = RecurrenceType.values().toList(),
+                    options = RECURRENCE_OPTIONS,
                     onValueChanged = onRecurrenceChanged,
                     labelMapper = { type ->
                         type.name.lowercase().split("_").joinToString(" ") { it.capitalize(Locale.getDefault()) }
@@ -394,7 +452,7 @@ fun AdvancedBottomSheetContent(
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                     )
                 )
-                TimeUnit.values().forEach { unit ->
+                TIME_UNIT_OPTIONS.forEach { unit ->
                     FilterChip(
                         selected = nagIntervalUnit == unit,
                         onClick = { onNagIntervalUnitChanged(unit) },
@@ -535,12 +593,12 @@ fun AdvancedBottomSheetTrigger(
 fun NotesSection(
     notes: String,
     onNotesChanged: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hazeState: HazeState? = null
 ) {
-    Card(
-        shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)),
-        modifier = modifier.fillMaxWidth()
+    GlassyCard(
+        modifier = modifier.fillMaxWidth(),
+        hazeState = hazeState
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             OutlinedTextField(

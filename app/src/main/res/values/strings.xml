@@ -151,6 +151,7 @@
     <string name="cd_snoozed">Snoozed</string>
     <string name="cd_profile">Profile</string>
     <string name="cd_history">History</string>
+    <string name="cd_expand_dropdown">Expand Dropdown</string>
     
     <!-- Notification Permission -->
     <string name="notification_permission_granted">Notification Permission Granted</string>

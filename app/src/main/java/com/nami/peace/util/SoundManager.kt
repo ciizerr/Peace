@@ -35,13 +35,23 @@ object SoundManager {
                         .build()
                 )
                 isLooping = true
-                prepare()
-                start()
+                try {
+                    prepare()
+                    start()
+                    DebugLogger.log("SoundManager: Playing alarm sound.")
+                } catch (e: Exception) {
+                     DebugLogger.log("SoundManager: Failed to start playback: ${e.message}")
+                     e.printStackTrace()
+                     release()
+                     mediaPlayer = null
+                }
             }
-            DebugLogger.log("SoundManager: Playing alarm sound.")
         } catch (e: Exception) {
-            DebugLogger.log("SoundManager: Error playing sound: ${e.message}")
+            DebugLogger.log("SoundManager: Error setting up player: ${e.message}")
             e.printStackTrace()
+            // Ensure cleanup
+            mediaPlayer?.release()
+            mediaPlayer = null
         }
     }
 

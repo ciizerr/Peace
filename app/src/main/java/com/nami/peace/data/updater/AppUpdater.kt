@@ -22,7 +22,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 data class UpdateInfo(
     val version: String,
     val releaseNotes: String,
-    val downloadUrl: String
+    val downloadUrl: String,
+    val sha256: String? = null
 )
 
 sealed class DownloadStatus {
@@ -86,9 +87,13 @@ class AppUpdater @Inject constructor(
                     }
                 }
 
+                // Attempt to find SHA256 in body (Format: "SHA256: <hash>")
+                val sha256Regex = "SHA256:\\s*([a-fA-F0-9]{64})".toRegex()
+                val sha256 = sha256Regex.find(body)?.groupValues?.get(1)
+
                 if (tagName.isNotEmpty() && downloadUrl.isNotEmpty()) {
                     if (isNewerVersion(tagName, BuildConfig.VERSION_NAME)) {
-                        emit(UpdateState.Available(UpdateInfo(tagName, body, downloadUrl)))
+                        emit(UpdateState.Available(UpdateInfo(tagName, body, downloadUrl, sha256)))
                     } else {
                         emit(UpdateState.UpToDate)
                     }
@@ -106,7 +111,7 @@ class AppUpdater @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    fun downloadApk(url: String): Flow<DownloadStatus> = flow {
+    fun downloadApk(url: String, expectedSha256: String? = null): Flow<DownloadStatus> = flow {
         emit(DownloadStatus.Downloading)
         try {
             val request = Request.Builder().url(url).build()
@@ -125,6 +130,9 @@ class AppUpdater @Inject constructor(
             val file = File(context.externalCacheDir, "update.apk")
             val totalBytes = body.contentLength()
             var downloadedBytes = 0L
+            
+            // Digest for SHA-256
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
 
             body.byteStream().use { input ->
                 FileOutputStream(file).use { output ->
@@ -132,6 +140,7 @@ class AppUpdater @Inject constructor(
                     var bytesRead: Int
                     while (input.read(buffer).also { bytesRead = it } != -1) {
                         output.write(buffer, 0, bytesRead)
+                        digest.update(buffer, 0, bytesRead)
                         downloadedBytes += bytesRead
                         
                         // Emit progress periodically if total size known
@@ -140,6 +149,16 @@ class AppUpdater @Inject constructor(
                             emit(DownloadStatus.Progress(percent))
                         }
                     }
+                }
+            }
+            
+            // Verify Integrity
+            if (expectedSha256 != null) {
+                val calculatedSha = digest.digest().joinToString("") { "%02x".format(it) }
+                if (!calculatedSha.equals(expectedSha256, ignoreCase = true)) {
+                    file.delete()
+                    emit(DownloadStatus.Error("Integrity check failed. File may be corrupted."))
+                    return@flow
                 }
             }
             

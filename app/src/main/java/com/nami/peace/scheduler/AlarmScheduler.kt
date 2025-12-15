@@ -136,7 +136,7 @@ class AlarmScheduler @Inject constructor(
 
         if (alarmTime <= now) {
             val diff = now - alarmTime
-            if (diff < 60 * 1000L) {
+            if (diff < 15 * 60 * 1000L) { // 15 Minutes Grace Period
                 com.nami.peace.util.DebugLogger.log("Alarm time is slightly in the past ($diff ms). Scheduling immediately.")
                 scheduleExact(now + 100, reminder)
             } else {

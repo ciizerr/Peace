@@ -23,6 +23,11 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED || 
             intent.action == "android.intent.action.QUICKBOOT_POWERON") {
             
+            // Acquire Partial WakeLock
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            val wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "Peace:BootReceiverWakeLock")
+            wakeLock.acquire(60 * 1000L) // 1 Minute Timeout
+
             val pendingResult = goAsync()
             val scope = CoroutineScope(Dispatchers.IO)
             
@@ -54,6 +59,7 @@ class BootReceiver : BroadcastReceiver() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
+                    if (wakeLock.isHeld) wakeLock.release()
                     pendingResult.finish()
                 }
             }
