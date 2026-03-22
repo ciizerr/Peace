@@ -20,7 +20,8 @@ fun SettingsContent(
     onNavigateToHistory: () -> Unit,
     onNavigateToDashboard: () -> Unit,
     onNavigateToCategory: (SettingsCategory) -> Unit,
-    hazeState: HazeState? = null
+    hazeState: HazeState? = null,
+    sheetHazeState: HazeState? = null
 ) {
     when (category) {
         SettingsCategory.Appearance -> com.nami.peace.ui.settings.appearance.AppearanceScreen(
@@ -29,20 +30,19 @@ fun SettingsContent(
         )
         SettingsCategory.Identity -> com.nami.peace.ui.settings.identity.IdentityScreen(
             onNavigateBack = onNavigateToDashboard,
+            hazeState = hazeState ?: dev.chrisbanes.haze.HazeState(),
+            sheetHazeState = sheetHazeState
+        )
+        SettingsCategory.Rhythms -> com.nami.peace.ui.settings.rhythms.RhythmsScreen(
+            onNavigateBack = onNavigateToDashboard,
             hazeState = hazeState ?: dev.chrisbanes.haze.HazeState()
         )
-        SettingsCategory.Rhythms -> PlaceholderScreen(
-            title = stringResource(com.nami.peace.R.string.title_rhythms),
-            subtitle = stringResource(com.nami.peace.R.string.subtitle_rhythms),
-            onBack = onNavigateToDashboard
-        )
-        SettingsCategory.Sanctuary -> PlaceholderScreen(
-            title = stringResource(com.nami.peace.R.string.title_sanctuary),
-            subtitle = stringResource(com.nami.peace.R.string.subtitle_sanctuary),
-            onBack = onNavigateToDashboard
+        SettingsCategory.Sanctuary -> com.nami.peace.ui.settings.sanctuary.SanctuaryScreen(
+            onNavigateBack = onNavigateToDashboard,
+            onNavigateToHistory = onNavigateToHistory,
+            hazeState = hazeState ?: dev.chrisbanes.haze.HazeState()
         )
         SettingsCategory.Wisdom -> AboutSettingsScreen(
-            onNavigateToHistory = onNavigateToHistory,
             onNavigateToDashboard = onNavigateToDashboard,
             hazeState = hazeState
         )

@@ -9,11 +9,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+
+import com.nami.peace.domain.repository.ReminderRepository
+import org.json.JSONArray
+import org.json.JSONObject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val reminderRepository: ReminderRepository,
     private val appUpdater: com.nami.peace.data.updater.AppUpdater
 ) : ViewModel() {
 
@@ -163,5 +170,165 @@ class SettingsViewModel @Inject constructor(
         }
         androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(localeList)
         _currentLanguageCode.value = code
+    }
+
+    // Rhythms Settings
+    val notificationsEnabled: StateFlow<Boolean> = userPreferencesRepository.notificationsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val soundEnabled: StateFlow<Boolean> = userPreferencesRepository.soundEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val vibrationEnabled: StateFlow<Boolean> = userPreferencesRepository.vibrationEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val soundVolume: StateFlow<Float> = userPreferencesRepository.soundVolume
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.8f)
+
+    val selectedSoundscape: StateFlow<String> = userPreferencesRepository.selectedSoundscape
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Default")
+
+    val selectedSoundUri: StateFlow<String?> = userPreferencesRepository.selectedSoundUri
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val quietHoursEnabled: StateFlow<Boolean> = userPreferencesRepository.quietHoursEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val quietHoursStart: StateFlow<String> = userPreferencesRepository.quietHoursStart
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "22:00")
+
+    val quietHoursEnd: StateFlow<String> = userPreferencesRepository.quietHoursEnd
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "07:00")
+
+    val nagModeEnabled: StateFlow<Boolean> = userPreferencesRepository.nagModeEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val nagModeInterval: StateFlow<Int> = userPreferencesRepository.nagModeInterval
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 5)
+
+    val nagModeMaxRepetitions: StateFlow<Int> = userPreferencesRepository.nagModeMaxRepetitions
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 10)
+
+    // Sanctuary Settings
+    val autoBackupEnabled: StateFlow<Boolean> = userPreferencesRepository.autoBackupEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val autoBackupFrequency: StateFlow<String> = userPreferencesRepository.autoBackupFrequency
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Daily")
+
+    val lastBackupTime: StateFlow<Long?> = userPreferencesRepository.lastBackupTime
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val analyticsEnabled: StateFlow<Boolean> = userPreferencesRepository.analyticsEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val crashReportingEnabled: StateFlow<Boolean> = userPreferencesRepository.crashReportingEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    // Rhythms Settings Functions
+    fun setNotificationsEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setNotificationsEnabled(enabled) }
+    }
+
+    fun setSoundEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setSoundEnabled(enabled) }
+    }
+
+    fun setVibrationEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setVibrationEnabled(enabled) }
+    }
+
+    fun setSoundVolume(volume: Float) {
+        viewModelScope.launch { userPreferencesRepository.setSoundVolume(volume) }
+    }
+
+    fun setSelectedSoundscape(soundscape: String) {
+        viewModelScope.launch { userPreferencesRepository.setSelectedSoundscape(soundscape) }
+    }
+
+    fun setSelectedSoundUri(uri: String?) {
+        viewModelScope.launch { userPreferencesRepository.setSelectedSoundUri(uri) }
+    }
+
+    fun setQuietHoursEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setQuietHoursEnabled(enabled) }
+    }
+
+    fun setQuietHoursStart(time: String) {
+        viewModelScope.launch { userPreferencesRepository.setQuietHoursStart(time) }
+    }
+
+    fun setQuietHoursEnd(time: String) {
+        viewModelScope.launch { userPreferencesRepository.setQuietHoursEnd(time) }
+    }
+
+    fun setNagModeEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setNagModeEnabled(enabled) }
+    }
+
+    fun setNagModeInterval(interval: Int) {
+        viewModelScope.launch { userPreferencesRepository.setNagModeInterval(interval) }
+    }
+
+    fun setNagModeMaxRepetitions(repetitions: Int) {
+        viewModelScope.launch { userPreferencesRepository.setNagModeMaxRepetitions(repetitions) }
+    }
+
+    // Sanctuary Settings Functions
+    fun setAutoBackupEnabled(enabled: Boolean) {
+        viewModelScope.launch { 
+            userPreferencesRepository.setAutoBackupEnabled(enabled)
+            if (enabled) {
+                val currentFreq = userPreferencesRepository.autoBackupFrequency.first()
+                com.nami.peace.data.worker.BackupWorker.schedule(context, currentFreq)
+            } else {
+                com.nami.peace.data.worker.BackupWorker.cancel(context)
+            }
+        }
+    }
+
+    fun setAutoBackupFrequency(frequency: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAutoBackupFrequency(frequency)
+            val isEnabled = userPreferencesRepository.autoBackupEnabled.first()
+            if (isEnabled) {
+                com.nami.peace.data.worker.BackupWorker.schedule(context, frequency)
+            }
+        }
+    }
+
+    fun setAnalyticsEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setAnalyticsEnabled(enabled) }
+    }
+
+    fun setCrashReportingEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferencesRepository.setCrashReportingEnabled(enabled) }
+    }
+
+    // --- DATA MANAGEMENT ---
+    
+    fun clearAllData() {
+        viewModelScope.launch {
+            reminderRepository.clearAllReminders()
+            reminderRepository.clearAllHistory()
+        }
+    }
+
+    suspend fun exportDataToJson(): String {
+        val reminders = reminderRepository.getAllRemindersList()
+        val history = reminderRepository.getAllHistoryList()
+        return com.nami.peace.util.DataBackupHelper.exportToJson(reminders, history)
+    }
+
+    fun importDataFromJson(json: String) {
+        viewModelScope.launch {
+            try {
+                val (reminders, history) = com.nami.peace.util.DataBackupHelper.parseJson(json)
+                reminders.forEach { reminderRepository.insertReminder(it) }
+                history.forEach { reminderRepository.insertHistory(it) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

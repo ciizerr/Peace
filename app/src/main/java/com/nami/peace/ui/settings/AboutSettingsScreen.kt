@@ -1,92 +1,60 @@
 package com.nami.peace.ui.settings
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.* // Ensure all M3 components are available
+import android.content.Intent
+import android.net.Uri
 import com.nami.peace.BuildConfig
 import com.nami.peace.R
 import com.nami.peace.data.updater.UpdateState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import com.nami.peace.ui.settings.components.*
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
-import androidx.compose.runtime.remember
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutSettingsScreen(
-    onNavigateToHistory: () -> Unit,
     onNavigateToDashboard: () -> Unit,
     viewModel: SettingsViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
     hazeState: HazeState? = null
 ) {
     val effectiveHazeState = hazeState ?: remember { HazeState() }
     val updateStatus by viewModel.updateStatus.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
-    // Manage Dialog State based on updateStatus
-    // We can also have local state if we want to dismiss it without resetting VM state,
-    // but resetting VM state is cleaner for "done" actions.
-    
-    if (updateStatus is UpdateState.Available) {
-        val info = (updateStatus as UpdateState.Available).updateInfo
-        AlertDialog(
-            onDismissRequest = { viewModel.resetUpdateState() },
-            title = { Text(stringResource(R.string.update_available_title, info.version)) },
-            text = { 
-                Column {
-                    Text(stringResource(R.string.update_available_message))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(info.releaseNotes, style = MaterialTheme.typography.bodySmall)
-                }
-            },
-            confirmButton = {
-                Button(onClick = { viewModel.startUpdate(info.downloadUrl) }) {
-                    Text(stringResource(R.string.update_now))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.resetUpdateState() }) {
-                    Text(stringResource(R.string.later))
-                }
-            }
-        )
-    }
-
-    if (updateStatus is UpdateState.Error) {
-        AlertDialog(
-            onDismissRequest = { viewModel.resetUpdateState() },
-            title = { Text(stringResource(R.string.update_failed_title)) },
-            text = { Text((updateStatus as UpdateState.Error).message) },
-            confirmButton = {
-                TextButton(onClick = { viewModel.resetUpdateState() }) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
-        )
-    }
-    
-    if (updateStatus is UpdateState.UpToDate) {
-         AlertDialog(
-            onDismissRequest = { viewModel.resetUpdateState() },
-            title = { Text(stringResource(R.string.up_to_date_title)) },
-            text = { Text(stringResource(R.string.up_to_date_message)) },
-            confirmButton = {
-                TextButton(onClick = { viewModel.resetUpdateState() }) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
-        )
-    }
+    // Update Dialogs
+    UpdateDialogs(updateStatus, viewModel, effectiveHazeState)
 
     val blurEnabled by viewModel.blurEnabled.collectAsState()
     val blurStrength by viewModel.blurStrength.collectAsState()
@@ -94,7 +62,6 @@ fun AboutSettingsScreen(
     val shadowStrength by viewModel.shadowStrength.collectAsState()
     val blurTintAlpha by viewModel.blurTintAlpha.collectAsState()
 
-    // Map float strength to string style for GlassyTopAppBar
     val shadowStyle = when {
         shadowStrength == 0f -> "None"
         shadowStrength <= 0.33f -> "Subtle"
@@ -109,65 +76,27 @@ fun AboutSettingsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .haze(effectiveHazeState) // Apply Haze source
+                    .haze(effectiveHazeState)
                     .verticalScroll(rememberScrollState())
                     .padding(
-                        top = padding.calculateTopPadding() + 80.dp, // Add extra padding for floating bar
+                        top = padding.calculateTopPadding() + 80.dp,
                         bottom = padding.calculateBottomPadding() + 16.dp,
                         start = 16.dp,
                         end = 16.dp
                     ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Content slightly shifted due to padding, use Spacer if needed to center vertically in remaining space
-                Spacer(modifier = Modifier.height(32.dp)) 
+                // App Header Section
+                AppHeaderSection()
 
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                Text(
-                    text = stringResource(R.string.version_format, BuildConfig.VERSION_NAME),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                // App Information Section
+                AppInfoSection(updateStatus, viewModel)
 
-                Spacer(modifier = Modifier.height(32.dp))
+                // Support Section
+                SupportSection(context)
 
-                // Check for Update Button
-                if (updateStatus is UpdateState.Downloading) {
-                    val progress = (updateStatus as UpdateState.Downloading).progress
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        LinearProgressIndicator(
-                            progress = { progress / 100f }, // Fix deprecation warning
-                            modifier = Modifier.fillMaxWidth(0.8f)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(stringResource(R.string.downloading_format, progress))
-                    }
-                } else if (updateStatus is UpdateState.Checking) {
-                     CircularProgressIndicator()
-                } else {
-                    Button(
-                        onClick = { viewModel.checkForUpdates() },
-                        enabled = updateStatus is UpdateState.Idle // Prevent multiple clicks
-                    ) {
-                        Text(stringResource(R.string.check_for_updates))
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(24.dp))
-
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 32.dp))
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                OutlinedButton(onClick = onNavigateToHistory) {
-                    Text(stringResource(R.string.view_history_log))
-                }
-                
-                Spacer(modifier = Modifier.height(32.dp))
+                // Developer Section
+                DeveloperSection()
             }
 
             // Floating Glassy Top Bar
@@ -175,13 +104,13 @@ fun AboutSettingsScreen(
                 title = { 
                     Text(
                         stringResource(R.string.title_wisdom),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                     ) 
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateToDashboard) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.cd_back)
                         )
                     }
@@ -197,3 +126,246 @@ fun AboutSettingsScreen(
         }
     }
 }
+
+@Composable
+private fun UpdateDialogs(updateStatus: UpdateState, viewModel: SettingsViewModel, hazeState: HazeState?) {
+    val availableState = updateStatus as? UpdateState.Available
+    val errorState = updateStatus as? UpdateState.Error
+    
+    val lastUpdateInfo = remember { androidx.compose.runtime.mutableStateOf(availableState?.updateInfo) }
+    if (availableState != null) lastUpdateInfo.value = availableState.updateInfo
+    
+    val lastErrorMsg = remember { androidx.compose.runtime.mutableStateOf(errorState?.message) }
+    if (errorState != null) lastErrorMsg.value = errorState.message
+
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = updateStatus is UpdateState.Available,
+        hazeState = hazeState,
+        onDismissRequest = { viewModel.resetUpdateState() },
+        title = { Text(stringResource(R.string.update_available_title, lastUpdateInfo.value?.version ?: "")) },
+        text = { 
+            Column {
+                Text(stringResource(R.string.update_available_message))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(lastUpdateInfo.value?.releaseNotes ?: "", style = MaterialTheme.typography.bodySmall)
+            }
+        },
+        confirmButton = {
+            Button(onClick = { lastUpdateInfo.value?.downloadUrl?.let { viewModel.startUpdate(it) } }) {
+                Text(stringResource(R.string.update_now))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { viewModel.resetUpdateState() }) {
+                Text(stringResource(R.string.later))
+            }
+        }
+    )
+
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = updateStatus is UpdateState.Error,
+        hazeState = hazeState,
+        onDismissRequest = { viewModel.resetUpdateState() },
+        title = { Text(stringResource(R.string.update_failed_title)) },
+        text = { Text(lastErrorMsg.value ?: "") },
+        confirmButton = {
+            TextButton(onClick = { viewModel.resetUpdateState() }) {
+                Text(stringResource(R.string.ok))
+            }
+        }
+    )
+
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = updateStatus is UpdateState.UpToDate,
+        hazeState = hazeState,
+        onDismissRequest = { viewModel.resetUpdateState() },
+        title = { Text(stringResource(R.string.up_to_date_title)) },
+        text = { Text(stringResource(R.string.up_to_date_message)) },
+        confirmButton = {
+            TextButton(onClick = { viewModel.resetUpdateState() }) {
+                Text(stringResource(R.string.ok))
+            }
+        }
+    )
+}
+
+@Composable
+private fun AppHeaderSection() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // App Icon
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_launcher_foreground),
+                contentDescription = null,
+                modifier = Modifier.size(80.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(R.string.app_name),
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = "Find your inner peace through mindful productivity",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun AppInfoSection(updateStatus: UpdateState, viewModel: SettingsViewModel) {
+    GlassySettingSection(
+        title = "App Information"
+    ) {
+        InfoRow("Version", stringResource(R.string.version_format, BuildConfig.VERSION_NAME))
+        InfoRow("Build", BuildConfig.VERSION_CODE.toString())
+        InfoRow("Target SDK", "34 (Android 14)")
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Update Button
+        when (updateStatus) {
+            is UpdateState.Downloading -> {
+                val progress = updateStatus.progress
+                Column {
+                    LinearProgressIndicator(
+                        progress = { progress / 100f },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.downloading_format, progress),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            is UpdateState.Checking -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                    Text("Checking for updates...")
+                }
+            }
+            else -> {
+                Button(
+                    onClick = { viewModel.checkForUpdates() },
+                    enabled = updateStatus is UpdateState.Idle,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Update, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.check_for_updates))
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SupportSection(context: android.content.Context) {
+    GlassySettingSection(
+        title = "Support"
+    ) {
+        GlassyButtonRow(
+            title = "GitHub Repository",
+            subtitle = "View source code and contribute",
+            icon = Icons.Default.Code,
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/ciizerr/Peace")))
+            }
+        )
+
+        GlassyButtonRow(
+            title = "Share Peace",
+            subtitle = "Share this app with friends and family",
+            icon = Icons.Default.Share,
+            onClick = {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Check out Peace")
+                    putExtra(Intent.EXTRA_TEXT, "Find your inner peace with Peace app: https://github.com/ciizerr/Peace")
+                }
+                context.startActivity(Intent.createChooser(intent, "Share Peace"))
+            }
+        )
+        
+        GlassyButtonRow(
+            title = "Report Bug",
+            subtitle = "Found an issue? Open a GitHub issue",
+            icon = Icons.Default.BugReport,
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/ciizerr/Peace/issues")))
+            }
+        )
+    }
+}
+
+
+@Composable
+private fun DeveloperSection() {
+    GlassySettingSection(
+        title = "Open Source"
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Peace is an open-source project",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "Made with ❤️ on GitHub",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+

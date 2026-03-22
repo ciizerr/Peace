@@ -166,4 +166,152 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setShadowStrength(strength: Float) {
         dataStore.edit { it[SHADOW_STRENGTH] = strength }
     }
+
+    // Rhythms Settings Keys
+    private val NOTIFICATIONS_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("notifications_enabled")
+    private val SOUND_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("sound_enabled")
+    private val VIBRATION_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("vibration_enabled")
+    private val SOUND_VOLUME = androidx.datastore.preferences.core.floatPreferencesKey("sound_volume")
+    private val SELECTED_SOUNDSCAPE = stringPreferencesKey("selected_soundscape")
+    private val QUIET_HOURS_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("quiet_hours_enabled")
+    private val QUIET_HOURS_START = stringPreferencesKey("quiet_hours_start")
+    private val QUIET_HOURS_END = stringPreferencesKey("quiet_hours_end")
+    private val NAG_MODE_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("nag_mode_enabled")
+    private val NAG_MODE_INTERVAL = androidx.datastore.preferences.core.intPreferencesKey("nag_mode_interval")
+    private val NAG_MODE_MAX_REPETITIONS = androidx.datastore.preferences.core.intPreferencesKey("nag_mode_max_repetitions")
+    private val SELECTED_SOUND_URI = stringPreferencesKey("selected_sound_uri")
+
+    // Sanctuary Settings Keys
+    private val AUTO_BACKUP_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("auto_backup_enabled")
+    private val AUTO_BACKUP_FREQUENCY = stringPreferencesKey("auto_backup_frequency")
+    private val LAST_BACKUP_TIME = androidx.datastore.preferences.core.longPreferencesKey("last_backup_time")
+    private val ANALYTICS_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("analytics_enabled")
+    private val CRASH_REPORTING_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("crash_reporting_enabled")
+
+    // Rhythms Settings Flows
+    val notificationsEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[NOTIFICATIONS_ENABLED] ?: true }
+
+    val soundEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[SOUND_ENABLED] ?: true }
+
+    val vibrationEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[VIBRATION_ENABLED] ?: true }
+
+    val soundVolume: Flow<Float> = dataStore.data
+        .map { preferences -> preferences[SOUND_VOLUME] ?: 0.8f }
+
+    val selectedSoundscape: Flow<String> = dataStore.data
+        .map { preferences -> preferences[SELECTED_SOUNDSCAPE] ?: "Default" }
+        
+    val selectedSoundUri: Flow<String?> = dataStore.data
+        .map { preferences -> preferences[SELECTED_SOUND_URI] }
+
+    val quietHoursEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[QUIET_HOURS_ENABLED] ?: false }
+
+    val quietHoursStart: Flow<String> = dataStore.data
+        .map { preferences -> preferences[QUIET_HOURS_START] ?: "22:00" }
+
+    val quietHoursEnd: Flow<String> = dataStore.data
+        .map { preferences -> preferences[QUIET_HOURS_END] ?: "07:00" }
+
+    val nagModeEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[NAG_MODE_ENABLED] ?: false }
+
+    val nagModeInterval: Flow<Int> = dataStore.data
+        .map { preferences -> preferences[NAG_MODE_INTERVAL] ?: 5 }
+
+    val nagModeMaxRepetitions: Flow<Int> = dataStore.data
+        .map { preferences -> preferences[NAG_MODE_MAX_REPETITIONS] ?: 10 }
+
+    // Sanctuary Settings Flows
+    val autoBackupEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[AUTO_BACKUP_ENABLED] ?: true }
+
+    val autoBackupFrequency: Flow<String> = dataStore.data
+        .map { preferences -> preferences[AUTO_BACKUP_FREQUENCY] ?: "Daily" }
+
+    val lastBackupTime: Flow<Long?> = dataStore.data
+        .map { preferences -> preferences[LAST_BACKUP_TIME] }
+
+    val analyticsEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[ANALYTICS_ENABLED] ?: false }
+
+    val crashReportingEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[CRASH_REPORTING_ENABLED] ?: false }
+
+    // Rhythms Settings Functions
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        dataStore.edit { it[NOTIFICATIONS_ENABLED] = enabled }
+    }
+
+    suspend fun setSoundEnabled(enabled: Boolean) {
+        dataStore.edit { it[SOUND_ENABLED] = enabled }
+    }
+
+    suspend fun setVibrationEnabled(enabled: Boolean) {
+        dataStore.edit { it[VIBRATION_ENABLED] = enabled }
+    }
+
+    suspend fun setSoundVolume(volume: Float) {
+        dataStore.edit { it[SOUND_VOLUME] = volume }
+    }
+
+    suspend fun setSelectedSoundscape(soundscape: String) {
+        dataStore.edit { it[SELECTED_SOUNDSCAPE] = soundscape }
+    }
+    
+    suspend fun setSelectedSoundUri(uri: String?) {
+        dataStore.edit { 
+            if (uri != null) it[SELECTED_SOUND_URI] = uri
+            else it.remove(SELECTED_SOUND_URI)
+        }
+    }
+
+    suspend fun setQuietHoursEnabled(enabled: Boolean) {
+        dataStore.edit { it[QUIET_HOURS_ENABLED] = enabled }
+    }
+
+    suspend fun setQuietHoursStart(time: String) {
+        dataStore.edit { it[QUIET_HOURS_START] = time }
+    }
+
+    suspend fun setQuietHoursEnd(time: String) {
+        dataStore.edit { it[QUIET_HOURS_END] = time }
+    }
+
+    suspend fun setNagModeEnabled(enabled: Boolean) {
+        dataStore.edit { it[NAG_MODE_ENABLED] = enabled }
+    }
+
+    suspend fun setNagModeInterval(interval: Int) {
+        dataStore.edit { it[NAG_MODE_INTERVAL] = interval }
+    }
+
+    suspend fun setNagModeMaxRepetitions(repetitions: Int) {
+        dataStore.edit { it[NAG_MODE_MAX_REPETITIONS] = repetitions }
+    }
+
+    // Sanctuary Settings Functions
+    suspend fun setAutoBackupEnabled(enabled: Boolean) {
+        dataStore.edit { it[AUTO_BACKUP_ENABLED] = enabled }
+    }
+
+    suspend fun setAutoBackupFrequency(frequency: String) {
+        dataStore.edit { it[AUTO_BACKUP_FREQUENCY] = frequency }
+    }
+
+    suspend fun setLastBackupTime(time: Long) {
+        dataStore.edit { it[LAST_BACKUP_TIME] = time }
+    }
+
+    suspend fun setAnalyticsEnabled(enabled: Boolean) {
+        dataStore.edit { it[ANALYTICS_ENABLED] = enabled }
+    }
+
+    suspend fun setCrashReportingEnabled(enabled: Boolean) {
+        dataStore.edit { it[CRASH_REPORTING_ENABLED] = enabled }
+    }
 }
+

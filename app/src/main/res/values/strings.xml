@@ -135,6 +135,7 @@
     <string name="snooze_all">SNOOZE ALL</string>
     <string name="im_doing_it_stop">I\'M DOING IT (STOP)</string>
     <string name="snooze">SNOOZE</string>
+    <string name="snooze_mixed">Snooze</string>
     
     <!-- Settings Screen -->
     <string name="data">Data</string>
@@ -277,10 +278,10 @@
 
     <!-- Settings Navigation (Carousel) -->
     <string name="nav_appearance">Appearance</string>
-    <string name="nav_identity">Profile &amp; AI</string>
-    <string name="nav_rhythms">Notifications &amp; Sounds</string>
-    <string name="nav_sanctuary">Data &amp; Storage</string>
-    <string name="nav_wisdom">About &amp; Updates</string>
+    <string name="nav_identity">Profile</string>
+    <string name="nav_rhythms">Notification</string>
+    <string name="nav_sanctuary">Storage</string>
+    <string name="nav_wisdom">About</string>
 
     <!-- Settings Screen Titles -->
     <string name="title_atmosphere">Atmosphere &amp; Feel</string>

@@ -342,32 +342,34 @@ fun GlassyHeader(text: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Translate Header Strings
         val displayText = when(text) {
             "Today" -> stringResource(R.string.history_header_today)
             "Yesterday" -> stringResource(R.string.history_header_yesterday)
             else -> text
         }
         
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
-            modifier = Modifier.height(32.dp)
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+        val bgColor = if (isDark) Color.White.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        val borderColor = if (isDark) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        val shape = RoundedCornerShape(16.dp)
+        
+        Box(
+            modifier = Modifier
+                .height(32.dp)
+                .background(bgColor, shape)
+                .border(1.dp, borderColor, shape)
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = displayText,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -398,13 +400,14 @@ fun HistoryReceiptSheet(
         val isAbandoned = reminder.isAbandoned
         val icon = if (isAbandoned) Icons.Default.Cancel else Icons.Default.CheckCircle
         val iconTint = if (isAbandoned) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-        val dateText = SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(reminder.completedTime ?: 0))
-        val timeText = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(reminder.completedTime ?: 0))
+        val displayTime = reminder.completedTime ?: reminder.originalStartTimeInMillis
+        val dateText = SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(displayTime))
+        val timeText = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(displayTime))
         
-        val fullStatusText = if (isAbandoned) {
-            "Abandoned on $dateText at $timeText"
-        } else {
-            stringResource(R.string.receipt_completed_on, dateText) + " " + stringResource(R.string.receipt_completed_at, timeText)
+        val fullStatusText = when {
+            isAbandoned -> "Abandoned on $dateText at $timeText"
+            reminder.completedTime != null -> stringResource(R.string.receipt_completed_on, dateText) + " " + stringResource(R.string.receipt_completed_at, timeText)
+            else -> "Scheduled for $dateText at $timeText"
         }
 
         Icon(

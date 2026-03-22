@@ -360,7 +360,7 @@ fun RecurrenceCard(
                 )
             }
 
-            AnimatedVisibility(visible = recurrenceType == RecurrenceType.WEEKLY) {
+            AnimatedVisibility(visible = recurrenceType == RecurrenceType.WEEKLY || recurrenceType == RecurrenceType.CUSTOM) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
                     Text(stringResource(R.string.select_days), style = MaterialTheme.typography.labelMedium)
                     Row(

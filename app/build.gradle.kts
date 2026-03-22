@@ -17,8 +17,8 @@ android {
         applicationId = "com.nami.peace"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "2.3.3"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -103,4 +103,12 @@ dependencies {
     
     // Networking
     implementation(libs.okhttp)
+
+    // WorkManager
+    val work_version = "2.9.0"
+    implementation("androidx.work:work-runtime-ktx:$work_version")
+
+    // Hilt WorkManager
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 }

@@ -155,11 +155,28 @@ class HomeViewModel @Inject constructor(
 
     fun markAsDone(reminder: Reminder) {
         viewModelScope.launch {
-            val updatedReminder = reminder.copy(isCompleted = true, completedTime = System.currentTimeMillis())
+            // 1. Record in History (Today's instance)
+            repository.insertHistory(reminder)
+            
+            // 2. Cancel OLD alarm immediately
+            alarmScheduler.cancel(reminder)
+            
+            // 3. Update Reminder for next time
+            val updatedReminder = if (reminder.recurrenceType == com.nami.peace.domain.model.RecurrenceType.ONE_TIME) {
+                reminder.copy(isCompleted = true, completedTime = System.currentTimeMillis())
+            } else {
+                val nextTime = com.nami.peace.util.DateUtils.getNextOccurrence(reminder.startTimeInMillis, reminder.recurrenceType, reminder.daysOfWeek)
+                reminder.copy(startTimeInMillis = nextTime)
+            }
             repository.updateReminder(updatedReminder)
-            alarmScheduler.cancel(updatedReminder)
-            com.nami.peace.util.DebugLogger.log("Reminder Completed: ${reminder.title}")
-            _toastMessage.send("Focus task completed")
+            
+            // 4. Re-schedule ONLY if it's recurring and not one-time complete
+            if (!updatedReminder.isCompleted) {
+                alarmScheduler.schedule(updatedReminder, updatedReminder.startTimeInMillis)
+            }
+            
+            com.nami.peace.util.DebugLogger.log("Dashboard MarkAsDone: ${reminder.title}. Next: ${updatedReminder.startTimeInMillis}")
+            _toastMessage.send(if (updatedReminder.isCompleted) "Focus task completed" else "See you tomorrow!")
         }
     }
     
