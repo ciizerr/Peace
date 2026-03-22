@@ -1,5 +1,12 @@
 package com.nami.peace.ui.components
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -237,6 +244,74 @@ fun GlassyDialog(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun GlassyAlertDialog(
+    show: Boolean,
+    onDismissRequest: () -> Unit,
+    confirmButton: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    dismissButton: @Composable (() -> Unit)? = null,
+    icon: @Composable (() -> Unit)? = null,
+    title: @Composable (() -> Unit)? = null,
+    text: @Composable (() -> Unit)? = null,
+    hazeState: HazeState? = null
+) {
+    GlassyDialog(
+        show = show,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier.padding(horizontal = 24.dp, vertical = 24.dp).fillMaxWidth(0.9f),
+        hazeState = hazeState
+    ) {
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+        ) {
+            // Optional Icon Centered at top
+            if (icon != null) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    icon()
+                }
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Optional Title
+            if (title != null) {
+                androidx.compose.material3.ProvideTextStyle(
+                    MaterialTheme.typography.headlineSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                ) {
+                    title()
+                }
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Optional Descriptive Text
+            if (text != null) {
+                androidx.compose.material3.ProvideTextStyle(
+                    MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                ) {
+                    text()
+                }
+                androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // Buttons aligned to end
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (dismissButton != null) {
+                    dismissButton()
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
+                }
+                confirmButton()
             }
         }
     }

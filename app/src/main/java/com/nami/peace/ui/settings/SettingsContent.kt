@@ -20,7 +20,8 @@ fun SettingsContent(
     onNavigateToHistory: () -> Unit,
     onNavigateToDashboard: () -> Unit,
     onNavigateToCategory: (SettingsCategory) -> Unit,
-    hazeState: HazeState? = null
+    hazeState: HazeState? = null,
+    sheetHazeState: HazeState? = null
 ) {
     when (category) {
         SettingsCategory.Appearance -> com.nami.peace.ui.settings.appearance.AppearanceScreen(
@@ -29,7 +30,8 @@ fun SettingsContent(
         )
         SettingsCategory.Identity -> com.nami.peace.ui.settings.identity.IdentityScreen(
             onNavigateBack = onNavigateToDashboard,
-            hazeState = hazeState ?: dev.chrisbanes.haze.HazeState()
+            hazeState = hazeState ?: dev.chrisbanes.haze.HazeState(),
+            sheetHazeState = sheetHazeState
         )
         SettingsCategory.Rhythms -> com.nami.peace.ui.settings.rhythms.RhythmsScreen(
             onNavigateBack = onNavigateToDashboard,

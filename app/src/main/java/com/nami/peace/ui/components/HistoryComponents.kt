@@ -55,6 +55,10 @@ fun PeaceCalendar(
     onMonthChange: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val bgColor = if (isDark) Color.White.copy(alpha = 0.05f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+
     AnimatedVisibility(
         visible = isExpanded,
         enter = expandVertically() + fadeIn(),
@@ -63,12 +67,10 @@ fun PeaceCalendar(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                    RoundedCornerShape(24.dp)
-                )
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .background(bgColor, RoundedCornerShape(24.dp))
+                .border(1.dp, borderColor, RoundedCornerShape(24.dp))
+                .padding(20.dp)
         ) {
             val days = remember(currentMonth) {
                 val start = currentMonth.atDay(1)

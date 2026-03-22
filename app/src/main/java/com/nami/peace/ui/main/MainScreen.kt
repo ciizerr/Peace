@@ -213,7 +213,8 @@ fun MainScreen(
                                 onNavigateToCategory = { category ->
                                     scope.launch { settingsPagerState.animateScrollToPage(category.ordinal) }
                                 },
-                                hazeState = contentHazeState
+                                hazeState = contentHazeState,
+                                sheetHazeState = sheetHazeState
                             )
                         }
                     }

@@ -117,33 +117,33 @@ fun HomeScreen(
         selectedIds = emptySet()
     }
 
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text(stringResource(R.string.delete_bulk_title)) },
-            text = { Text(stringResource(R.string.delete_bulk_message, selectedIds.size)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val toDelete = (uiState.morningTasks + uiState.afternoonTasks + uiState.eveningTasks + listOfNotNull(uiState.focusTask))
-                            .filter { selectedIds.contains(it.id) }
-                        
-                        // We use a helper from VM to delete multiple (ensure VM has it)
-                        viewModel.deleteReminders(toDelete)
-                        selectedIds = emptySet()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = showDeleteDialog,
+        hazeState = hazeState,
+        onDismissRequest = { showDeleteDialog = false },
+        title = { Text(stringResource(R.string.delete_bulk_title)) },
+        text = { Text(stringResource(R.string.delete_bulk_message, selectedIds.size)) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val toDelete = (uiState.morningTasks + uiState.afternoonTasks + uiState.eveningTasks + listOfNotNull(uiState.focusTask))
+                        .filter { selectedIds.contains(it.id) }
+                    
+                    // We use a helper from VM to delete multiple (ensure VM has it)
+                    viewModel.deleteReminders(toDelete)
+                    selectedIds = emptySet()
+                    showDeleteDialog = false
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+            ) {
+                Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
             }
-        )
-    }
+        },
+        dismissButton = {
+            TextButton(onClick = { showDeleteDialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 
     // Toast Observation
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -495,32 +495,33 @@ fun DashboardHeader(greetingRes: Int, userName: String?) {
 fun PeaceProgressCard(completed: Int, total: Int) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.5f))
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     stringResource(R.string.header_progress),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     stringResource(R.string.progress_label, completed, total),
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             val progress = if (total > 0) completed.toFloat() / total.toFloat() else 0f
             LinearProgressIndicator(
                 progress = progress,
-                modifier = Modifier.fillMaxWidth().height(8.dp),
+                modifier = Modifier.fillMaxWidth().height(10.dp).clip(CircleShape),
                 color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
             )
         }
@@ -530,68 +531,71 @@ fun PeaceProgressCard(completed: Int, total: Int) {
 @Composable
 fun FocusHeroCard(reminder: Reminder?, onDone: () -> Unit, onClick: () -> Unit) {
     if (reminder != null) {
-        val stripColor = when (reminder.priority) {
-            PriorityLevel.HIGH -> Color(0xFFEF5350)
-            PriorityLevel.MEDIUM -> Color(0xFF42A5F5)
-            PriorityLevel.LOW -> Color(0xFF66BB6A)
+        val gradientColors = when (reminder.priority) {
+            PriorityLevel.HIGH -> listOf(Color(0xFFEF5350).copy(alpha = 0.8f), Color(0xFFB71C1C).copy(alpha = 0.9f))
+            PriorityLevel.MEDIUM -> listOf(Color(0xFF42A5F5).copy(alpha = 0.8f), Color(0xFF1565C0).copy(alpha = 0.9f))
+            PriorityLevel.LOW -> listOf(Color(0xFF66BB6A).copy(alpha = 0.8f), Color(0xFF2E7D32).copy(alpha = 0.9f))
         }
     
         Card(
-            modifier = Modifier.fillMaxWidth().height(200.dp),
+            modifier = Modifier.fillMaxWidth().height(220.dp).clickable { onClick() },
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f))
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                // Background Gradient or Effect?
-                
+            Box(modifier = Modifier.fillMaxSize().background(Brush.linearGradient(gradientColors))) {
                 Column(
                     modifier = Modifier.padding(24.dp).align(Alignment.TopStart)
                 ) {
                     // Priority Chip
                     Surface(
-                        color = stripColor,
-                        shape = CircleShape
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = CircleShape,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.4f))
                     ) {
                         Text(
                              reminder.priority.name,
-                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                              style = MaterialTheme.typography.labelSmall,
-                             color = Color.White
+                             color = Color.White,
+                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
                         reminder.title,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
+                        color = Color.White,
                         maxLines = 2
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                          formatTime(reminder.startTimeInMillis),
                          style = MaterialTheme.typography.titleMedium,
-                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha=0.7f)
+                         color = Color.White.copy(alpha = 0.85f)
                     )
                 }
                 
                 Button(
                     onClick = onDone,
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.primary),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.25f), contentColor = Color.White),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(stringResource(R.string.done))
+                    Text(stringResource(R.string.done), fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(Icons.Default.Eco, null)
                 }
             }
         }
     } else {
-        // Empty State
+        // Empty State Glassy
         Card(
             modifier = Modifier.fillMaxWidth().height(150.dp),
             shape = RoundedCornerShape(32.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f))
         ) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
@@ -809,19 +813,20 @@ fun UpcomingReminderCard(
     val containerColor = if (isSelected) 
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) 
     else 
-        MaterialTheme.colorScheme.surfaceVariant
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
 
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
-    val borderWidth = if (isSelected) 2.dp else 0.dp
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
+    val borderWidth = if (isSelected) 2.dp else 1.dp
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(CardDefaults.shape)
+            .clip(RoundedCornerShape(24.dp))
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         border = androidx.compose.foundation.BorderStroke(borderWidth, borderColor)
     ) {
@@ -834,13 +839,13 @@ fun UpcomingReminderCard(
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(6.dp)
-                    .background(stripColor)
+                    .background(Brush.verticalGradient(listOf(stripColor.copy(alpha=0.8f), stripColor)))
             )
             
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(16.dp)
+                    .padding(vertical = 20.dp, horizontal = 16.dp)
             ) {
                 if (isNextUp) {
                     Text(
@@ -856,12 +861,23 @@ fun UpcomingReminderCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
-                    formatTime(reminder.startTimeInMillis),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.AutoAwesome, 
+                        contentDescription = null, 
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.8f)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        formatTime(reminder.startTimeInMillis),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 if (reminder.isInNestedSnoozeLoop) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         stringResource(R.string.snoozed_nag_mode),
                         style = MaterialTheme.typography.labelSmall,

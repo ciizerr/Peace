@@ -342,32 +342,34 @@ fun GlassyHeader(text: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Translate Header Strings
         val displayText = when(text) {
             "Today" -> stringResource(R.string.history_header_today)
             "Yesterday" -> stringResource(R.string.history_header_yesterday)
             else -> text
         }
         
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
-            modifier = Modifier.height(32.dp)
+        val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+        val bgColor = if (isDark) Color.White.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        val borderColor = if (isDark) Color.White.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        val shape = RoundedCornerShape(16.dp)
+        
+        Box(
+            modifier = Modifier
+                .height(32.dp)
+                .background(bgColor, shape)
+                .border(1.dp, borderColor, shape)
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = displayText,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = displayText,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

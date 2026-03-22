@@ -17,8 +17,8 @@ android {
         applicationId = "com.nami.peace"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "2.3.3"
+        versionCode = 1
+        versionName = "0.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         

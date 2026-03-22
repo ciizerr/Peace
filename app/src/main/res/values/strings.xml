@@ -276,10 +276,10 @@
 
     <!-- Settings Navigation (Carousel) -->
     <string name="nav_appearance">Appearance</string>
-    <string name="nav_identity">Profile &amp; AI</string>
-    <string name="nav_rhythms">Notifications &amp; Sounds</string>
-    <string name="nav_sanctuary">Data &amp; Storage</string>
-    <string name="nav_wisdom">About &amp; Updates</string>
+    <string name="nav_identity">Profile</string>
+    <string name="nav_rhythms">Notification</string>
+    <string name="nav_sanctuary">Storage</string>
+    <string name="nav_wisdom">About</string>
 
     <!-- Settings Screen Titles -->
     <string name="title_atmosphere">Atmosphere &amp; Feel</string>

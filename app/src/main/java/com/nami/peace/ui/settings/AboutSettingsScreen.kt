@@ -36,8 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.nami.peace.BuildConfig
 import com.nami.peace.R
 import com.nami.peace.data.updater.UpdateState
-import com.nami.peace.ui.components.SettingsSection
-import com.nami.peace.ui.components.SettingsButton
+import com.nami.peace.ui.settings.components.*
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 
@@ -53,7 +52,7 @@ fun AboutSettingsScreen(
     val updateStatus by viewModel.updateStatus.collectAsState()
 
     // Update Dialogs
-    UpdateDialogs(updateStatus, viewModel)
+    UpdateDialogs(updateStatus, viewModel, effectiveHazeState)
 
     val blurEnabled by viewModel.blurEnabled.collectAsState()
     val blurStrength by viewModel.blurStrength.collectAsState()
@@ -133,58 +132,65 @@ fun AboutSettingsScreen(
 }
 
 @Composable
-private fun UpdateDialogs(updateStatus: UpdateState, viewModel: SettingsViewModel) {
-    when (updateStatus) {
-        is UpdateState.Available -> {
-            val info = updateStatus.updateInfo
-            AlertDialog(
-                onDismissRequest = { viewModel.resetUpdateState() },
-                title = { Text(stringResource(R.string.update_available_title, info.version)) },
-                text = { 
-                    Column {
-                        Text(stringResource(R.string.update_available_message))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(info.releaseNotes, style = MaterialTheme.typography.bodySmall)
-                    }
-                },
-                confirmButton = {
-                    Button(onClick = { viewModel.startUpdate(info.downloadUrl) }) {
-                        Text(stringResource(R.string.update_now))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { viewModel.resetUpdateState() }) {
-                        Text(stringResource(R.string.later))
-                    }
-                }
-            )
+private fun UpdateDialogs(updateStatus: UpdateState, viewModel: SettingsViewModel, hazeState: HazeState?) {
+    val availableState = updateStatus as? UpdateState.Available
+    val errorState = updateStatus as? UpdateState.Error
+    
+    val lastUpdateInfo = remember { androidx.compose.runtime.mutableStateOf(availableState?.updateInfo) }
+    if (availableState != null) lastUpdateInfo.value = availableState.updateInfo
+    
+    val lastErrorMsg = remember { androidx.compose.runtime.mutableStateOf(errorState?.message) }
+    if (errorState != null) lastErrorMsg.value = errorState.message
+
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = updateStatus is UpdateState.Available,
+        hazeState = hazeState,
+        onDismissRequest = { viewModel.resetUpdateState() },
+        title = { Text(stringResource(R.string.update_available_title, lastUpdateInfo.value?.version ?: "")) },
+        text = { 
+            Column {
+                Text(stringResource(R.string.update_available_message))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(lastUpdateInfo.value?.releaseNotes ?: "", style = MaterialTheme.typography.bodySmall)
+            }
+        },
+        confirmButton = {
+            Button(onClick = { lastUpdateInfo.value?.downloadUrl?.let { viewModel.startUpdate(it) } }) {
+                Text(stringResource(R.string.update_now))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { viewModel.resetUpdateState() }) {
+                Text(stringResource(R.string.later))
+            }
         }
-        is UpdateState.Error -> {
-            AlertDialog(
-                onDismissRequest = { viewModel.resetUpdateState() },
-                title = { Text(stringResource(R.string.update_failed_title)) },
-                text = { Text(updateStatus.message) },
-                confirmButton = {
-                    TextButton(onClick = { viewModel.resetUpdateState() }) {
-                        Text(stringResource(R.string.ok))
-                    }
-                }
-            )
+    )
+
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = updateStatus is UpdateState.Error,
+        hazeState = hazeState,
+        onDismissRequest = { viewModel.resetUpdateState() },
+        title = { Text(stringResource(R.string.update_failed_title)) },
+        text = { Text(lastErrorMsg.value ?: "") },
+        confirmButton = {
+            TextButton(onClick = { viewModel.resetUpdateState() }) {
+                Text(stringResource(R.string.ok))
+            }
         }
-        is UpdateState.UpToDate -> {
-            AlertDialog(
-                onDismissRequest = { viewModel.resetUpdateState() },
-                title = { Text(stringResource(R.string.up_to_date_title)) },
-                text = { Text(stringResource(R.string.up_to_date_message)) },
-                confirmButton = {
-                    TextButton(onClick = { viewModel.resetUpdateState() }) {
-                        Text(stringResource(R.string.ok))
-                    }
-                }
-            )
+    )
+
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = updateStatus is UpdateState.UpToDate,
+        hazeState = hazeState,
+        onDismissRequest = { viewModel.resetUpdateState() },
+        title = { Text(stringResource(R.string.up_to_date_title)) },
+        text = { Text(stringResource(R.string.up_to_date_message)) },
+        confirmButton = {
+            TextButton(onClick = { viewModel.resetUpdateState() }) {
+                Text(stringResource(R.string.ok))
+            }
         }
-        else -> { /* No dialog needed */ }
-    }
+    )
 }
 
 @Composable
@@ -228,9 +234,8 @@ private fun AppHeaderSection() {
 
 @Composable
 private fun AppInfoSection(updateStatus: UpdateState, viewModel: SettingsViewModel) {
-    SettingsSection(
-        title = "App Information",
-        icon = Icons.Default.Info
+    GlassySettingSection(
+        title = "App Information"
     ) {
         InfoRow("Version", stringResource(R.string.version_format, BuildConfig.VERSION_NAME))
         InfoRow("Build", BuildConfig.VERSION_CODE.toString())
@@ -281,11 +286,10 @@ private fun AppInfoSection(updateStatus: UpdateState, viewModel: SettingsViewMod
 
 @Composable
 private fun FeaturesSection(onNavigateToHistory: () -> Unit) {
-    SettingsSection(
-        title = "Features",
-        icon = Icons.Default.Star
+    GlassySettingSection(
+        title = "Features"
     ) {
-        SettingsButton(
+        GlassyButtonRow(
             title = "View History Log",
             subtitle = "Browse your completed tasks and activity",
             icon = Icons.Default.Info,
@@ -311,25 +315,24 @@ private fun FeaturesSection(onNavigateToHistory: () -> Unit) {
 
 @Composable
 private fun SupportSection() {
-    SettingsSection(
-        title = "Support",
-        icon = Icons.Default.Favorite
+    GlassySettingSection(
+        title = "Support"
     ) {
-        SettingsButton(
+        GlassyButtonRow(
             title = "Rate Peace",
             subtitle = "Help us improve by rating the app",
             icon = Icons.Default.Star,
             onClick = { /* TODO: Open Play Store */ }
         )
         
-        SettingsButton(
+        GlassyButtonRow(
             title = "Share Peace",
             subtitle = "Share this app with friends and family",
             icon = Icons.Default.Share,
             onClick = { /* TODO: Share app */ }
         )
         
-        SettingsButton(
+        GlassyButtonRow(
             title = "Report Bug",
             subtitle = "Found an issue? Let us know",
             icon = Icons.Default.BugReport,
@@ -340,25 +343,24 @@ private fun SupportSection() {
 
 @Composable
 private fun LegalSection() {
-    SettingsSection(
-        title = "Legal",
-        icon = Icons.Default.Security
+    GlassySettingSection(
+        title = "Legal"
     ) {
-        SettingsButton(
+        GlassyButtonRow(
             title = "Privacy Policy",
             subtitle = "How we handle your data",
             icon = Icons.Default.Security,
             onClick = { /* TODO: Open privacy policy */ }
         )
         
-        SettingsButton(
+        GlassyButtonRow(
             title = "Terms of Service",
             subtitle = "Terms and conditions of use",
             icon = Icons.Default.Info,
             onClick = { /* TODO: Open terms */ }
         )
         
-        SettingsButton(
+        GlassyButtonRow(
             title = "Open Source Licenses",
             subtitle = "Third-party libraries and licenses",
             icon = Icons.Default.Code,
@@ -369,9 +371,8 @@ private fun LegalSection() {
 
 @Composable
 private fun DeveloperSection() {
-    SettingsSection(
-        title = "Developer",
-        icon = Icons.Default.Code
+    GlassySettingSection(
+        title = "Developer"
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -399,7 +400,7 @@ private fun DeveloperSection() {
 @Composable
 private fun InfoRow(label: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -418,7 +419,7 @@ private fun InfoRow(label: String, value: String) {
 
 @Composable
 private fun FeatureItem(title: String, description: String) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,

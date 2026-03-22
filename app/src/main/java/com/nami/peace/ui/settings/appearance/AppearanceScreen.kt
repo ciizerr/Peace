@@ -38,6 +38,7 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import androidx.compose.foundation.border
 import androidx.compose.material.icons.Icons
+import com.nami.peace.ui.settings.components.*
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -100,7 +101,7 @@ fun AppearanceScreen(
                     )
             ) {
                 // 1. Theme Section
-                GlassySection(title = stringResource(R.string.section_theme)) {
+                GlassySettingSection(title = stringResource(R.string.section_theme)) {
                     ThemeSelector(
                         currentTheme = themeMode,
                         onThemeSelected = viewModel::setThemeMode
@@ -108,7 +109,7 @@ fun AppearanceScreen(
                 }
                 
                 // 2. Mood (Energy) Section
-                GlassySection(title = stringResource(R.string.section_mood)) {
+                GlassySettingSection(title = stringResource(R.string.section_mood)) {
                     MoodSelector(
                         currentMood = moodColor,
                         onMoodSelected = viewModel::setMoodColor,
@@ -117,7 +118,7 @@ fun AppearanceScreen(
                 }
 
                 // 3. Readability Section
-                GlassySection(title = stringResource(R.string.section_readability)) {
+                GlassySettingSection(title = stringResource(R.string.section_readability)) {
                     val currentFontFamily by viewModel.fontFamily.collectAsState()
                     
                     FontSelectorRow(
@@ -125,7 +126,7 @@ fun AppearanceScreen(
                         onFontSelected = viewModel::setFontFamily
                     )
                     
-                    SwitchSettingRow(
+                    GlassySwitchRow(
                         label = stringResource(R.string.lbl_bold_text),
                         checked = isBoldText,
                         onCheckedChange = viewModel::setBoldText
@@ -170,9 +171,9 @@ fun AppearanceScreen(
                 }
                 
                 // 4. Immersion Section (Shadow & Blur)
-                GlassySection(title = stringResource(R.string.section_immersion)) {
+                GlassySettingSection(title = stringResource(R.string.section_immersion)) {
                      // Blur Control
-                     SwitchSettingRow(
+                     GlassySwitchRow(
                          label = stringResource(R.string.lbl_glass_effects),
                          subtitle = stringResource(R.string.lbl_android_12_plus),
                          checked = blurEnabled,
@@ -185,14 +186,14 @@ fun AppearanceScreen(
                          exit = shrinkVertically() + fadeOut()
                      ) {
                          Column {
-                             SliderSettingRow(
+                             GlassySliderRow(
                                  label = stringResource(R.string.lbl_glass_blur),
                                  value = blurStrength,
                                  valueRange = 5f..30f,
                                  onValueChange = viewModel::setBlurStrength
                              )
                              
-                             SliderSettingRow(
+                             GlassySliderRow(
                                  label = stringResource(R.string.lbl_tint_opacity),
                                  value = blurTintAlpha,
                                  valueRange = 0f..0.5f,
@@ -202,7 +203,7 @@ fun AppearanceScreen(
                      }
                      
                      // Shadow Control
-                     SwitchSettingRow(
+                     GlassySwitchRow(
                          label = "Shadows",
                          checked = shadowsEnabled,
                          onCheckedChange = viewModel::setShadowsEnabled
@@ -213,7 +214,7 @@ fun AppearanceScreen(
                          enter = expandVertically() + fadeIn(),
                          exit = shrinkVertically() + fadeOut()
                      ) {
-                          SliderSettingRow(
+                          GlassySliderRow(
                              label = stringResource(R.string.lbl_shadows),
                              value = shadowStrength,
                              valueRange = 0f..1f,
@@ -289,29 +290,7 @@ fun AppearanceScreen(
 // Sub-Components
 // -----------------------------------------------------------------------------
 
-@Composable
-fun GlassySection(
-    title: String,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.5f))
-            .padding(vertical = 16.dp)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-        )
-        content()
-    }
-}
+
 
 @Composable
 fun ThemeSelector(currentTheme: String, onThemeSelected: (String) -> Unit) {
@@ -511,78 +490,7 @@ fun MoodSelector(
     }
 }
 
-@Composable
-fun SwitchSettingRow(
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    iconRes: Int = 0,
-    imageVector: androidx.compose.ui.graphics.vector.ImageVector? = null,
-    subtitle: String? = null
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            if (subtitle != null) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-        if (imageVector != null) {
-             Icon(
-                 imageVector = imageVector,
-                 contentDescription = null,
-                 tint = MaterialTheme.colorScheme.primary,
-                 modifier = Modifier.padding(end = 16.dp)
-             )
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
-    }
-}
 
-@Composable
-fun SliderSettingRow(
-    label: String,
-    value: Float,
-    valueRange: ClosedFloatingPointRange<Float>,
-    onValueChange: (Float) -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-            // Just display value for debugging or context if needed, or remove details for cleaner look
-        }
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = valueRange
-        )
-    }
-}
 
 @Composable
 fun PreviewCard() {

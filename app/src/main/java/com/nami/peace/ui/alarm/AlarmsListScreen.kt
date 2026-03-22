@@ -74,17 +74,17 @@ fun AlarmsListScreen(
     var selectedNapLabel by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
     var selectedNapDuration by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
 
-    if (showNapDialog) {
-        NapCustomizationDialog(
-            initialDuration = selectedNapDuration,
-            label = selectedNapLabel,
-            onDismiss = { showNapDialog = false },
-            onConfirm = { duration ->
-                viewModel.addQuickNap(duration, selectedNapLabel)
-                showNapDialog = false
-            }
-        )
-    }
+    NapCustomizationDialog(
+        show = showNapDialog,
+        hazeState = hazeState,
+        initialDuration = selectedNapDuration,
+        label = selectedNapLabel,
+        onDismiss = { showNapDialog = false },
+        onConfirm = { duration ->
+            viewModel.addQuickNap(duration, selectedNapLabel)
+            showNapDialog = false
+        }
+    )
     
     androidx.compose.runtime.LaunchedEffect(Unit) {
         viewModel.toastMessage.collect { message ->
@@ -112,30 +112,30 @@ fun AlarmsListScreen(
     }
 
     // Delete Confirmation Dialog
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text(stringResource(R.string.delete_bulk_title)) },
-            text = { Text(stringResource(R.string.delete_bulk_message, selectedIds.size)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val toDelete = uiState.activeAlarms.filter { selectedIds.contains(it.id) }
-                        viewModel.deleteReminders(toDelete)
-                        selectedIds = emptySet()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = showDeleteDialog,
+        hazeState = hazeState,
+        onDismissRequest = { showDeleteDialog = false },
+        title = { Text(stringResource(R.string.delete_bulk_title)) },
+        text = { Text(stringResource(R.string.delete_bulk_message, selectedIds.size)) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val toDelete = uiState.activeAlarms.filter { selectedIds.contains(it.id) }
+                    viewModel.deleteReminders(toDelete)
+                    selectedIds = emptySet()
+                    showDeleteDialog = false
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+            ) {
+                Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
             }
-        )
-    }
+        },
+        dismissButton = {
+            TextButton(onClick = { showDeleteDialog = false }) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
 
     Scaffold(
         modifier = Modifier,
@@ -367,12 +367,17 @@ fun AlarmsListScreen(
 
 @Composable
 fun NextAlarmHero(reminder: Reminder?) {
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val containerColor = if (isDark) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f))
+            .height(200.dp),
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -382,8 +387,8 @@ fun NextAlarmHero(reminder: Reminder?) {
                 Icon(
                     imageVector = Icons.Default.AccessTime,
                     contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    modifier = Modifier.size(56.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 
@@ -391,12 +396,12 @@ fun NextAlarmHero(reminder: Reminder?) {
                     Text(
                         stringResource(R.string.rhythms_next_label),
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha=0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         formatTime(reminder.startTimeInMillis),
                         style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     val timeDiff = reminder.startTimeInMillis - System.currentTimeMillis()
@@ -405,13 +410,14 @@ fun NextAlarmHero(reminder: Reminder?) {
                     Text(
                         stringResource(R.string.rhythms_next_countdown, relativeTime),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha=0.8f)
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 } else {
                     Text(
                         stringResource(R.string.rhythms_next_empty),
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha=0.8f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
@@ -447,9 +453,10 @@ fun QuickNapRow(onNap20: () -> Unit, onNap90: () -> Unit) {
 @Composable
 fun NapCard(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
-        modifier = modifier.height(100.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.5f)),
+        modifier = modifier.height(120.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.15f)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f)),
         onClick = onClick
     ) {
         Column(
@@ -457,12 +464,21 @@ fun NapCard(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(icon, null, tint = color, modifier = Modifier.size(32.dp))
-            Spacer(modifier = Modifier.height(8.dp))
+            Surface(
+                color = color.copy(alpha = 0.2f),
+                shape = androidx.compose.foundation.shape.CircleShape,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(icon, null, tint = color, modifier = Modifier.size(24.dp))
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 title,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -470,6 +486,8 @@ fun NapCard(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
 fun NapCustomizationDialog(
+    show: Boolean,
+    hazeState: HazeState?,
     initialDuration: Int,
     label: String,
     onDismiss: () -> Unit,
@@ -477,7 +495,9 @@ fun NapCustomizationDialog(
 ) {
     var duration by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(initialDuration) }
 
-    AlertDialog(
+    com.nami.peace.ui.components.GlassyAlertDialog(
+        show = show,
+        hazeState = hazeState,
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.nap_dialog_title, label)) },
         text = {
