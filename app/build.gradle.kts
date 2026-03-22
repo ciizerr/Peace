@@ -25,8 +25,24 @@ android {
         // Hilt Test Runner (Optional but good practice, skipping for now to keep simple)
     }
 
+    signingConfigs {
+        create("release") {
+            val props = Properties().apply {
+                val propFile = file("../local.properties")
+                if (propFile.exists()) {
+                    load(propFile.inputStream())
+                }
+            }
+            storeFile = file("release.jks")
+            storePassword = props.getProperty("RELEASE_STORE_PASSWORD")
+            keyAlias = props.getProperty("RELEASE_KEY_ALIAS")
+            keyPassword = props.getProperty("RELEASE_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
