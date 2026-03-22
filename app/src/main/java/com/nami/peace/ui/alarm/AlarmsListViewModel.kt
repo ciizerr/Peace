@@ -39,7 +39,7 @@ class AlarmsListViewModel @Inject constructor(
                 // Prompt said "active reminders (!isCompleted and time > now)")
                 
                 val activeSorted = reminders
-                    .filter { !it.isCompleted && it.startTimeInMillis > now }
+                    .filter { !it.isCompleted } // Show all active, even if missed
                     .sortedBy { it.startTimeInMillis }
 
                 val next = activeSorted.firstOrNull { it.isEnabled }
@@ -115,18 +115,20 @@ class AlarmsListViewModel @Inject constructor(
     fun deleteReminders(reminders: List<Reminder>) {
         viewModelScope.launch {
             reminders.forEach { reminder ->
-                // Soft Delete: Mark as Abandoned and Completed
-                val abandonedReminder = reminder.copy(
+                // 1. Record in History as Abandoned/Canceled
+                val record = reminder.copy(
                     isAbandoned = true,
-                    isCompleted = true,
                     completedTime = System.currentTimeMillis()
                 )
-                repository.updateReminder(abandonedReminder)
+                repository.insertHistory(record)
                 
-                // Cancel Alarm
+                // 2. Cancel the Alarm
                 alarmScheduler.cancel(reminder)
+                
+                // 3. Remove from Reminders table (since it's now in History)
+                repository.deleteReminder(reminder)
             }
-            _toastMessage.send("${reminders.size} reminders abandoned")
+            _toastMessage.send("${reminders.size} rhythms removed")
         }
     }
 }

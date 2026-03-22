@@ -43,7 +43,6 @@ fun SettingsContent(
             hazeState = hazeState ?: dev.chrisbanes.haze.HazeState()
         )
         SettingsCategory.Wisdom -> AboutSettingsScreen(
-            onNavigateToHistory = onNavigateToHistory,
             onNavigateToDashboard = onNavigateToDashboard,
             hazeState = hazeState
         )

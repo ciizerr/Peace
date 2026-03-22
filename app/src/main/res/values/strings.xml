@@ -135,6 +135,7 @@
     <string name="snooze_all">SNOOZE ALL</string>
     <string name="im_doing_it_stop">I\'M DOING IT (STOP)</string>
     <string name="snooze">SNOOZE</string>
+    <string name="snooze_mixed">Snooze</string>
     
     <!-- Settings Screen -->
     <string name="data">Data</string>

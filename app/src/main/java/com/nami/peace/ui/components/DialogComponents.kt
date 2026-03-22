@@ -45,6 +45,7 @@ import com.nami.peace.ui.theme.GlassyBlack
 import com.nami.peace.ui.theme.GlassyWhite
 import dev.chrisbanes.haze.hazeChild
 import com.nami.peace.ui.theme.LocalGlassSettings
+import androidx.compose.material3.Text
 
 
 
@@ -312,6 +313,108 @@ fun GlassyAlertDialog(
                     androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(8.dp))
                 }
                 confirmButton()
+            }
+        }
+    }
+}
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun GlassyTimePicker(
+    show: Boolean,
+    state: androidx.compose.material3.TimePickerState,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    hazeState: HazeState? = null
+) {
+    GlassyDialog(
+        show = show,
+        onDismissRequest = onDismiss,
+        hazeState = hazeState
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Select Time",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+            
+            androidx.compose.material3.TimePicker(state = state)
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                androidx.compose.material3.TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                androidx.compose.material3.Button(onClick = onConfirm) {
+                    Text("OK")
+                }
+            }
+        }
+    }
+}
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+fun GlassyDatePicker(
+    show: Boolean,
+    state: androidx.compose.material3.DatePickerState,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    hazeState: HazeState? = null
+) {
+    GlassyDialog(
+        show = show,
+        onDismissRequest = onDismiss,
+        hazeState = hazeState
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Select Date",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            androidx.compose.material3.Surface(
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.05f),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.padding(horizontal = 4.dp).border(0.5.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
+            ) {
+                androidx.compose.material3.DatePicker(
+                    state = state,
+                    showModeToggle = false,
+                    title = null,
+                    headline = null,
+                    colors = androidx.compose.material3.DatePickerDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedDayContentColor = Color.White,
+                        todayContentColor = MaterialTheme.colorScheme.primary,
+                        todayDateBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                androidx.compose.material3.TextButton(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+                androidx.compose.material3.Button(onClick = onConfirm) {
+                    Text("OK")
+                }
             }
         }
     }

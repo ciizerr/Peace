@@ -10,11 +10,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Snooze
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -49,6 +51,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import androidx.compose.ui.res.stringResource
 import com.nami.peace.R
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
+import com.nami.peace.ui.theme.White
+import com.nami.peace.ui.theme.AccentRed
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
 
 @AndroidEntryPoint
 class AlarmActivity : ComponentActivity() {
@@ -191,145 +204,221 @@ fun AlarmScreenMultiple(
     onStop: () -> Unit,
     onSnooze: () -> Unit
 ) {
-    // Use the highest priority for gradient
-    val highestPriority = reminders.firstOrNull()?.priority?.name ?: "MEDIUM"
-    val gradientColors = when (highestPriority) {
-        "HIGH" -> listOf(Color(0xFFB71C1C), Color(0xFF212121))
-        "MEDIUM" -> listOf(Color(0xFF1976D2), Color(0xFF212121))
-        else -> listOf(Color(0xFF2E7D32), Color(0xFF212121))
-    }
+    val hazeState = remember { HazeState() }
+    var isSnoozed by remember { mutableStateOf(false) }
 
+    // Delayed Exit for Snooze
+    LaunchedEffect(isSnoozed) {
+        if (isSnoozed) {
+            delay(2000)
+            onSnooze()
+        }
+    }
+    
     // Clock Logic
-    var currentTime by remember { mutableStateOf(LocalTime.now()) }
-    LaunchedEffect(Unit) {
+    val currentTime by produceState(initialValue = LocalTime.now()) {
         while (true) {
-            currentTime = LocalTime.now()
+            value = LocalTime.now()
             delay(1000)
         }
     }
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
-    // Animation Logic
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1.0f,
-        targetValue = 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale"
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        // 1. Serene Background Image
+        AsyncImage(
+            model = R.drawable.peace_alarm_bg,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black 
-    ) {
+        // 2. Haze Blur Overlay
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.verticalGradient(gradientColors))
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-            ) {
-                // Top: Clock
-                Text(
-                    text = currentTime.format(timeFormatter),
-                    style = MaterialTheme.typography.displayLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 64.sp,
-                        color = Color.White
-                    )
+                .haze(
+                    state = hazeState,
+                    style = HazeStyle(blurRadius = 40.dp, tint = Color.Black.copy(alpha = 0.15f))
                 )
-                
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Middle: Pulsing Icon
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(100.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .scale(scale)
-                            .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Alarm,
-                        contentDescription = stringResource(R.string.cd_alarm),
-                        tint = Color.White,
-                        modifier = Modifier.size(48.dp)
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Show count if multiple
-                if (reminders.size > 1) {
-                    Text(
-                        text = stringResource(R.string.reminders_due_format, reminders.size),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White.copy(alpha = 0.9f)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.1f),
+                            Color.Transparent,
+                            Color.Black.copy(alpha = 0.4f)
                         )
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                
-                // List of reminders (sorted by priority)
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                )
+        )
+
+        // 3. Main Content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Upper Section: Clock & Greeting
+            Spacer(modifier = Modifier.height(48.dp))
+            
+            Text(
+                text = currentTime.format(timeFormatter),
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontWeight = FontWeight.Light,
+                    fontSize = 84.sp,
+                    letterSpacing = (-2).sp
+                ),
+                color = White
+            )
+            
+            Text(
+                text = stringResource(R.string.alarm_hero_title).uppercase(),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    letterSpacing = 4.sp,
+                    fontWeight = FontWeight.Medium
+                ),
+                color = White.copy(alpha = 0.7f)
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Center Section: Primary Reminder
+            reminders.firstOrNull()?.let { hero ->
+                com.nami.peace.ui.alarm.GlassyCard(
+                    hazeState = hazeState,
+                    modifier = Modifier.fillMaxWidth(0.9f)
                 ) {
-                    items(reminders) { reminder ->
-                        ReminderCard(reminder = reminder)
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(AccentRed.copy(alpha = 0.2f), CircleShape)
+                                .border(1.dp, AccentRed.copy(alpha = 0.4f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.NotificationsActive,
+                                contentDescription = null,
+                                tint = AccentRed,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text(
+                            text = hero.title,
+                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                            color = White,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        
+                        if (!hero.notes.isNullOrBlank()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = hero.notes,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = White.copy(alpha = 0.8f),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                        }
+                        
+                        // Priority Badge
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Surface(
+                            color = White.copy(alpha = 0.1f),
+                            shape = CircleShape,
+                            modifier = Modifier.border(0.5.dp, White.copy(alpha = 0.2f), CircleShape)
+                        ) {
+                            Text(
+                                text = hero.priority.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = White.copy(alpha = 0.8f),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                            )
+                        }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.weight(1.2f))
 
-                // Bottom: Buttons
-                Button(
-                    onClick = onStop,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
+            // Lower Section: Bundled Reminders (if any)
+            if (reminders.size > 1) {
+                Text(
+                    text = stringResource(R.string.alarm_bundle_header),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = White.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = stringResource(R.string.im_doing_it_stop_all),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
+                    items(reminders.drop(1)) { reminder ->
+                        com.nami.peace.ui.alarm.GlassySmallCard(hazeState = hazeState, title = reminder.title)
+                    }
                 }
+                Spacer(modifier = Modifier.height(32.dp))
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedButton(
-                    onClick = onSnooze,
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(Color.White)),
+            if (isSnoozed) {
+                // Snooze Confirmation Overlay
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp)
+                        .height(80.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(White.copy(alpha = 0.9f))
+                        .hazeChild(state = hazeState),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = stringResource(R.string.snooze_all),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Check, contentDescription = null, tint = Color.Black)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Snoozed for 2 minutes",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            } else {
+                // Bottom Section: Actions
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    com.nami.peace.ui.alarm.GlassyActionButton(
+                        onClick = onStop,
+                        icon = Icons.Default.Check,
+                        label = stringResource(R.string.im_doing_it_stop_all),
+                        containerColor = White.copy(alpha = 0.9f),
+                        contentColor = Color.Black,
+                        hazeState = hazeState,
+                        modifier = Modifier.weight(1.5f)
+                    )
+                    
+                    com.nami.peace.ui.alarm.GlassyActionButton(
+                        onClick = { isSnoozed = true },
+                        icon = Icons.Default.Snooze,
+                        label = stringResource(R.string.snooze_all),
+                        containerColor = White.copy(alpha = 0.15f),
+                        contentColor = White,
+                        hazeState = hazeState,
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
+            
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

@@ -400,13 +400,14 @@ fun HistoryReceiptSheet(
         val isAbandoned = reminder.isAbandoned
         val icon = if (isAbandoned) Icons.Default.Cancel else Icons.Default.CheckCircle
         val iconTint = if (isAbandoned) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-        val dateText = SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(reminder.completedTime ?: 0))
-        val timeText = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(reminder.completedTime ?: 0))
+        val displayTime = reminder.completedTime ?: reminder.originalStartTimeInMillis
+        val dateText = SimpleDateFormat("MMM dd", Locale.getDefault()).format(Date(displayTime))
+        val timeText = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(displayTime))
         
-        val fullStatusText = if (isAbandoned) {
-            "Abandoned on $dateText at $timeText"
-        } else {
-            stringResource(R.string.receipt_completed_on, dateText) + " " + stringResource(R.string.receipt_completed_at, timeText)
+        val fullStatusText = when {
+            isAbandoned -> "Abandoned on $dateText at $timeText"
+            reminder.completedTime != null -> stringResource(R.string.receipt_completed_on, dateText) + " " + stringResource(R.string.receipt_completed_at, timeText)
+            else -> "Scheduled for $dateText at $timeText"
         }
 
         Icon(

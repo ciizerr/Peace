@@ -1,5 +1,7 @@
 package com.nami.peace.data.repository
 
+import com.nami.peace.data.local.HistoryDao
+import com.nami.peace.data.local.HistoryEntity
 import com.nami.peace.data.local.ReminderDao
 import com.nami.peace.data.local.ReminderEntity
 import com.nami.peace.domain.model.Reminder
@@ -9,7 +11,8 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class ReminderRepositoryImpl @Inject constructor(
-    private val dao: ReminderDao
+    private val dao: ReminderDao,
+    private val historyDao: HistoryDao
 ) : ReminderRepository {
 
     override fun getReminders(): Flow<List<Reminder>> {
@@ -44,5 +47,31 @@ class ReminderRepositoryImpl @Inject constructor(
 
     override suspend fun setTaskCompleted(id: Int, isCompleted: Boolean) {
         dao.setTaskCompleted(id, isCompleted)
+    }
+
+    override suspend fun getAllRemindersList(): List<Reminder> {
+        return dao.getAllRemindersList().map { it.toDomain() }
+    }
+
+    override fun getAllHistory(): Flow<List<Reminder>> {
+        return historyDao.getAll().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override suspend fun getAllHistoryList(): List<Reminder> {
+        return historyDao.getAllList().map { it.toDomain() }
+    }
+
+    override suspend fun clearAllReminders() {
+        dao.clearAll()
+    }
+
+    override suspend fun clearAllHistory() {
+        historyDao.clearAll()
+    }
+
+    override suspend fun insertHistory(reminder: Reminder) {
+        historyDao.insert(HistoryEntity.fromDomain(reminder))
     }
 }

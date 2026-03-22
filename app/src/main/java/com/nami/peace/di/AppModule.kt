@@ -38,14 +38,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideReminderRepository(dao: ReminderDao): ReminderRepository {
-        return ReminderRepositoryImpl(dao)
+    fun provideHistoryDao(db: AppDatabase): HistoryDao {
+        return db.historyDao()
     }
 
     @Provides
     @Singleton
-    fun provideHistoryDao(db: AppDatabase): HistoryDao {
-        return db.historyDao()
+    fun provideReminderRepository(
+        dao: ReminderDao,
+        historyDao: HistoryDao
+    ): ReminderRepository {
+        return ReminderRepositoryImpl(dao, historyDao)
     }
 
     @Provides

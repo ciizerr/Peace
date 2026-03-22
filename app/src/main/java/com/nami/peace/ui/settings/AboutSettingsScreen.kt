@@ -33,6 +33,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.content.Intent
+import android.net.Uri
 import com.nami.peace.BuildConfig
 import com.nami.peace.R
 import com.nami.peace.data.updater.UpdateState
@@ -43,13 +45,13 @@ import dev.chrisbanes.haze.haze
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutSettingsScreen(
-    onNavigateToHistory: () -> Unit,
     onNavigateToDashboard: () -> Unit,
     viewModel: SettingsViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
     hazeState: HazeState? = null
 ) {
     val effectiveHazeState = hazeState ?: remember { HazeState() }
     val updateStatus by viewModel.updateStatus.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     // Update Dialogs
     UpdateDialogs(updateStatus, viewModel, effectiveHazeState)
@@ -90,14 +92,8 @@ fun AboutSettingsScreen(
                 // App Information Section
                 AppInfoSection(updateStatus, viewModel)
 
-                // Features Section
-                FeaturesSection(onNavigateToHistory)
-
                 // Support Section
-                SupportSection()
-
-                // Legal Section
-                LegalSection()
+                SupportSection(context)
 
                 // Developer Section
                 DeveloperSection()
@@ -284,102 +280,58 @@ private fun AppInfoSection(updateStatus: UpdateState, viewModel: SettingsViewMod
     }
 }
 
-@Composable
-private fun FeaturesSection(onNavigateToHistory: () -> Unit) {
-    GlassySettingSection(
-        title = "Features"
-    ) {
-        GlassyButtonRow(
-            title = "View History Log",
-            subtitle = "Browse your completed tasks and activity",
-            icon = Icons.Default.Info,
-            onClick = onNavigateToHistory
-        )
-        
-        FeatureItem(
-            title = "Smart Reminders",
-            description = "Intelligent notification system with nag mode"
-        )
-        
-        FeatureItem(
-            title = "Peaceful Design",
-            description = "Glassmorphism UI with customizable themes"
-        )
-        
-        FeatureItem(
-            title = "Privacy First",
-            description = "All data stored locally on your device"
-        )
-    }
-}
 
 @Composable
-private fun SupportSection() {
+private fun SupportSection(context: android.content.Context) {
     GlassySettingSection(
         title = "Support"
     ) {
         GlassyButtonRow(
-            title = "Rate Peace",
-            subtitle = "Help us improve by rating the app",
-            icon = Icons.Default.Star,
-            onClick = { /* TODO: Open Play Store */ }
+            title = "GitHub Repository",
+            subtitle = "View source code and contribute",
+            icon = Icons.Default.Code,
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/ciizerr/Peace")))
+            }
         )
-        
+
         GlassyButtonRow(
             title = "Share Peace",
             subtitle = "Share this app with friends and family",
             icon = Icons.Default.Share,
-            onClick = { /* TODO: Share app */ }
+            onClick = {
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Check out Peace")
+                    putExtra(Intent.EXTRA_TEXT, "Find your inner peace with Peace app: https://github.com/ciizerr/Peace")
+                }
+                context.startActivity(Intent.createChooser(intent, "Share Peace"))
+            }
         )
         
         GlassyButtonRow(
             title = "Report Bug",
-            subtitle = "Found an issue? Let us know",
+            subtitle = "Found an issue? Open a GitHub issue",
             icon = Icons.Default.BugReport,
-            onClick = { /* TODO: Open bug report */ }
+            onClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/ciizerr/Peace/issues")))
+            }
         )
     }
 }
 
-@Composable
-private fun LegalSection() {
-    GlassySettingSection(
-        title = "Legal"
-    ) {
-        GlassyButtonRow(
-            title = "Privacy Policy",
-            subtitle = "How we handle your data",
-            icon = Icons.Default.Security,
-            onClick = { /* TODO: Open privacy policy */ }
-        )
-        
-        GlassyButtonRow(
-            title = "Terms of Service",
-            subtitle = "Terms and conditions of use",
-            icon = Icons.Default.Info,
-            onClick = { /* TODO: Open terms */ }
-        )
-        
-        GlassyButtonRow(
-            title = "Open Source Licenses",
-            subtitle = "Third-party libraries and licenses",
-            icon = Icons.Default.Code,
-            onClick = { /* TODO: Open licenses */ }
-        )
-    }
-}
 
 @Composable
 private fun DeveloperSection() {
     GlassySettingSection(
-        title = "Developer"
+        title = "Open Source"
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Made with ❤️ by the Peace Team",
+                text = "Peace is an open-source project",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -388,7 +340,7 @@ private fun DeveloperSection() {
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "© 2024 Peace App. All rights reserved.",
+                text = "Made with ❤️ on GitHub",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -417,18 +369,3 @@ private fun InfoRow(label: String, value: String) {
     }
 }
 
-@Composable
-private fun FeatureItem(title: String, description: String) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
-        )
-        Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}

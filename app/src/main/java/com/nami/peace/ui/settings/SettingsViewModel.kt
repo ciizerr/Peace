@@ -9,11 +9,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+
+import com.nami.peace.domain.repository.ReminderRepository
+import org.json.JSONArray
+import org.json.JSONObject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
     private val userPreferencesRepository: UserPreferencesRepository,
+    private val reminderRepository: ReminderRepository,
     private val appUpdater: com.nami.peace.data.updater.AppUpdater
 ) : ViewModel() {
 
@@ -181,6 +188,9 @@ class SettingsViewModel @Inject constructor(
     val selectedSoundscape: StateFlow<String> = userPreferencesRepository.selectedSoundscape
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Default")
 
+    val selectedSoundUri: StateFlow<String?> = userPreferencesRepository.selectedSoundUri
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     val quietHoursEnabled: StateFlow<Boolean> = userPreferencesRepository.quietHoursEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
@@ -202,6 +212,12 @@ class SettingsViewModel @Inject constructor(
     // Sanctuary Settings
     val autoBackupEnabled: StateFlow<Boolean> = userPreferencesRepository.autoBackupEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val autoBackupFrequency: StateFlow<String> = userPreferencesRepository.autoBackupFrequency
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Daily")
+
+    val lastBackupTime: StateFlow<Long?> = userPreferencesRepository.lastBackupTime
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     val analyticsEnabled: StateFlow<Boolean> = userPreferencesRepository.analyticsEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -230,6 +246,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { userPreferencesRepository.setSelectedSoundscape(soundscape) }
     }
 
+    fun setSelectedSoundUri(uri: String?) {
+        viewModelScope.launch { userPreferencesRepository.setSelectedSoundUri(uri) }
+    }
+
     fun setQuietHoursEnabled(enabled: Boolean) {
         viewModelScope.launch { userPreferencesRepository.setQuietHoursEnabled(enabled) }
     }
@@ -256,7 +276,25 @@ class SettingsViewModel @Inject constructor(
 
     // Sanctuary Settings Functions
     fun setAutoBackupEnabled(enabled: Boolean) {
-        viewModelScope.launch { userPreferencesRepository.setAutoBackupEnabled(enabled) }
+        viewModelScope.launch { 
+            userPreferencesRepository.setAutoBackupEnabled(enabled)
+            if (enabled) {
+                val currentFreq = userPreferencesRepository.autoBackupFrequency.first()
+                com.nami.peace.data.worker.BackupWorker.schedule(context, currentFreq)
+            } else {
+                com.nami.peace.data.worker.BackupWorker.cancel(context)
+            }
+        }
+    }
+
+    fun setAutoBackupFrequency(frequency: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAutoBackupFrequency(frequency)
+            val isEnabled = userPreferencesRepository.autoBackupEnabled.first()
+            if (isEnabled) {
+                com.nami.peace.data.worker.BackupWorker.schedule(context, frequency)
+            }
+        }
     }
 
     fun setAnalyticsEnabled(enabled: Boolean) {
@@ -265,5 +303,32 @@ class SettingsViewModel @Inject constructor(
 
     fun setCrashReportingEnabled(enabled: Boolean) {
         viewModelScope.launch { userPreferencesRepository.setCrashReportingEnabled(enabled) }
+    }
+
+    // --- DATA MANAGEMENT ---
+    
+    fun clearAllData() {
+        viewModelScope.launch {
+            reminderRepository.clearAllReminders()
+            reminderRepository.clearAllHistory()
+        }
+    }
+
+    suspend fun exportDataToJson(): String {
+        val reminders = reminderRepository.getAllRemindersList()
+        val history = reminderRepository.getAllHistoryList()
+        return com.nami.peace.util.DataBackupHelper.exportToJson(reminders, history)
+    }
+
+    fun importDataFromJson(json: String) {
+        viewModelScope.launch {
+            try {
+                val (reminders, history) = com.nami.peace.util.DataBackupHelper.parseJson(json)
+                reminders.forEach { reminderRepository.insertReminder(it) }
+                history.forEach { reminderRepository.insertHistory(it) }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

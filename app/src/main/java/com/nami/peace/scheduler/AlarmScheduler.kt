@@ -69,7 +69,7 @@ class AlarmScheduler @Inject constructor(
                 }
                 todayCalendar.timeInMillis
             }
-            RecurrenceType.WEEKLY -> {
+            RecurrenceType.WEEKLY, RecurrenceType.CUSTOM -> {
                 // Find next matching day
                 val todayCalendar = Calendar.getInstance()
                 todayCalendar.set(Calendar.HOUR_OF_DAY, hour)
@@ -184,7 +184,9 @@ class AlarmScheduler @Inject constructor(
     }
 
     fun cancel(reminder: Reminder) {
-        val intent = Intent(context, AlarmReceiver::class.java)
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            action = "com.nami.peace.ACTION_ALARM_TRIGGER"
+        }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             reminder.id,

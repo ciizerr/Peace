@@ -179,9 +179,12 @@ class UserPreferencesRepository @Inject constructor(
     private val NAG_MODE_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("nag_mode_enabled")
     private val NAG_MODE_INTERVAL = androidx.datastore.preferences.core.intPreferencesKey("nag_mode_interval")
     private val NAG_MODE_MAX_REPETITIONS = androidx.datastore.preferences.core.intPreferencesKey("nag_mode_max_repetitions")
+    private val SELECTED_SOUND_URI = stringPreferencesKey("selected_sound_uri")
 
     // Sanctuary Settings Keys
     private val AUTO_BACKUP_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("auto_backup_enabled")
+    private val AUTO_BACKUP_FREQUENCY = stringPreferencesKey("auto_backup_frequency")
+    private val LAST_BACKUP_TIME = androidx.datastore.preferences.core.longPreferencesKey("last_backup_time")
     private val ANALYTICS_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("analytics_enabled")
     private val CRASH_REPORTING_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("crash_reporting_enabled")
 
@@ -200,6 +203,9 @@ class UserPreferencesRepository @Inject constructor(
 
     val selectedSoundscape: Flow<String> = dataStore.data
         .map { preferences -> preferences[SELECTED_SOUNDSCAPE] ?: "Default" }
+        
+    val selectedSoundUri: Flow<String?> = dataStore.data
+        .map { preferences -> preferences[SELECTED_SOUND_URI] }
 
     val quietHoursEnabled: Flow<Boolean> = dataStore.data
         .map { preferences -> preferences[QUIET_HOURS_ENABLED] ?: false }
@@ -222,6 +228,12 @@ class UserPreferencesRepository @Inject constructor(
     // Sanctuary Settings Flows
     val autoBackupEnabled: Flow<Boolean> = dataStore.data
         .map { preferences -> preferences[AUTO_BACKUP_ENABLED] ?: true }
+
+    val autoBackupFrequency: Flow<String> = dataStore.data
+        .map { preferences -> preferences[AUTO_BACKUP_FREQUENCY] ?: "Daily" }
+
+    val lastBackupTime: Flow<Long?> = dataStore.data
+        .map { preferences -> preferences[LAST_BACKUP_TIME] }
 
     val analyticsEnabled: Flow<Boolean> = dataStore.data
         .map { preferences -> preferences[ANALYTICS_ENABLED] ?: false }
@@ -248,6 +260,13 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setSelectedSoundscape(soundscape: String) {
         dataStore.edit { it[SELECTED_SOUNDSCAPE] = soundscape }
+    }
+    
+    suspend fun setSelectedSoundUri(uri: String?) {
+        dataStore.edit { 
+            if (uri != null) it[SELECTED_SOUND_URI] = uri
+            else it.remove(SELECTED_SOUND_URI)
+        }
     }
 
     suspend fun setQuietHoursEnabled(enabled: Boolean) {
@@ -277,6 +296,14 @@ class UserPreferencesRepository @Inject constructor(
     // Sanctuary Settings Functions
     suspend fun setAutoBackupEnabled(enabled: Boolean) {
         dataStore.edit { it[AUTO_BACKUP_ENABLED] = enabled }
+    }
+
+    suspend fun setAutoBackupFrequency(frequency: String) {
+        dataStore.edit { it[AUTO_BACKUP_FREQUENCY] = frequency }
+    }
+
+    suspend fun setLastBackupTime(time: Long) {
+        dataStore.edit { it[LAST_BACKUP_TIME] = time }
     }
 
     suspend fun setAnalyticsEnabled(enabled: Boolean) {

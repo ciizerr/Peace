@@ -70,25 +70,28 @@ fun AddEditReminderScreen(
     // Helpers
     val dateFormat = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
     val timeFormat = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+    // Picker States
+    var showGlassyTimePicker by remember { mutableStateOf(false) }
+    var showGlassyDatePicker by remember { mutableStateOf(false) }
+    
+    val initialTimeCal = remember(uiState.startTimeInMillis) { 
+        Calendar.getInstance().apply { timeInMillis = uiState.startTimeInMillis }
+    }
+    val timePickerState = rememberTimePickerState(
+        initialHour = initialTimeCal.get(Calendar.HOUR_OF_DAY),
+        initialMinute = initialTimeCal.get(Calendar.MINUTE)
+    )
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = uiState.dateInMillis ?: System.currentTimeMillis()
+    )
 
     fun showDatePicker() {
-        val initialMillis = uiState.dateInMillis ?: System.currentTimeMillis()
-        val c = Calendar.getInstance().apply { timeInMillis = initialMillis }
-        DatePickerDialog(context, { _, y, m, d ->
-            val sel = Calendar.getInstance()
-            sel.set(y, m, d)
-            viewModel.onEvent(AddEditReminderEvent.DateChanged(sel.timeInMillis))
-        }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show()
+        showGlassyDatePicker = true
     }
 
     fun showTimePicker() {
-        val c = Calendar.getInstance().apply { timeInMillis = uiState.startTimeInMillis }
-        TimePickerDialog(context, { _, h, m ->
-            val newCal = Calendar.getInstance()
-            newCal.set(Calendar.HOUR_OF_DAY, h)
-            newCal.set(Calendar.MINUTE, m)
-            viewModel.onEvent(AddEditReminderEvent.StartTimeChanged(newCal.timeInMillis))
-        }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false).show()
+        showGlassyTimePicker = true
     }
 
     fun onSave() {
@@ -264,5 +267,33 @@ fun AddEditReminderScreen(
                 }
             }
         }
+
+        // Glassy Time Picker Integration
+        com.nami.peace.ui.components.GlassyTimePicker(
+            show = showGlassyTimePicker,
+            state = timePickerState,
+            onDismiss = { showGlassyTimePicker = false },
+            onConfirm = {
+                val newCal = Calendar.getInstance()
+                newCal.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                newCal.set(Calendar.MINUTE, timePickerState.minute)
+                viewModel.onEvent(AddEditReminderEvent.StartTimeChanged(newCal.timeInMillis))
+                showGlassyTimePicker = false
+            },
+            hazeState = localHazeState
+        )
+        // Glassy Date Picker Integration
+        com.nami.peace.ui.components.GlassyDatePicker(
+            show = showGlassyDatePicker,
+            state = datePickerState,
+            onDismiss = { showGlassyDatePicker = false },
+            onConfirm = {
+                datePickerState.selectedDateMillis?.let {
+                    viewModel.onEvent(AddEditReminderEvent.DateChanged(it))
+                }
+                showGlassyDatePicker = false
+            },
+            hazeState = localHazeState
+        )
     }
 }

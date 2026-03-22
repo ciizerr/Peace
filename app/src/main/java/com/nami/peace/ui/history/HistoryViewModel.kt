@@ -53,9 +53,8 @@ class HistoryViewModel @Inject constructor(
         FilterArgs(date, expanded, receipt, month, msg, emptySet())
     }.combine(_selectedIds) { args, selIds ->
         args.copy(selectedIds = selIds)
-    }.combine(repository.getReminders()) { filters, reminders ->
-        val completed = reminders.filter { it.isCompleted }
-            .sortedByDescending { it.completedTime ?: 0L }
+    }.combine(repository.getAllHistory()) { filters, completedRaw ->
+        val completed = completedRaw.sortedByDescending { it.completedTime ?: 0L }
 
         // Populate set of dates with history
         val historyDates = completed.mapNotNull { reminder ->

@@ -171,7 +171,7 @@ fun ReminderDetailSheet(
                                       stringResource(R.string.reminder_recurrence_one_time)
                                  }
                             }
-                            RecurrenceType.WEEKLY -> {
+                            RecurrenceType.WEEKLY, RecurrenceType.CUSTOM -> {
                                 if (reminder.daysOfWeek.isNotEmpty()) {
                                     stringResource(R.string.reminder_recurrence_weekly_prefix) + " " + formatDaysOfWeek(reminder.daysOfWeek)
                                 } else {

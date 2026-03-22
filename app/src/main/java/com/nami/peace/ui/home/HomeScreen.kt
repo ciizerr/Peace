@@ -587,6 +587,28 @@ fun FocusHeroCard(reminder: Reminder?, onDone: () -> Unit, onClick: () -> Unit) 
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(Icons.Default.Eco, null)
                 }
+
+                if (reminder.isInNestedSnoozeLoop) {
+                     Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(24.dp)
+                            .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
+                            .border(1.dp, Color.White.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.AutoAwesome, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Snoozed: ${formatTime(reminder.startTimeInMillis)}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
         }
     } else {
@@ -870,11 +892,33 @@ fun UpcomingReminderCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.8f)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
+                    val timeText = if (com.nami.peace.util.DateUtils.isToday(reminder.startTimeInMillis)) {
+                        formatTime(reminder.startTimeInMillis)
+                    } else {
+                        com.nami.peace.util.DateUtils.formatDateHeader(reminder.startTimeInMillis) + " at " + formatTime(reminder.startTimeInMillis)
+                    }
+                    
                     Text(
-                        formatTime(reminder.startTimeInMillis),
+                        timeText,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    
+                    if (reminder.recurrenceType != com.nami.peace.domain.model.RecurrenceType.ONE_TIME) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        ) {
+                            Text(
+                                text = formatRecurrenceLabel(reminder),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
                 if (reminder.isInNestedSnoozeLoop) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -892,6 +936,22 @@ fun UpcomingReminderCard(
                 modifier = Modifier.padding(end = 16.dp)
             )
         }
+    }
+}
+
+private fun formatRecurrenceLabel(reminder: Reminder): String {
+    return when (reminder.recurrenceType) {
+        com.nami.peace.domain.model.RecurrenceType.DAILY -> "Daily"
+        com.nami.peace.domain.model.RecurrenceType.WEEKLY -> "Weekly"
+        com.nami.peace.domain.model.RecurrenceType.CUSTOM -> {
+            if (reminder.daysOfWeek.isEmpty()) "Daily"
+            else {
+                val days = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+                // daysOfWeek is 1=Sun, 2=Mon, etc. to match Calendar
+                reminder.daysOfWeek.sorted().joinToString(", ") { days[it - 1] }
+            }
+        }
+        else -> ""
     }
 }
 
